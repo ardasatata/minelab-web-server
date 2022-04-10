@@ -131,3 +131,5 @@ dmypy.json
 # Project
 model/
 *.h5
+
+*.npz
