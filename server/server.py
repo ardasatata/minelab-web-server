@@ -7,7 +7,7 @@ import json
 import base64
 import eventlet
 import numpy as np
-from PIL import Image
+# from PIL import Image
 
 eventlet.monkey_patch()
 
@@ -55,14 +55,14 @@ class Worker(object):
     #             else:
     #                 break
 
-    def do_work(self):
+    def do_work(self, filename='output.npz'):
         """
         do work and emit message
         """
         while self.switch:
             self.unit_of_work += 1
 
-            file = np.load('output.npz', allow_pickle=True)
+            file = np.load(filename, allow_pickle=True)
             file = file['arr_0']
 
             # print(len(file))
@@ -131,14 +131,15 @@ def connect():
 
 
 @socketio.on('play', namespace='/work')
-def start_work():
-    print('start worker video')
+def start_work(data):
+    print('start worker video ', data)
     """
     trigger background thread
     """
     emit("update", {"msg": "starting worker"})
     # notice that the method is not called - don't put braces after method name
-    socketio.start_background_task(target=worker.do_work)
+    # socketio.start_background_task(target=worker.do_work('output_professor.npz'))
+    socketio.start_background_task(target=worker.do_work(data))
 
 
 @socketio.on('stop', namespace='/work')
