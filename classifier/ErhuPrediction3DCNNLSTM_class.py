@@ -15,7 +15,7 @@ import imutils
 import numpy as np
 import argparse
 import json
-import util.Util as Util
+# import util.Util as Util
 from json import JSONEncoder
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
@@ -29,6 +29,15 @@ from tensorflow.keras.models import load_model
 from PIL import ImageFont, ImageDraw, Image
 from configparser import ConfigParser
 
+def getVideoProperties(video) :
+    properties = {}
+    properties['FPS'] = round(video.get(cv2.CAP_PROP_FPS))
+    properties['Height'] = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    properties['Width'] = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    properties['Count'] = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    return properties
+
 mp_drawing          = mp.solutions.drawing_utils
 # mp_drawing_styles   = mp.solutions.drawing_styles
 mp_holistic         = mp.solutions.holistic
@@ -41,7 +50,9 @@ hip_left_point  = []
 hip_right_point = []
 
 configure = ConfigParser()
-configure.read('config.ini')
+thisfolder = os.path.dirname(os.path.abspath(__file__))
+configini = os.path.join(thisfolder, 'config.ini')
+configure.read(configini)
 
 K_var = configure.getint('traditional', 'k')
 X_var = configure.getint('traditional', 'x')
@@ -59,8 +70,9 @@ print("P_var:", P_var)
 
 img_chinese = np.zeros((200, 400, 3), np.uint8)
 b, g, r, a = 0, 255, 0, 0
-chinese_font = 'C:/Windows/Fonts/simsun.ttc'
-result_font = ImageFont.truetype(chinese_font, 28)
+chinese_font = './util/simsun.ttc'
+
+result_font = ImageFont.truetype(os.path.join(thisfolder, 'util/simsun.ttc'), 28)
 
 def get_contours(frame):
     image   = frame.copy()
@@ -699,16 +711,16 @@ def main_predict(video_input):
     curr_date = str(start_now.day)+'-'+str(start_now.month)+'-'+str(start_now.year)
     curr_time = str(start_now.strftime('%H%M%S'))
 
-    model_left_hand  = load_model('model/dataset_ver5/final/models_leftHand/model-007.h5')
-    model_left_arm   = load_model('model/dataset_ver5/final/models_leftArm/model-004.h5')
-    model_right_hand = load_model('model/dataset_ver5/final/models_rightHand/model-017.h5')
-    model_right_arm  = load_model('model/dataset_ver5/final/models_rightArm/model-016.h5')
+    model_left_hand  = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftHand/model-007.h5'))
+    model_left_arm   = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftArm/model-004.h5'))
+    model_right_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightHand/model-017.h5'))
+    model_right_arm  = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightArm/model-016.h5'))
     model_left_hand.summary()
     model_left_arm.summary()
     model_right_hand.summary()
     model_right_arm.summary()
 
-    result_folder   = "result/prediction_result/"+curr_date
+    result_folder   = os.path.join(thisfolder, "result/prediction_result/"+curr_date)
     if os.path.exists(result_folder) == False:
         os.mkdir(result_folder)
     # dataset_folder  = 'video/5th_dataset_test'
@@ -721,8 +733,8 @@ def main_predict(video_input):
     LABELS          = ["body", "bow", "erhu"]
     segment_image   = custom_segmentation()
     segment_image.inferConfig(num_classes=3, class_names=LABELS)
-    segment_image.load_model("model/SegmentationModel/4_5_dataset_13032022/mask_rcnn_model.081-0.129956.h5")
-    properties  = Util.getVideoProperties(videoInput)
+    segment_image.load_model(os.path.join(thisfolder, "model/SegmentationModel/4_5_dataset_13032022/mask_rcnn_model.081-0.129956.h5"))
+    properties  = getVideoProperties(videoInput)
     # videoSegmentation = {}
     fourcc      = cv2.VideoWriter_fourcc(*'MP4V')
     vid_fps     = properties['FPS']
@@ -1085,7 +1097,7 @@ def main_predict(video_input):
                     resize_img = (256, 256)
                     img_resized = np.array(img_pil.resize(resize_img))
                     img_original = np.array(img_pil)
-                    output_array.append([warning_mess, img_resized])
+                    output_array.append([warning_mess])
                     videoOut_1.write(img_original)
                 #
                 # for img_leftArm, left_arm_point in zip(x_test_video_leftArm, x_test_left_arm_point):

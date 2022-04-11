@@ -1,3 +1,5 @@
+import os.path
+
 from flask import Flask, render_template, request, Response, jsonify
 from flask_socketio import SocketIO, emit
 from datetime import datetime
@@ -11,12 +13,23 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 
+from flask_cors import CORS, cross_origin
+
+import sys
+sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
+
+from classifier.ErhuPrediction3DCNNLSTM_class import main_predict
+
 # from PIL import Image
 
 eventlet.monkey_patch()
 
 app = Flask(__name__)
+cors = CORS(app)
+
 app.config['SECRET_KEY'] = '78581099#lkjh'
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # our global worker
@@ -77,6 +90,7 @@ class Worker(object):
 
 # Getting arguments from a POST form
 @app.route("/send-video", methods=['POST'])
+@cross_origin()
 def send_video():
     video = request.files.get('video')
 
@@ -89,6 +103,8 @@ def send_video():
 
     # Saved Video Path
     filename = UPLOAD_DIR + video.filename
+
+    result = main_predict(filename)
 
     try:
         print(filename)
