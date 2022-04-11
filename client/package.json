@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.26.1",
     "@ant-design/icons": "4.7.0",
     "@reduxjs/toolkit": "1.7.1",
     "@tailwindcss/forms": "0.4.0",
