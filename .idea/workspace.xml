@@ -1,16 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="update package.json">
+    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="added util files">
+      <change afterPath="$PROJECT_DIR$/classifier/config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/erhu-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/erhu-project.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/pages/RecordVideo/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/pages/RecordVideo/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/client/yarn.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -36,21 +49,21 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="dart.analysis.tool.window.visible" value="false" />
-    <property name="last_opened_file_path" value="/media/minelab/MINELAB II/Wisnu/image segmentation/point-transformer-master" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/classifier" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-    <property name="ts.external.directory.path" value="$PROJECT_DIR$/client/node_modules/typescript/lib" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/classifier" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/predict" />
       <recent name="$PROJECT_DIR$/server" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.start">
+  <component name="RunManager">
     <configuration name="server" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="erhu-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -73,21 +86,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/client/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="start" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="npm.start" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -99,7 +97,8 @@
       <updated>1649574817148</updated>
       <workItem from="1649574818850" duration="2580000" />
       <workItem from="1649611073990" duration="7714000" />
-      <workItem from="1649694439861" duration="926000" />
+      <workItem from="1649694439861" duration="4956000" />
+      <workItem from="1649701802268" duration="2058000" />
     </task>
     <task id="LOCAL-00001" summary="add server.py">
       <created>1649582412245</created>
@@ -122,14 +121,35 @@
       <option name="project" value="LOCAL" />
       <updated>1649614906854</updated>
     </task>
-    <task id="LOCAL-00004" summary="update package.json">
-      <created>1649697620027</created>
+    <task id="LOCAL-00004" summary="restructure">
+      <created>1649695641196</created>
       <option name="number" value="00004" />
       <option name="presentableId" value="LOCAL-00004" />
       <option name="project" value="LOCAL" />
-      <updated>1649697620027</updated>
+      <updated>1649695641196</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="update ignore">
+      <created>1649695733894</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1649695733894</updated>
+    </task>
+    <task id="LOCAL-00006" summary="update new structure">
+      <created>1649696375979</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1649696375979</updated>
+    </task>
+    <task id="LOCAL-00007" summary="added util files">
+      <created>1649701314056</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1649701314057</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,7 +170,13 @@
     <MESSAGE value="add server.py" />
     <MESSAGE value="re-structure folder" />
     <MESSAGE value="update" />
-    <MESSAGE value="update package.json" />
-    <option name="LAST_COMMIT_MESSAGE" value="update package.json" />
+    <MESSAGE value="restructure" />
+    <MESSAGE value="update ignore" />
+    <MESSAGE value="update new structure" />
+    <MESSAGE value="added util files" />
+    <option name="LAST_COMMIT_MESSAGE" value="added util files" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1649703755254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
   </component>
 </project>
