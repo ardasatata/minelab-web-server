@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, jsonify
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 from time import sleep
@@ -7,6 +7,10 @@ import json
 import base64
 import eventlet
 import numpy as np
+
+from os import listdir
+from os.path import isfile, join
+
 # from PIL import Image
 
 eventlet.monkey_patch()
@@ -15,9 +19,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '78581099#lkjh'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
-# our gloabal worker
+# our global worker
 workerObject = None
-PREDICTION_DIR = r"F:\Dataset\Erhu\Data Predicted\\"
+PREDICTION_DIR = r"./predict/"
+UPLOAD_DIR = r"./upload/"
+
 
 class Worker(object):
     switch = False
@@ -30,31 +36,6 @@ class Worker(object):
         self.socketio = socketio
         self.switch = True
 
-    # def do_work(self):
-    #     """
-    #     do work and emit message
-    #     """
-    #     while self.switch:
-    #         self.unit_of_work += 1
-    #
-    #         cap = cv2.VideoCapture('predict.mp4')
-    #         frame_counter = 0
-    #         while (cap.isOpened()):
-    #             ret, img = cap.read()
-    #             frame_counter += 1
-    #             if ret and self.switch:
-    #                 img = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
-    #                 frame = cv2.imencode('.jpg', img)[1].tobytes()
-    #                 frame = base64.encodebytes(frame).decode("utf-8")
-    #                 # message(frame, frame_counter)
-    #                 data = {'image': frame, 'frame': frame_counter}
-    #                 json_data = json.dumps(data)
-    #                 self.socketio.emit('image', json_data, namespace="/work")
-    #                 # socketio.sleep(0.05)
-    #                 eventlet.sleep(0.05)
-    #             else:
-    #                 break
-
     def do_work(self, filename='output.npz'):
         """
         do work and emit message
@@ -62,14 +43,9 @@ class Worker(object):
         while self.switch:
             self.unit_of_work += 1
 
-            file = np.load(filename, allow_pickle=True)
+            file = np.load(PREDICTION_DIR + filename, allow_pickle=True)
             file = file['arr_0']
 
-            # print(len(file))
-            # break
-            # print(file[0][0])
-            # print(file[0][1])
-            # break
             frame_counter = 0
             for frame in file:
                 frame_counter += 1
@@ -92,32 +68,49 @@ class Worker(object):
             eventlet.sleep(1)
             self.switch = False
 
-            # cap = cv2.VideoCapture('predict.mp4')
-            # frame_counter = 0
-            # while (cap.isOpened()):
-            #     ret, img = cap.read()
-            #     frame_counter += 1
-            #     if ret and self.switch:
-            #         img = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
-            #         frame = cv2.imencode('.jpg', img)[1].tobytes()
-            #         frame = base64.encodebytes(frame).decode("utf-8")
-            #         # message(frame, frame_counter)
-            #         data = {'image': frame, 'frame': frame_counter}
-            #         json_data = json.dumps(data)
-            #         self.socketio.emit('image', json_data, namespace="/work")
-            #         # socketio.sleep(0.05)
-            #         eventlet.sleep(0.05)
-            #     else:
-            #         break
-
-            # important to use eventlet's sleep method
-            # eventlet.sleep(1)
-
     def stop(self):
         """
         stop the loop
         """
         self.switch = False
+
+
+# Getting arguments from a POST form
+@app.route("/send-video", methods=['POST'])
+def send_video():
+    video = request.files.get('video')
+
+    now = datetime.now()  # current date and time
+
+    date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
+    print("date and time:", date_time)
+
+    video.filename = date_time + ".mp4"
+
+    # Saved Video Path
+    filename = UPLOAD_DIR + video.filename
+
+    try:
+        print(filename)
+        video.save(filename)
+    finally:
+        value = {
+            "ok": True,
+            "fileName": date_time
+        }
+        return value
+
+
+@app.route('/predict-list')
+def file_path():
+    print('getting all predicted files name')
+    onlyfiles = [f for f in listdir(PREDICTION_DIR) if isfile(join(PREDICTION_DIR, f))]
+
+    print(onlyfiles)
+    value = {
+        "filepath": onlyfiles.tolist()
+    }
+    return jsonify(value)
 
 
 @socketio.on('connect', namespace='/work')
@@ -161,23 +154,25 @@ def stop_work():
     worker.stop()
     emit("update", {"msg": "worker has been stoppped"})
 
-@app.route("/send-video", methods=['POST'])
-def send_video():
-    video = request.files.get('video')
 
-    now = datetime.now()  # current date and time
+# @app.route("/send-video", methods=['POST'])
+# def send_video():
+#     video = request.files.get('video')
+#
+#     now = datetime.now()  # current date and time
+#
+#     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
+#     print("date and time:", date_time)
+#
+#     video.filename = date_time + ".mp4"
+#
+#     # Saved Video Path
+#     filename = PREDICTION_DIR + video.filename
+#
+#     print(filename)
+#
+#     video.save(filename)
 
-    date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
-    print("date and time:", date_time)
-
-    video.filename = date_time + ".mp4"
-
-    # Saved Video Path
-    filename = PREDICTION_DIR + video.filename
-
-    print(filename)
-
-    video.save(filename)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host='140.115.51.243', port=5000)
