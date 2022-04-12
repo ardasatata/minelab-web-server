@@ -8,8 +8,8 @@ export function Logo() {
     <Wrapper>
       <img src={ncuLogo} className={'h-8 mr-2'}/>
       <img src={minelab} className={'h-8 mr-4'}/>
-      <Title>Erhu Estimator</Title>
-      <Description>Demo App</Description>
+      <Title>Erhu Trainer | 二胡學</Title>
+      <Description>Minelab 2022</Description>
     </Wrapper>
   );
 }

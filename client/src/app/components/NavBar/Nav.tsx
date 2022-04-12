@@ -2,27 +2,26 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import { ReactComponent as DocumentationIcon } from './assets/documentation-icon.svg';
 import { ReactComponent as GithubIcon } from './assets/github-icon.svg';
+import {ArrowUpOutlined, OrderedListOutlined} from "@ant-design/icons";
 
 export function Nav() {
   return (
     <Wrapper>
       <Item
-        href="https://cansahin.gitbook.io/react-boilerplate-cra-template/"
-        target="_blank"
+        href={process.env.PUBLIC_URL + `/list`}
         title="Documentation Page"
         rel="noopener noreferrer"
       >
-        <DocumentationIcon />
-        Documentation
+        <OrderedListOutlined className={'mr-2'} />
+        Video List
       </Item>
       <Item
-        href="https://github.com/react-boilerplate/react-boilerplate-cra-template"
-        target="_blank"
+        href={process.env.PUBLIC_URL + `/`}
         title="Github Page"
         rel="noopener noreferrer"
       >
-        <GithubIcon />
-        Github
+        <ArrowUpOutlined className={'mr-2'} />
+        Upload Video
       </Item>
     </Wrapper>
   );
