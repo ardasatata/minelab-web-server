@@ -365,7 +365,7 @@ export function PlayVideo(props: Props) {
   return (
     <>
       <Helmet>
-        <title>Home Page</title>
+        <title>{`Evaluate ${query.get('title')}`}</title>
         <meta
           name="description"
           content="A React Boilerplate application homepage"
@@ -408,7 +408,10 @@ export function PlayVideo(props: Props) {
                   <img
                     src={img}
                     alt={'main-stream'}
-                    className={'h-full w-full object-contain'}
+                    className={'w-full object-contain'}
+                    style={{
+                      aspectRatio: '16/9',
+                    }}
                   />
                 ) : (
                   <div className={'text-white text-9xl m-auto'} onClick={play}>

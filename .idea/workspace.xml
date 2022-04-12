@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="added util files">
-      <change afterPath="$PROJECT_DIR$/classifier/config.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/erhu-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/erhu-project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="update client">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/Logo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/Logo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/Nav.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/Nav.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/pages/PlayVideo/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/pages/PlayVideo/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/pages/RecordVideo/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/pages/RecordVideo/index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,11 +50,20 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/classifier" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/src/app/pages" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.standard" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.standard" value="" />
+    <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="settings.editor.selected.configurable" value="settings.javascript.linters.eslint" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/client/node_modules/typescript/lib" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/src/app/pages" />
       <recent name="$PROJECT_DIR$/classifier" />
       <recent name="$PROJECT_DIR$" />
     </key>
@@ -63,7 +73,7 @@
       <recent name="$PROJECT_DIR$/server" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="npm.start">
     <configuration name="server" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="erhu-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -86,6 +96,21 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/client/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="start" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.start" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -99,6 +124,7 @@
       <workItem from="1649611073990" duration="7714000" />
       <workItem from="1649694439861" duration="4956000" />
       <workItem from="1649701802268" duration="2058000" />
+      <workItem from="1649740268790" duration="2067000" />
     </task>
     <task id="LOCAL-00001" summary="add server.py">
       <created>1649582412245</created>
@@ -176,7 +202,8 @@
     <MESSAGE value="added util files" />
     <option name="LAST_COMMIT_MESSAGE" value="added util files" />
   </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1649703755254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

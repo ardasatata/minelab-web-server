@@ -17,17 +17,18 @@ import { NotFoundPage } from './pages/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 import { RecordVideo } from './pages/RecordVideo';
 import { PlayVideo } from './pages/PlayVideo';
+import {FileList} from "./pages/FileList";
 
 export function App() {
   const { i18n } = useTranslation();
   return (
     <BrowserRouter>
       <Helmet
-        titleTemplate="%s - React Boilerplate"
-        defaultTitle="React Boilerplate"
+        titleTemplate="%s - Minelab"
+        defaultTitle="Erhu Trainer | 二胡學"
         htmlAttributes={{ lang: i18n.language }}
       >
-        <meta name="description" content="A React Boilerplate application" />
+        <meta name="description" content="An Erhu Trainer|二胡學 application" />
       </Helmet>
 
       <Switch>
@@ -35,6 +36,11 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/'}
           component={() => <RecordVideo />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/list'}
+          component={() => <FileList />}
         />
         <Route
           exact
