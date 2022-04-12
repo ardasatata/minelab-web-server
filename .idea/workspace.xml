@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="added util files">
-      <change afterPath="$PROJECT_DIR$/classifier/config.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/erhu-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/erhu-project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="fix upload functionality">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/client/yarn.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -51,6 +49,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/classifier" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/client/node_modules/typescript/lib" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -98,7 +97,14 @@
       <workItem from="1649574818850" duration="2580000" />
       <workItem from="1649611073990" duration="7714000" />
       <workItem from="1649694439861" duration="4956000" />
-      <workItem from="1649701802268" duration="2058000" />
+      <workItem from="1649701802268" duration="8249000" />
+      <workItem from="1649714097687" duration="257000" />
+      <workItem from="1649714366753" duration="1126000" />
+      <workItem from="1649715767557" duration="687000" />
+      <workItem from="1649716765325" duration="577000" />
+      <workItem from="1649718430332" duration="1251000" />
+      <workItem from="1649721259653" duration="2305000" />
+      <workItem from="1649738281748" duration="2181000" />
     </task>
     <task id="LOCAL-00001" summary="add server.py">
       <created>1649582412245</created>
@@ -149,7 +155,14 @@
       <option name="project" value="LOCAL" />
       <updated>1649701314057</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="fix upload functionality">
+      <created>1649703880066</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1649703880066</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -174,9 +187,10 @@
     <MESSAGE value="update ignore" />
     <MESSAGE value="update new structure" />
     <MESSAGE value="added util files" />
-    <option name="LAST_COMMIT_MESSAGE" value="added util files" />
+    <MESSAGE value="fix upload functionality" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix upload functionality" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1649703755254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
+    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1649740173473" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
   </component>
 </project>

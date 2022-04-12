@@ -102,13 +102,15 @@ def send_video():
     video.filename = date_time + ".mp4"
 
     # Saved Video Path
-    filename = UPLOAD_DIR + video.filename
-
-    result = main_predict(filename)
+    # filename = UPLOAD_DIR + video.filename
+    filename = video.filename
 
     try:
         print(filename)
         video.save(filename)
+
+        main_predict(filename)
+
     finally:
         value = {
             "ok": True,
@@ -124,7 +126,7 @@ def file_path():
 
     print(onlyfiles)
     value = {
-        "filepath": onlyfiles.tolist()
+        "filepath": onlyfiles
     }
     return jsonify(value)
 
