@@ -23,7 +23,7 @@ import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
-import {NavBar} from "../../components/NavBar";
+import { NavBar } from '../../components/NavBar';
 
 interface Props {}
 
@@ -37,8 +37,8 @@ export function RecordVideo(props: Props) {
 
   const handleChange = async file => {
     setFile(file);
-    setIsUploaded(false)
-    setIsError(false)
+    setIsUploaded(false);
+    setIsError(false);
   };
 
   const clearFile = () => {
@@ -78,13 +78,12 @@ export function RecordVideo(props: Props) {
 
     console.log(result);
 
-    if(result.data.ok){
-      setIsUploaded(true)
+    if (result.data.ok) {
+      setIsUploaded(true);
       setFile(null);
-    }
-    else {
-      setIsError(true)
-      setIsUploaded(false)
+    } else {
+      setIsError(true);
+      setIsUploaded(false);
     }
   };
 
@@ -99,7 +98,7 @@ export function RecordVideo(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain>
-        <div className={'flex h-full w-full'}>
+        <div className={'flex h-full w-full bg-black'}>
           {/*<VideoRecorder*/}
           {/*  isReplayingVideo={false}*/}
           {/*  showReplayControls={true}*/}
@@ -128,17 +127,22 @@ export function RecordVideo(props: Props) {
               'flex flex-col items-center justify-center text-white w-full'
             }
           >
-
-            {isUploaded ? <h1 className={'text-5xl mb-4'}>
-                Your file is uploaded!
-              </h1> : null}
+            {isUploaded ? (
+              <>
+                <h1 className={'text-4xl mb-2'}>Your file is uploaded!</h1>
+                <h1 className={'text-2xl mb-12 text-center text-teal-300'}>
+                  We appreciate your contribution to allow us for using your
+                  video file for research purposes.
+                </h1>
+              </>
+            ) : null}
 
             {file !== null ? (
               <h1 className={'text-5xl mb-12'}>
                 Your file is ready to upload!
               </h1>
             ) : (
-              <h1 className={'text-5xl mb-12'}>
+              <h1 className={'text-2xl mb-4 text-amber-50'}>
                 Please Drag a video file below!
               </h1>
             )}
@@ -171,7 +175,7 @@ export function RecordVideo(props: Props) {
                 types={fileTypes}
               />
             )}
-            <p className={'mt-6'}>
+            <p className={'mt-6 text-amber-200'}>
               {file ? `File name: ${file[0].name}` : 'no files uploaded yet'}
             </p>
           </div>

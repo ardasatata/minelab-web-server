@@ -12,10 +12,18 @@ import { Helmet } from 'react-helmet-async';
 import { io } from 'socket.io-client';
 import {
   LoadingOutlined,
+  MenuOutlined,
   PlayCircleOutlined,
   StopOutlined,
 } from '@ant-design/icons';
 import DataTable from 'react-data-table-component';
+
+import { ReactComponent as HeadIcon } from './assets/head.svg';
+import { ReactComponent as ShoulderIcon } from './assets/shoulder.svg';
+import shoulderIcon from './assets/shoulder.png';
+import { ReactComponent as BowIcon } from './assets/bow.svg';
+import { ReactComponent as HandIcon } from './assets/hand.svg';
+import { ReactComponent as TorsoIcon } from './assets/torso.svg';
 
 import {
   CategoryScale,
@@ -362,6 +370,12 @@ export function PlayVideo(props: Props) {
     );
   };
 
+  const [isShow, setIsShow] = useState<boolean>(false);
+
+  const toggleMenu = () => {
+    setIsShow(!isShow);
+  };
+
   return (
     <>
       <Helmet>
@@ -373,9 +387,13 @@ export function PlayVideo(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain>
-        <div className={'flex h-full w-3/5 bg-black'}>
-          <div className={'flex flex-col w-full h-full justify-center'}>
-            <div className={'flex flex-row'}>
+        <div className={'flex h-full w-full bg-black flex-1'}>
+          <div
+            className={
+              'flex flex-col w-full h-full justify-center items-center'
+            }
+          >
+            <div className={'flex flex-row w-full'}>
               <div
                 className={
                   'flex-1 text-white text-4xl py-4 transition ease-in-out bg-green-500 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
@@ -394,9 +412,18 @@ export function PlayVideo(props: Props) {
                 <StopOutlined className={'mr-2'} />
                 {'STOP'}
               </div>
+              <div
+                className={
+                  'text-white text-4xl py-4 transition ease-in-out bg-blue-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer px-8'
+                }
+                onClick={toggleMenu}
+              >
+                <MenuOutlined className={'mr-2'} />
+                {'MENU'}
+              </div>
             </div>
             {socket ? (
-              <div className="flex w-full flex-1">
+              <div className="flex flex-1 justify-center max-w-7xl">
                 <div
                   className={
                     'text-white text-3xl absolute mt-4 ml-4 transition ease-in-out bg-black p-2'
@@ -405,10 +432,93 @@ export function PlayVideo(props: Props) {
                   {`Frame Number : ${frame}`}
                 </div>
                 {data ? (
+                  <div
+                    className={
+                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0'
+                    }
+                    style={{
+                      backgroundColor: 'rgba(0,47,105,0.5)',
+                    }}
+                  >
+                    <div
+                      className={
+                        data[0][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <HeadIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`Head : ${data[0][4]}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[1][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <TorsoIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`Body : ${data[1][4]}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[2][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <ShoulderIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`Shoulder : ${data[2][4]}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[3][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <HandIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`Right : ${data[3][4]}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[4][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <HandIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`Left : ${data[4][4]}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[5][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`Bow : ${data[5][4]}`}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {data ? (
                   <img
                     src={img}
                     alt={'main-stream'}
-                    className={'w-full object-contain'}
+                    className={'object-contain'}
                     style={{
                       aspectRatio: '16/9',
                     }}
@@ -424,37 +534,42 @@ export function PlayVideo(props: Props) {
             )}
           </div>
         </div>
-        <div className={'h-full flex flex-col bg-white w-2/5 overflow-scroll'}>
-          {data ? (
-            <div className={'h-full mb-8'}>
-              <DataTable
-                columns={columns}
-                data={data}
-                customStyles={customStyles}
-                dense={true}
+        {isShow ? (
+          <div
+            style={{ flex: 0.7 }}
+            className={'h-full flex flex-col bg-white overflow-scroll'}
+          >
+            {data ? (
+              <div className={'h-full mb-8'}>
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  customStyles={customStyles}
+                  dense={true}
+                />
+              </div>
+            ) : null}
+            <div className={'h-full mb-4'}>
+              <Line options={options} data={chartData} />
+            </div>
+            <div className={'px-12 mb-24'}>
+              <PolarArea
+                data={polarData}
+                options={{
+                  plugins: {
+                    legend: {
+                      position: 'top' as const,
+                    },
+                    title: {
+                      display: true,
+                      text: 'Error Plot',
+                    },
+                  },
+                }}
               />
             </div>
-          ) : null}
-          <div className={'h-full mb-4'}>
-            <Line options={options} data={chartData} />
           </div>
-          <div className={'px-12 mb-24'}>
-            <PolarArea
-              data={polarData}
-              options={{
-                plugins: {
-                  legend: {
-                    position: 'top' as const,
-                  },
-                  title: {
-                    display: true,
-                    text: 'Error Plot',
-                  },
-                },
-              }}
-            />
-          </div>
-        </div>
+        ) : null}
       </PageWrapperMain>
     </>
   );

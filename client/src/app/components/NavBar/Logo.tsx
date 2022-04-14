@@ -8,7 +8,7 @@ export function Logo() {
     <Wrapper>
       <img src={ncuLogo} className={'h-8 mr-2'}/>
       <img src={minelab} className={'h-8 mr-4'}/>
-      <Title>Erhu Trainer | 二胡學</Title>
+      <Title>Erhu Trainer | 二胡學習</Title>
       <Description>Minelab 2022</Description>
     </Wrapper>
   );
