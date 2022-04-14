@@ -1089,112 +1089,112 @@ def main_predict(video_input):
                     degree_body = all_body_point[4]
                     degree_shoulder = all_body_point[5]
 
-                    cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
-                    draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
-                    draw_res_bow.text((10, 20), "===== Traditional Algorithm =====", font=result_font,
-                                      fill=(b, g, r, a))
+                    # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
+                    # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
+                    # draw_res_bow.text((10, 20), "===== Traditional Algorithm =====", font=result_font,
+                    #                   fill=(b, g, r, a))
                     # E11 : Head position not normal
                     if degree_ear_face >= K_var or degree_ear_face < (0 - K_var):
-                        draw_res_bow.text((10, 50), E11_classname + ':' + str(degree_ear_face), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 50), E11_classname + ':' + str(degree_ear_face), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E11", str(degree_ear_face), 'Head Position', str(degree_ear_face),
                                              'E11-Head position not normal (to L or R)'])
                         draw_res_bow.rectangle(head_coordinate, outline="blue", fill=None, width=4)
                     else:
-                        draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
                         warning_mess.append(["Head Position", "Normal", 'Head Position', str(0), 'Normal'])
                     # E14 : Need to seat straight
                     if degree_body > (90 + K_var) or degree_body < (90 - K_var):
-                        draw_res_bow.text((10, 80), E14_classname + ':' + str(degree_body), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 80), E14_classname + ':' + str(degree_body), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E14", str(degree_body), 'Body Position', str(degree_body),
                                              'E14-Need to seat straight (to L or R)'])
                         draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
                     else:
-                        draw_res_bow.text((10, 80), 'Body Position : Normal', font=result_font, fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 80), 'Body Position : Normal', font=result_font, fill=(b, g, r, a))
                         warning_mess.append(["Body Position", "Normal", 'Body Position', str(0), 'Normal'])
                     # E12 - E13 Left Shoulder too High / Right Shoulder too High
                     if degree_shoulder > ((X_var / 90) * 100):
-                        draw_res_bow.text((10, 110), E13_classname + ':' + str(degree_shoulder), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 110), E13_classname + ':' + str(degree_shoulder), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E13", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
                                              'E13-Right shoulder too hight '])
                         draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
                     elif degree_shoulder < (0 - ((X_var / 90) * 100)):
-                        draw_res_bow.text((10, 110), E12_classname + ':' + str(degree_shoulder), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 110), E12_classname + ':' + str(degree_shoulder), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E12", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
                                              'E12-Left shoulder too hight'])
                         draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
                     else:
-                        draw_res_bow.text((10, 110), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 110), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
                         warning_mess.append(['Shoulders Position', 'Normal', 'Shoulders Position', str(0), 'Normal'])
-                    draw_res_bow.text((10, 140), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
+                    # draw_res_bow.text((10, 140), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
                     if rightArm_E31 >= P_var:
-                        draw_res_bow.text((10, 170), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 170), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Arm Position', str(rightArm_E31),
                                              'E31-Wrong RH thumb position'])
                         draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
                     elif rightArm_E32 >= P_var:
-                        draw_res_bow.text((10, 170), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 170), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Arm Position', str(rightArm_E32),
                                              'E32-Wrong RH index finger position'])
                         draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
                     elif rightArm_E33 >= P_var:
-                        draw_res_bow.text((10, 170), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 170), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E33", str(rightArm_E33), 'Right Hand Arm Position', str(rightArm_E33),
                                              'E33-Wrong RH middle or ring finger position'])
                         draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
                     elif rightArm_E34 >= P_var:
-                        draw_res_bow.text((10, 170), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 170), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E34", str(rightArm_E34), 'Right Hand Arm Position', str(rightArm_E34),
                                              'E34-Right wrist position too inward'])
                         draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
                     elif rightArm_E35 >= P_var:
-                        draw_res_bow.text((10, 170), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 170), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E35", str(rightArm_E35), 'Right Hand Arm Position', str(rightArm_E35),
                                              'E35-Right wrist position too outward'])
                         draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
                     else:
-                        draw_res_bow.text((10, 170), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 170), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                         warning_mess.append(["Right Arm Position", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
-                    draw_res_bow.text((10, 200), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
+                    # draw_res_bow.text((10, 200), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
                     ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
                     if leftArm_E21 >= P_var:
-                        draw_res_bow.text((10, 230), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 230), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E21", str(leftArm_E21), 'Left Hand Arm Position', str(leftArm_E21),
                                              'E21-Left elbow too Hight'])
                         draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
                     elif leftArm_E22 >= P_var:
-                        draw_res_bow.text((10, 230), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 230), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E22", str(leftArm_E22), 'Left Hand Arm Position', str(leftArm_E22),
                                              'E22-Left elbow too Low'])
                         draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
                     elif leftArm_E23 >= P_var:
-                        draw_res_bow.text((10, 230), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font,
-                                          fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 230), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font,
+                        #                   fill=(b, g, r, a))
                         warning_mess.append(["E23", str(leftArm_E23), 'Left Hand Arm Position', str(leftArm_E23),
                                              'E23-Left elbow and wrist in a line'])
                         draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
                     else:
-                        draw_res_bow.text((10, 230), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 230), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                         warning_mess.append(
                             ["Left Arm Position", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
-                    draw_res_bow.text((10, 260), "===== Bow Erhu =====", font=result_font, fill=(b, g, r, a))
+                    # draw_res_bow.text((10, 260), "===== Bow Erhu =====", font=result_font, fill=(b, g, r, a))
                     is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1],
                                                      bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
                     bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
                     erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), (erhu_line[1][0], erhu_line[1][1])]
                     # print('Erhu Bow Line Shape:', bow_line_shape, erhu_line_shape)
                     if is_orthogonal == False:
-                        draw_res_bow.text((10, 290), E41_classname, font=result_font, fill=(b, g, r, a))
+                        # draw_res_bow.text((10, 290), E41_classname, font=result_font, fill=(b, g, r, a))
                         warning_mess.append(["Bow Erhu Position", "E41", "Bow Erhu Position", str(1.0),
                                              "E41-Pole tilt to left - Bow hair and string must be orthogonal"])
                         # draw_res_bow.line(bow_line_shape, fill='blue', width=4)
