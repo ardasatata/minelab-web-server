@@ -15,10 +15,14 @@ from os.path import isfile, join
 
 from flask_cors import CORS, cross_origin
 
+import subprocess
+
 import sys
+import skvideo.io
+
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
 
-from classifier.ErhuPrediction3DCNNLSTM_class import main_predict
+# from classifier.ErhuPrediction3DCNNLSTM_class import main_predict
 
 # from PIL import Image
 
@@ -49,27 +53,47 @@ class Worker(object):
         self.socketio = socketio
         self.switch = True
 
-    def do_work(self, filename='output.npz'):
+    def do_work(self, filename='output'):
         """
         do work and emit message
         """
         while self.switch:
             self.unit_of_work += 1
 
-            file = np.load(PREDICTION_DIR + filename, allow_pickle=True)
+            file = np.load(f"{PREDICTION_DIR}{filename}.npz", allow_pickle=True)
             file = file['arr_0']
+            #
+            # video = skvideo.io.vread(f"{PREDICTION_DIR}{filename}.mp4")
+            print(f"{PREDICTION_DIR}{filename}.mp4")
+
+            vid = cv2.VideoCapture(f"{PREDICTION_DIR}{filename}.mp4")
+
+            video = []
+            check = True
+            i = 0
+
+            while check:
+                check, arr = vid.read()
+                # if not i % 20:  # This line is if you want to subsample your video
+                #     # (i.e. keep one frame every 20)
+                video.append(arr)
+                i += 1
+
+            video = np.array(video)
 
             frame_counter = 0
-            for frame in file:
+            for index in range(file.shape[0]):
+                # print(video[index])
                 frame_counter += 1
                 # img = Image.fromarray(frame[1], 'RGB').convert('RGB')
-                img = frame[1]
+                # img = frame[1]
+                img = video[index]
 
                 if self.switch:
                     img = cv2.imencode('.jpg', img)[1].tobytes()
                     img = base64.encodebytes(img).decode("utf-8")
                     # message(frame, frame_counter)
-                    data = {'image': img, 'frame': frame_counter, 'data': frame[0]}
+                    data = {'image': img, 'frame': frame_counter, 'data': file[index][0].tolist()}
                     json_data = json.dumps(data)
                     self.socketio.emit('image', json_data, namespace="/work")
                     # socketio.sleep(0.05)
@@ -99,30 +123,45 @@ def send_video():
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
     print("date and time:", date_time)
 
-    video.filename = date_time + ".mp4"
+    original_filename = video.filename[:-4]
+
+    video.filename = f"{date_time}_{original_filename}.mp4"
 
     # Saved Video Path
     # filename = UPLOAD_DIR + video.filename
     filename = video.filename
 
+    value = {
+        "ok": True,
+        "fileName": date_time
+    }
+
+    # run classifier sub-process
+    print("processing...", filename)
+    subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename], stdout=subprocess.DEVNULL,
+                     stderr=subprocess.STDOUT)
+
     try:
-        print(filename)
-        video.save(filename)
+        print("saving...", filename)
+        video.save(UPLOAD_DIR + filename)
 
-        main_predict(filename)
+        # main_predict(filename)
+        # os.system(f"python ./classifier/classifier.py {UPLOAD_DIR +filename}")
 
-    finally:
+        return value
+    except:
         value = {
-            "ok": True,
-            "fileName": date_time
+            "ok": False,
+            "fileName": filename
         }
+        print("error uploading file")
         return value
 
 
 @app.route('/predict-list')
 def file_path():
     print('getting all predicted files name')
-    onlyfiles = [f for f in listdir(PREDICTION_DIR) if isfile(join(PREDICTION_DIR, f))]
+    onlyfiles = [f[:-4] for f in listdir(PREDICTION_DIR) if isfile(join(PREDICTION_DIR, f)) and f[-4:] == ".npz"]
 
     print(onlyfiles)
     value = {

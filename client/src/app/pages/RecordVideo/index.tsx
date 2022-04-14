@@ -31,8 +31,14 @@ const fileTypes = ['MP4', 'MOV'];
 
 export function RecordVideo(props: Props) {
   const [file, setFile] = useState<any>(null);
+
+  const [isUploaded, setIsUploaded] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+
   const handleChange = async file => {
     setFile(file);
+    setIsUploaded(false)
+    setIsError(false)
   };
 
   const clearFile = () => {
@@ -71,6 +77,15 @@ export function RecordVideo(props: Props) {
     );
 
     console.log(result);
+
+    if(result.data.ok){
+      setIsUploaded(true)
+      setFile(null);
+    }
+    else {
+      setIsError(true)
+      setIsUploaded(false)
+    }
   };
 
   return (
@@ -113,6 +128,11 @@ export function RecordVideo(props: Props) {
               'flex flex-col items-center justify-center text-white w-full'
             }
           >
+
+            {isUploaded ? <h1 className={'text-5xl mb-4'}>
+                Your file is uploaded!
+              </h1> : null}
+
             {file !== null ? (
               <h1 className={'text-5xl mb-12'}>
                 Your file is ready to upload!

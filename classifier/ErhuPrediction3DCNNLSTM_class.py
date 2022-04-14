@@ -887,9 +887,12 @@ def main_predict(video_input):
                 if not success:
                     break
                 image = frame.copy()
+                # cv2.imshow("Video", image)
+                # cv2.waitKey(1000)
                 print("Frame ", str(frame_number), " processed!")
                 try:
                     seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
+                    # cv2.imshow("Video", seg_mask)
                     segLeng = len(seg_mask['scores'])
                     for i in range(segLeng):
                         mask = frame.copy()
@@ -1201,6 +1204,7 @@ def main_predict(video_input):
                     resize_img = (256, 256)
                     img_resized = np.array(img_pil.resize(resize_img))
                     img_original = np.array(img_pil)
+                    # output_array.append([warning_mess, img_original])
                     output_array.append([warning_mess])
                     videoOut_1.write(img_original)
                 #
@@ -1284,7 +1288,8 @@ def main_predict(video_input):
         else:
             frame_number += 1
     # print(output_array)
-    np.savez_compressed(os.path.join(result_folder, filename + "_" + curr_time), output_array)
+    # np.savez_compressed(os.path.join(result_folder, filename + "_" + curr_time), output_array)
+    np.savez_compressed(os.path.join(result_folder, filename), output_array)
     videoInput.release()
     tensorflow.keras.backend.clear_session()
     videoOut_1.release()
