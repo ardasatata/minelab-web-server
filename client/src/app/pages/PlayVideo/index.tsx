@@ -20,10 +20,10 @@ import DataTable from 'react-data-table-component';
 
 import { ReactComponent as HeadIcon } from './assets/head.svg';
 import { ReactComponent as ShoulderIcon } from './assets/shoulder.svg';
-import shoulderIcon from './assets/shoulder.png';
 import { ReactComponent as BowIcon } from './assets/bow.svg';
 import { ReactComponent as HandIcon } from './assets/hand.svg';
 import { ReactComponent as TorsoIcon } from './assets/torso.svg';
+import { ReactComponent as KneeIcon } from './assets/knee.svg';
 
 import {
   CategoryScale,
@@ -232,6 +232,12 @@ export function PlayVideo(props: Props) {
         borderColor: 'rgb(255,159,64)',
         backgroundColor: 'rgba(255, 159, 64, 0.5)',
       },
+      {
+        label: 'Knee(s)',
+        data: [0],
+        borderColor: 'rgb(20,255,150)',
+        backgroundColor: 'rgba(20,255,150,0.5)',
+      },
     ],
   });
 
@@ -243,12 +249,13 @@ export function PlayVideo(props: Props) {
       'Right Arm',
       'Left Arm',
       'Bow Position',
+      'Knees Position',
     ],
     datasets: [
       {
         label: '# of Votes',
         // data: [12, 10, 3, 5, 2, 3],
-        data: [0, 0, 0, 0, 0, 0],
+        data: [0, 0, 0, 0, 0, 0, 0],
         backgroundColor: [
           'rgba(255, 99, 132, 0.5)',
           'rgba(54, 162, 235, 0.5)',
@@ -305,6 +312,7 @@ export function PlayVideo(props: Props) {
     let rightArm = parseInt(obj.data[3][3]);
     let leftArm = parseInt(obj.data[4][3]);
     let bowPosition = parseInt(obj.data[5][3]);
+    let kneesPosition = parseInt(obj.data[6][3]);
 
     let datasetsCopy = chartData.datasets.slice(0);
 
@@ -314,6 +322,7 @@ export function PlayVideo(props: Props) {
     let copyRightArm = datasetsCopy[3].data;
     let copyLeftArm = datasetsCopy[4].data;
     let copyBow = datasetsCopy[5].data;
+    let copyKnees = datasetsCopy[6].data;
 
     copyHead.push(headValue);
     copyBody.push(bodyValue);
@@ -321,6 +330,7 @@ export function PlayVideo(props: Props) {
     copyRightArm.push(rightArm);
     copyLeftArm.push(leftArm);
     copyBow.push(bowPosition);
+    copyKnees.push(kneesPosition);
 
     let polarDataCopy = polarData.datasets.slice(0);
 
@@ -332,6 +342,7 @@ export function PlayVideo(props: Props) {
     let rightArmStats = obj.data[3][4];
     let leftArmStats = obj.data[4][4];
     let bowPositionStats = obj.data[5][4];
+    let kneesPositionStats = obj.data[6][4];
 
     if (headStats !== 'Normal') {
       polarCopy[0] = polarCopy[0] + 1;
@@ -357,6 +368,10 @@ export function PlayVideo(props: Props) {
       polarCopy[5] = polarCopy[5] + 1;
     }
 
+    if (kneesPositionStats !== 'Normal') {
+      polarCopy[6] = polarCopy[6] + 1;
+    }
+
     setChartData(
       Object.assign({}, chartData, {
         datasets: datasetsCopy,
@@ -374,6 +389,87 @@ export function PlayVideo(props: Props) {
 
   const toggleMenu = () => {
     setIsShow(!isShow);
+  };
+
+  const headMessage = (input: string) => {
+    switch (input) {
+      case 'Head_Normal':
+        return '頭正常';
+      case 'E11':
+        return '頭要擺正';
+    }
+  };
+
+  const bodyMessage = (input: string) => {
+    switch (input) {
+      case 'Body_Normal':
+        return '坐姿正常';
+      case 'E14':
+        return '坐姿要正';
+    }
+  };
+
+  const shoulderMessage = (input: string) => {
+    switch (input) {
+      case 'Shoulder_Normal':
+        return '肩正常';
+      case 'E13':
+        return '右肩太高';
+      case 'E12':
+        return '左肩太高';
+    }
+  };
+
+  const rightHandMessage = (input: string) => {
+    switch (input) {
+      case 'RightArm_Normal':
+        return '右手正常';
+      case 'E31':
+        return '拇指握弓位置錯誤';
+      case 'E32':
+        return '食指握弓桿位置錯誤';
+      case 'E33':
+        return '中指或無名指觸弓位置錯誤';
+      case 'E34':
+        return '右手腕持弓太向內翻';
+      case 'E35':
+        return '右手腕持弓太向外翻';
+    }
+  };
+
+  const leftHandMessage = (input: string) => {
+    switch (input) {
+      case 'LeftArm_Normal':
+        return '左手正常';
+      case 'E21':
+        return '左手肘過高';
+      case 'E22':
+        return '左手肘太低';
+      case 'E23':
+        return '手腕手肘放輕鬆連成一直線';
+    }
+  };
+
+  const bowMessage = (input: string) => {
+    switch (input) {
+      case 'Bow_normal':
+        return '運弓正常';
+      case 'E41':
+        return '琴桿左傾斜';
+      case 'E42':
+        return '琴桿右傾斜';
+      case 'E43':
+        return '運弓軌跡必須保持一直線';
+    }
+  };
+
+  const kneesMessage = (input: string) => {
+    switch (input) {
+      case 'Knees_Normal':
+        return '兩膝正常';
+      case 'E15':
+        return '兩膝與肩同寬';
+    }
   };
 
   return (
@@ -434,10 +530,11 @@ export function PlayVideo(props: Props) {
                 {data ? (
                   <div
                     className={
-                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0'
+                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0 mb-2'
                     }
                     style={{
-                      backgroundColor: 'rgba(0,47,105,0.5)',
+                      minWidth: 300,
+                      backgroundColor: 'rgba(0,47,105,0.35)',
                     }}
                   >
                     <div
@@ -449,7 +546,7 @@ export function PlayVideo(props: Props) {
                     >
                       <HeadIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`Head : ${data[0][4]}`}
+                        {`頭 : ${headMessage(data[0][0])}`}
                       </div>
                     </div>
                     <div
@@ -461,7 +558,7 @@ export function PlayVideo(props: Props) {
                     >
                       <TorsoIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`Body : ${data[1][4]}`}
+                        {`身體 : ${bodyMessage(data[1][0])}`}
                       </div>
                     </div>
                     <div
@@ -473,7 +570,7 @@ export function PlayVideo(props: Props) {
                     >
                       <ShoulderIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`Shoulder : ${data[2][4]}`}
+                        {`肩 : ${shoulderMessage(data[2][0])}`}
                       </div>
                     </div>
                     <div
@@ -485,7 +582,7 @@ export function PlayVideo(props: Props) {
                     >
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`Right : ${data[3][4]}`}
+                        {`右手 : ${rightHandMessage(data[3][0])}`}
                       </div>
                     </div>
                     <div
@@ -497,7 +594,8 @@ export function PlayVideo(props: Props) {
                     >
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`Left : ${data[4][4]}`}
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`左手 : ${leftHandMessage(data[4][0])}`}
                       </div>
                     </div>
                     <div
@@ -509,7 +607,21 @@ export function PlayVideo(props: Props) {
                     >
                       <BowIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`Bow : ${data[5][4]}`}
+                        {/*{`Bow : ${data[5][0]}`}*/}
+                        {`運弓 : ${bowMessage(data[5][0])}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[6][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <KneeIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Knee(s) : ${kneesMessage(data[6][0])}`}*/}
+                        {`兩膝 : ${kneesMessage(data[6][0])}`}
                       </div>
                     </div>
                   </div>
