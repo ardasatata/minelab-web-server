@@ -100,7 +100,7 @@ export function FileList(props: Props) {
       <NavBar />
       <PageWrapperMain>
         <div className={'flex h-full w-full bg-black justify-center'}>
-          <div className="flex flex-col max-h-screen w-1/3 mt-8">
+          <div className="flex flex-col max-h-screen mt-8">
             <div className="text-center text-5xl font-bold font-sans text-white">
               File List
             </div>
