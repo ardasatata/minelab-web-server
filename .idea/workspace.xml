@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="update client">
+    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="fix server classifier &amp; frontend view">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/Logo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/Logo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/Nav.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/Nav.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/pages/PlayVideo/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/pages/PlayVideo/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/pages/RecordVideo/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/pages/RecordVideo/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifier/classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/classifier.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
     <envs>
@@ -73,7 +77,29 @@
       <recent name="$PROJECT_DIR$/server" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.start">
+  <component name="RunManager" selected="Python.server">
+    <configuration name="classifier" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="erhu-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/classifier" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/classifier/classifier.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="server" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="erhu-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -96,7 +122,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="website start" type="js.build_tools.npm" temporary="true">
       <package-json value="$PROJECT_DIR$/client/package.json" />
       <command value="run" />
       <scripts>
@@ -106,9 +132,15 @@
       <envs />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="npm.website start" />
+      <item itemvalue="Python.server" />
+      <item itemvalue="Python.classifier" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.start" />
+        <item itemvalue="Python.classifier" />
+        <item itemvalue="npm.website start" />
       </list>
     </recent_temporary>
   </component>
@@ -125,6 +157,7 @@
       <workItem from="1649694439861" duration="4956000" />
       <workItem from="1649701802268" duration="2058000" />
       <workItem from="1649740268790" duration="2067000" />
+      <workItem from="1649974667630" duration="20789000" />
     </task>
     <task id="LOCAL-00001" summary="add server.py">
       <created>1649582412245</created>
@@ -175,7 +208,14 @@
       <option name="project" value="LOCAL" />
       <updated>1649701314057</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="fix server classifier &amp; frontend view">
+      <created>1649962068783</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1649962068783</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -200,10 +240,16 @@
     <MESSAGE value="update ignore" />
     <MESSAGE value="update new structure" />
     <MESSAGE value="added util files" />
-    <option name="LAST_COMMIT_MESSAGE" value="added util files" />
+    <MESSAGE value="fix server classifier &amp; frontend view" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix server classifier &amp; frontend view" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/erhu_project$classifier.coverage" NAME="classifier Coverage Results" MODIFIED="1650308309576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
+    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1650308673479" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
+    <SUITE FILE_PATH="coverage/erhu_project$test_classifier.coverage" NAME="test_classifier Coverage Results" MODIFIED="1649877640572" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
   </component>
 </project>

@@ -26,7 +26,7 @@ import tensorflow
 from pixellib.instance import custom_segmentation
 from datetime import datetime
 from tensorflow.keras.models import load_model
-from PIL import ImageFont, ImageDraw, Image
+from PIL import ImageFont, ImageDraw, Image, ImageEnhance
 from configparser import ConfigParser
 
 sys.path.append(os.path.abspath(os.path.join('..', 'upload')))
@@ -71,9 +71,9 @@ configure.read(configini)
 K_var = configure.getint('traditional', 'k')
 X_var = configure.getint('traditional', 'x')
 Y_var = configure.getint('traditional', 'y')
-N_var = configure.getint('traditional', 'N')
-M_var = configure.getint('traditional', 'M')
-P_var = configure.getfloat('deeplearning', 'P')
+N_var = configure.getint('traditional', 'n')
+M_var = configure.getint('traditional', 'm')
+P_var = configure.getfloat('deeplearning', 'p')
 
 print("K_var:", K_var)
 print("X_var:", X_var)
@@ -300,9 +300,8 @@ def erhu_segment(img, frame):
     # cv2.rectangle(img_ori, leftTopDot_QinThong, rightBottomDot_QinThong, colorGreen, thickness)
     QinThongCropped = image[leftTopDot_QinThong[1]:rightBottomDot_QinThong[1],
                       leftTopDot_QinThong[0]:rightBottomDot_QinThong[0]]
-    cv2.line(img_ori, topMiddlePoint_Marker, bottomMiddlePoint_QinThong, colorRed, 2)
-    erhu_line = [[topMiddlePoint_Marker[0], topMiddlePoint_Marker[1]],
-                 [bottomMiddlePoint_QinThong[0], bottomMiddlePoint_QinThong[1]]]
+    # cv2.line(img_ori, topMiddlePoint_Marker, bottomMiddlePoint_QinThong, colorRed, 2)
+    erhu_line = [[topMiddlePoint_Marker[0], topMiddlePoint_Marker[1]],[bottomMiddlePoint_QinThong[0], bottomMiddlePoint_QinThong[1]]]
     # ==============================================================================================================
     # cv2.imshow("Image", img_ori)
     # cv2.waitKey(1)
@@ -400,6 +399,82 @@ def cropped_by_pixel(img, p1X, p1Y, p2X, p2Y):
     rightBottomPoint = (extRightPoint[0], extBotPoint[1])
     image_cropped = image[leftTopPoint[1]:rightBottomPoint[1], leftTopPoint[0]:rightBottomPoint[0]]
     return image_cropped
+
+def get_cdf_hist(image_input):
+    """
+    Method to compute histogram and cumulative distribution function
+    :param image_input: input image
+    :return: cdf
+    """
+    hist, bins = np.histogram(image_input.flatten(), 256, [0, 256])
+    cdf = hist.cumsum()
+    cdf_normalized = cdf * float(hist.max()) / cdf.max()
+    return cdf_normalized
+
+def clahe_enhancement(image, threshold, grid_size=(16, 16)):
+    """
+    Adaptive histogram equalization to enhance the input image
+    :param image: input image
+    :param threshold: clipping threshold
+    :param grid_size: local neighbourhood
+    :return: enhanced image
+        """
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=threshold, tileGridSize=grid_size)
+    enhanced_image = clahe.apply(img)
+    new_img =  cv2.cvtColor(enhanced_image, cv2.COLOR_GRAY2RGB)
+    cdf = get_cdf_hist(enhanced_image)
+    return new_img, cdf
+
+def drop_backgroud(image):
+    with mp_holistic.Holistic(
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5) as holistic:
+        # To improve performance, optionally mark the image as not writeable to
+        # pass by reference.
+        image.flags.writeable = False
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image_height, image_width, _ = image.shape
+        results = holistic.process(image)
+        # Draw landmark annotation on the image.
+        image.flags.writeable = True
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        canvas = np.zeros((image.shape[0], image.shape[1], 3), dtype="uint8")
+        # mp_drawing.draw_landmarks(
+        #     image,
+        #     results.pose_landmarks,
+        #     mp_holistic.POSE_CONNECTIONS,
+        #     landmark_drawing_spec=mp_drawing_styles
+        #         .get_default_pose_landmarks_style())
+        # Flip the image horizontally for a selfie-view display.
+        x_left_elbow1 = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_ELBOW].x * image_width) + 100
+        y_left_elbow2 = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_ELBOW].y * image_height)
+        x_right_thumb1 = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_THUMB].x * image_width) - 100
+        x_right_elbow1 = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW].x * image_width) - 100
+        y_right_elbow2 = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_THUMB].y * image_height)
+
+        if x_right_thumb1 < x_right_elbow1:
+            right_most = x_right_thumb1
+            left_most = x_left_elbow1
+        else:
+            right_most = x_right_elbow1
+            left_most = x_left_elbow1
+
+        new_img = image.copy()
+        new_img[:, 0:right_most] = 255
+        new_img[:, left_most: ] = 255
+        # image brightness enhancer
+        # enhanced_clahe, cdf_clahe = clahe_enhancement(new_img, 10)
+        pil_img = Image.fromarray(new_img)
+        enhancer = ImageEnhance.Contrast(pil_img)
+        factor = 1  # increase contrast
+        im_output = enhancer.enhance(factor)
+        img_res = np.array(im_output)
+        # im_output.save('more-contrast-image.png')
+        # cv2.imshow('MediaPipe Holistic', enhanced_clahe)
+        # cv2.waitKey(10000)
+        # exit()
+    return new_img
 
 
 def body_segment(img, frame):
@@ -501,6 +576,8 @@ def body_segment(img, frame):
         x_L2_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_HIP].y * image_height)
         x_R1_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_HIP].x * image_width)
         x_R2_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_HIP].y * image_height)
+        hip_left_point = (x_L1_hip, x_L2_hip)
+        hip_right_point = (x_R1_hip, x_R2_hip)
 
         x_L1_shoulders = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_SHOULDER].x * image_width)
         x_L2_shoulders = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_SHOULDER].y * image_height)
@@ -625,7 +702,7 @@ def body_segment(img, frame):
            left_arm_ori_shape, right_arm_ori_shape, left_hand_ori_shape, right_hand_ori_shape, \
            left_arm_coordinate, right_arm_coordinate, right_hand_coordinate, \
            head_rectangle_coordinate, body_rectangle_coordinate, \
-           knee_shoulder_distance, degrees_ear_face, degrees_body, degrees_shoulder
+           knee_shoulder_distance, degrees_ear_face, degrees_body, degrees_shoulder, hip_left_point,hip_right_point
     # return ret_image, right_hand_ori_shape, right_arm_ori_shape, left_hand_ori_shape, left_arm_ori_shape, half_body_ori_shape
 
 
@@ -745,11 +822,11 @@ def bow_segment(img_ori, frame):
     # === End of Get start point of Bow Lines ==================================================================
 
     if middlePoint_Bow1[1] < middlePoint_Bow3[1]:
-        cv2.line(img_ori, leftTopBow1, rightBotBow3, colorRed, thickness)
+        # cv2.line(img_ori, leftTopBow1, rightBotBow3, colorRed, thickness)
         bow_line = [[leftTopBow1[0], leftTopBow1[1]], [rightBotBow3[0], rightBotBow3[1]]]
         bow_angle = get_angle((leftTopBow1[0], leftTopBow1[1]), (rightBotBow3[0], rightBotBow3[1]))
     else:
-        cv2.line(img_ori, leftBotBow1, rightTopBow3, colorRed, thickness)
+        # cv2.line(img_ori, leftBotBow1, rightTopBow3, colorRed, thickness)
         bow_line = [[leftBotBow1[0], leftBotBow1[1]], [rightTopBow3[0], rightTopBow3[1]]]
         bow_angle = get_angle((leftBotBow1[0], leftBotBow1[1]), (rightTopBow3[0], rightTopBow3[1]))
 
@@ -772,14 +849,18 @@ def main_predict(video_input):
     curr_date = str(start_now.day) + '-' + str(start_now.month) + '-' + str(start_now.year)
     curr_time = str(start_now.strftime('%H%M%S'))
 
-    model_left_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftHand/model-007.h5'))
-    model_left_arm = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftArm/model-004.h5'))
-    model_right_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightHand/model-017.h5'))
-    model_right_arm = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightArm/model-016.h5'))
-    model_left_hand.summary()
-    model_left_arm.summary()
-    model_right_hand.summary()
-    model_right_arm.summary()
+    # model_left_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftHand/model-007.h5'))
+    # model_left_arm = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftArm/model-004.h5'))
+    # model_right_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightHand/model-017.h5'))
+    # model_right_arm = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightArm/model-016.h5'))
+    model_left = load_model('/home/minelab/dev/erhu-project/classifier/model/PredictionModel/model_left/model-008.h5')
+    model_right = load_model('/home/minelab/dev/erhu-project/classifier/model/PredictionModel/model_right/model-014.h5')
+    model_left.summary()
+    model_right.summary()
+    # model_left_hand.summary()
+    # model_left_arm.summary()
+    # model_right_hand.summary()
+    # model_right_arm.summary()
     # print('TEST')
     # exit()
     result_folder = os.path.join(os.path.abspath(__file__ + "/../../"), "predict")
@@ -878,415 +959,561 @@ def main_predict(video_input):
     # right_arm_point = []
     # right_hand_point = []
     while videoInput.isOpened():
-        if (frame_number > frame_start):
-            # if limit_counter < limit_sample:
-
-            if (limit_counter_body < limit_sample) or (limit_counter_erhu < limit_sample) or (
-                    limit_counter_bow < limit_sample):
-                success, frame = videoInput.read()
-                if not success:
-                    break
-                image = frame.copy()
-                # cv2.imshow("Video", image)
-                # cv2.waitKey(1000)
-                print("Frame ", str(frame_number), " processed!")
-                try:
-                    seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
-                    # cv2.imshow("Video", seg_mask)
-                    segLeng = len(seg_mask['scores'])
+        # if (frame_number > frame_start) :
+        if limit_counter < limit_sample:
+            # if (limit_counter_body < limit_sample) or (limit_counter_erhu < limit_sample) or (limit_counter_bow < limit_sample):
+            success, frame = videoInput.read()
+            if not success:
+                break
+            try:
+                droped_img = drop_backgroud(frame.copy())
+                seg_mask, seg_output = segment_image.segmentFrame(droped_img.copy())
+                segLeng = len(seg_mask['scores'])
+                # print(seg_mask['scores'])
+                # print('Number of Segment:', segLeng)
+                if segLeng >= 2:
+                    # img_body = body_dilation(frame.copy())
+                    image = frame.copy()
+                    print("Frame ", str(frame_number), " processed!")
                     for i in range(segLeng):
-                        mask = frame.copy()
+                        mask = droped_img.copy()
                         id = seg_mask['class_ids'][i]
                         label = LABELS[int(id) - 1]
-                        # if label not in videoSegmentation:
-                        #     videoSegmentation[label] = cv2.VideoWriter("result/ErhuErrorClassification_v2_18022022/seg_{}.mp4".format(label),
-                        #                                                cv2.VideoWriter_fourcc(*'MP4V'),
-                        #                                                properties['FPS'],
-                        #                                                (mask.shape[1], mask.shape[0]))
                         if mask.shape[0] == seg_mask['masks'].shape[0] and mask.shape[1] == seg_mask['masks'].shape[1]:
                             mask[seg_mask['masks'][:, :, i] == False] = (0, 0, 0)
                             # videoSegmentation[label].write(mask)
                             if label == 'erhu':
+                                # cv2.imshow('erhu', mask)
+                                # cv2.waitKey(1)
+                                # counter_erhu +=1
                                 image, erhu_line, QinZhenPart, QinThongPart = erhu_segment(image, mask)
                                 limit_counter_erhu += 1
                                 x_test_erhu_line_point.append(erhu_line)
-                                # print('Counter Limit Erhu:', limit_counter_erhu)
-                                # cv2.imwrite(os.path.join(video_filepath_qinThong, "QinThong_"+video_filename+"_"+str(frame_number)+".jpg"), QinThongPart)
-                                # cv2.imwrite(os.path.join(video_filepath_qinThong, str(frame_erhu)+".jpg"), QinThongPart)
                                 img_resized_qinThong = cv2.resize(QinThongPart, (img_height, img_width))
                                 if len(x_test_video_qinThong_resized) < limit_sample:
-                                    # print('QinThong:', len(x_test_video_qinThong_resized))
                                     x_test_video_qinThong_resized.append(img_resized_qinThong)
                                     x_test_video_qinThong.append(mask)
-                                # videoOut_qinthong.write(QinThongPart)
-                                # cv2.imwrite(os.path.join(video_filepath_qinZhen, "QinZhen_"+video_filename+"_"+str(frame_number)+".jpg"), QinZhenPart)
-                                # cv2.imwrite(os.path.join(video_filepath_qinZhen, str(frame_erhu)+".jpg"), QinZhenPart)
-                                img_resized_qinZhen = cv2.resize(QinZhenPart, (img_height, img_width))
+                                    img_resized_qinZhen = cv2.resize(QinZhenPart, (img_height, img_width))
                                 if len(x_test_video_qinZhen_resized) < limit_sample:
-                                    # print('QinZhen:', len(x_test_video_qinZhen_resized))
                                     x_test_video_qinZhen_resized.append(img_resized_qinZhen)
                                     x_test_video_qinZhen.append(mask)
-                                # videoOut_qinzhen.write(QinZhenPart)
-                                # frame_erhu += 1
                             elif label == 'body':
+                                # counter_body += 1
                                 image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
                                 halfBodyPart, leftArmPartOri, rightArmPartOri, leftHandPartOri, \
                                 rightHandPartOri, left_arm_point, right_arm_point, right_hand_point, head_coordinate, body_coordinate, \
-                                knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder = body_segment(
-                                    image, mask)
+                                knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right = body_segment(image, mask)
                                 limit_counter_body += 1
-                                # print('Counter Limit Body:', limit_counter_body)
-                                # cv2.imwrite(os.path.join(video_filepath_leftHand, "LeftHand_"+video_filename+"_"+str(frame_number)+".jpg"), leftHandPart)
-                                # cv2.imwrite(os.path.join(video_filepath_leftHand, str(frame_body)+".jpg"), leftHandPart)
+                                # cv2.imshow('leftHand', leftHandPart)
+                                # cv2.imshow('leftArm', leftArmPart)
+                                # cv2.imshow('RightArm', rightArmPart)
+                                # cv2.imshow('RightHand', rightHandPart)
+                                # cv2.waitKey(1)
                                 img_resized_leftHand = cv2.resize(leftHandPart, (img_height, img_width))
                                 if len(x_test_video_leftHand_resized) < limit_sample:
-                                    # print('LeftHand:', len(x_test_video_leftHand_resized))
                                     x_test_video_leftHand_resized.append(img_resized_leftHand)
                                     x_test_video_leftHand.append(leftHandPartOri)
-                                # videoOut_lefthand.write(leftHandPart)
-                                # cv2.imwrite(os.path.join(video_filepath_rightHand, "RightHand_"+video_filename+"_"+str(frame_number)+".jpg"), rightHandPart)
-                                # cv2.imwrite(os.path.join(video_filepath_rightHand, str(frame_body)+".jpg"), rightHandPart)
                                 img_resized_rightHand = cv2.resize(rightHandPart, (img_height, img_width))
                                 if len(x_test_video_rightHand_resized) < limit_sample:
-                                    # print('RightHand:', len(x_test_video_rightHand_resized))
                                     x_test_video_rightHand_resized.append(img_resized_rightHand)
                                     x_test_video_rightHand.append(rightHandPartOri)
                                     x_test_right_hand_point.append(right_hand_point)
-                                # videoOut_righthand.write(rightHandPart)
-                                # cv2.imwrite(os.path.join(video_filepath_leftArm, "LeftArm_"+video_filename+"_"+str(frame_number)+".jpg"), leftArmPart)
-                                # cv2.imwrite(os.path.join(video_filepath_leftArm, str(frame_body)+".jpg"), leftArmPart)
                                 img_resized_leftArm = cv2.resize(leftArmPart, (img_height, img_width))
                                 if len(x_test_video_leftArm_resized) < limit_sample:
-                                    # print('LeftArm:', len(x_test_video_leftArm_resized))
                                     x_test_video_leftArm_resized.append(img_resized_leftArm)
                                     x_test_video_leftArm.append(leftArmPartOri)
                                     x_test_left_arm_point.append(left_arm_point)
-                                # videoOut_leftArm.write(leftArmPart)
-                                # cv2.imwrite(os.path.join(video_filepath_rightArm,"RightArm_" + video_filename + "_" + str(frame_number) + ".jpg"), rightArmPart)
-                                # cv2.imwrite(os.path.join(video_filepath_rightArm, str(frame_body) + ".jpg"), rightArmPart)
                                 img_resized_rightArm = cv2.resize(rightArmPart, (img_height, img_width))
                                 if len(x_test_video_rightArm_resized) < limit_sample:
-                                    # print('RightArm:', len(x_test_video_rightArm_resized))
                                     x_test_video_rightArm_resized.append(img_resized_rightArm)
                                     x_test_video_rightArm.append(rightArmPartOri)
                                     x_test_right_arm_point.append(right_arm_point)
-                                x_test_all_body_point.append(
-                                    [head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face,
-                                     degree_body, degree_shoulder])
-                                # videoOut_rightArm.write(rightArmPart)
-                                # frame_body += 1
+                                    x_test_all_body_point.append([head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right])
                             elif label == 'bow':
+                                # cv2.imshow('bow', mask)
+                                # cv2.waitKey(1)
+                                # counter_bow += 1
                                 image, bow_line, bow_cropped, bow_angle = bow_segment(image, mask)
                                 limit_counter_bow += 1
-                                x_test_bow_line_point.append(bow_line)
-                                # print('Counter Limit Bow:', limit_counter_bow)
-                                # videoOut_bow.write(bow_cropped)
-                                # cv2.imwrite(os.path.join(video_filepath_bow, "Bow_"+video_filename+"_"+str(frame_number) + ".jpg"), bow_cropped)
-                                # cv2.imwrite(os.path.join(video_filepath_bow, str(frame_bow) + ".jpg"), bow_cropped)
                                 img_resized_bow = cv2.resize(bow_cropped, (img_height, img_width))
                                 if len(x_test_video_bow_resized) < limit_sample:
-                                    # print('Bow:', len(x_test_video_bow_resized))
                                     x_test_video_bow_resized.append(img_resized_bow)
+                                    x_test_bow_line_point.append(bow_line)
                                     x_test_video_bow.append(mask)
                                     x_test_bow_point.append(bow_angle)
-                                # frame_bow += 1
-                    is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1],
-                                                     bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
-                    # cv2.putText(image, '[E41][E42] Bow Erhu Orthogonal : ' + str(is_orthogonal), (10, 170), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-                    # cv2.imshow("Video", image)
-                    # videoOut_1.write(image)
+                    # is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1], bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
                     x_test_video_original.append(image)
-                    limit_counter += 1
                     frame_number += 1
-                    # if cv2.waitKey(5) & 0xFF == 27:
-                    #     break
-                except:
-                    print("Something is wrong...")
-                # else:
-                #     skipped_frame += 1
-            else:
-                limit_counter = 0
-                limit_counter_bow = 0
-                limit_counter_body = 0
-                limit_counter_erhu = 0
-                # frame_number +=1
-                print('Image Count:', len(x_test_video_bow_resized))
-                x_test_bow.append(x_test_video_bow_resized)
-                x_test_leftArm.append(x_test_video_leftArm_resized)
-                x_test_leftHand.append(x_test_video_leftHand_resized)
-                x_test_rightArm.append(x_test_video_rightArm_resized)
-                x_test_rightHand.append(x_test_video_rightHand_resized)
-                x_test_qinThong.append(x_test_video_qinThong_resized)
-                x_test_qinZhen.append(x_test_video_qinZhen_resized)
-                test_x_bow = np.array(x_test_bow)
-                print('bow shape:', test_x_bow.shape)
-                test_x_bow = test_x_bow / 255.0
-                test_x_leftArm = np.array(x_test_leftArm)
-                print('leftArm shape:', test_x_leftArm.shape)
-                test_x_leftArm = test_x_leftArm / 255.0
-                test_x_leftHand = np.array(x_test_leftHand)
-                print('leftHand shape:', test_x_leftHand.shape)
-                test_x_leftHand = test_x_leftHand / 255.0
-                test_x_rightArm = np.array(x_test_rightArm)
-                print('rightArm shape:', test_x_rightArm.shape)
-                test_x_rightArm = test_x_rightArm / 255.0
-                test_x_rightHand = np.array(x_test_rightHand)
-                print('rightHand shape:', test_x_rightHand.shape)
-                test_x_rightHand = test_x_rightHand / 255.0
-                test_x_qinThong = np.array(x_test_qinThong)
-                print('qinThong shape:', test_x_qinThong.shape)
-                test_x_qinThong = test_x_qinThong / 255.0
-                test_x_qinZhen = np.array(x_test_qinZhen)
-                print('qinZhen shape:', test_x_qinZhen.shape)
-                test_x_qinZhen = test_x_qinZhen / 255.0
-
-                prediction_leftArm = model_left_arm.predict(test_x_leftArm)
-                prediction_rightArm = model_right_arm.predict(test_x_rightArm)
-                print(prediction_rightArm)
-                print(prediction_leftArm)
-                rightArm_E31 = round(prediction_rightArm[0][0], 2)
-                rightArm_E32 = round(prediction_rightArm[0][1], 2)
-                rightArm_E33 = round(prediction_rightArm[0][2], 2)
-                rightArm_E34 = round(prediction_rightArm[0][3], 2)
-                rightArm_E35 = round(prediction_rightArm[0][4], 2)
-                rightArm_E31_ClassName = 'E31-拇指握弓位置錯誤'
-                rightArm_E32_ClassName = 'E32-食指握弓桿位置錯誤'
-                rightArm_E33_ClassName = 'E33-中指或無名指觸弓位置錯誤'
-                rightArm_E34_ClassName = 'E34-右手腕持弓太向內翻'
-                rightArm_E35_ClassName = 'E35-右手腕持弓太向外翻'
-                rightArm_Normal_ClassName = 'N-右手正常持弓 '
-                leftArm_E21 = round(prediction_leftArm[0][0], 2)
-                leftArm_E22 = round(prediction_leftArm[0][1], 2)
-                leftArm_E23 = round(prediction_leftArm[0][2], 2)
-                leftArm_Normal_ClassName = 'N-左手正常'
-                leftArm_E21_ClassName = 'E21-左手肘過高'
-                leftArm_E22_ClassName = 'E22-左手肘太低'
-                leftArm_E23_ClassName = 'E23-手腕手肘放輕鬆連成一直線'
-                E11_classname = 'E11-頭要擺正'
-                E14_classname = 'E14-坐姿要正'
-                E13_classname = 'E13-右肩太高'
-                E12_classname = 'E12-右肩太高'
-                E41_classname = 'E41-琴桿左傾斜 - 弓毛與琴弦必須垂直'
-                E42_classname = 'E42-琴桿右傾斜 - 弓毛與琴弦必須垂直'
-                E43_classname = 'E43-運弓軌跡必須保持一直線'
-
-                for img_original, ori_right_hand_point, ori_right_arm_point, ori_left_arm_point, all_body_point, bow_line, erhu_line in \
-                        zip(x_test_video_original, x_test_right_hand_point, x_test_right_arm_point,
-                            x_test_left_arm_point, x_test_all_body_point, x_test_bow_line_point,
-                            x_test_erhu_line_point):
-                    warning_mess = []
-                    img_pil = Image.fromarray(img_original)
-                    draw_res_bow = ImageDraw.Draw(img_pil)
-                    # print('Rectangle:', right_hand_point, right_arm_point, left_arm_point)
-                    ori_right_hand_rectangle_shape = [ori_right_hand_point[0], ori_right_hand_point[1]]
-                    ori_right_arm_rectangle_shape = [ori_right_arm_point[0], ori_right_arm_point[1]]
-                    # print('Shape:', ori_right_hand_rectangle_shape, ori_right_arm_rectangle_shape)
-                    # x_test_all_body_point.append([head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder])
-                    head_coordinate = all_body_point[0]
-                    body_coordinate = all_body_point[1]
-                    knees_shoulder_distance = all_body_point[2]
-                    degree_ear_face = all_body_point[3]
-                    degree_body = all_body_point[4]
-                    degree_shoulder = all_body_point[5]
-
-                    # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
-                    # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
-                    # draw_res_bow.text((10, 20), "===== Traditional Algorithm =====", font=result_font,
-                    #                   fill=(b, g, r, a))
-                    # E11 : Head position not normal
-                    if degree_ear_face >= K_var or degree_ear_face < (0 - K_var):
-                        # draw_res_bow.text((10, 50), E11_classname + ':' + str(degree_ear_face), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E11", str(degree_ear_face), 'Head Position', str(degree_ear_face),
-                                             'E11-Head position not normal (to L or R)'])
-                        draw_res_bow.rectangle(head_coordinate, outline="blue", fill=None, width=4)
-                    else:
-                        # draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(["Head Position", "Normal", 'Head Position', str(0), 'Normal'])
-                    # E14 : Need to seat straight
-                    if degree_body > (90 + K_var) or degree_body < (90 - K_var):
-                        # draw_res_bow.text((10, 80), E14_classname + ':' + str(degree_body), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E14", str(degree_body), 'Body Position', str(degree_body),
-                                             'E14-Need to seat straight (to L or R)'])
-                        draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
-                    else:
-                        # draw_res_bow.text((10, 80), 'Body Position : Normal', font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(["Body Position", "Normal", 'Body Position', str(0), 'Normal'])
-                    # E12 - E13 Left Shoulder too High / Right Shoulder too High
-                    if degree_shoulder > ((X_var / 90) * 100):
-                        # draw_res_bow.text((10, 110), E13_classname + ':' + str(degree_shoulder), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E13", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
-                                             'E13-Right shoulder too hight '])
-                        draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
-                    elif degree_shoulder < (0 - ((X_var / 90) * 100)):
-                        # draw_res_bow.text((10, 110), E12_classname + ':' + str(degree_shoulder), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E12", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
-                                             'E12-Left shoulder too hight'])
-                        draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
-                    else:
-                        # draw_res_bow.text((10, 110), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(['Shoulders Position', 'Normal', 'Shoulders Position', str(0), 'Normal'])
-                    # draw_res_bow.text((10, 140), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
-                    if rightArm_E31 >= P_var:
-                        # draw_res_bow.text((10, 170), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Arm Position', str(rightArm_E31),
-                                             'E31-Wrong RH thumb position'])
-                        draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    elif rightArm_E32 >= P_var:
-                        # draw_res_bow.text((10, 170), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Arm Position', str(rightArm_E32),
-                                             'E32-Wrong RH index finger position'])
-                        draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    elif rightArm_E33 >= P_var:
-                        # draw_res_bow.text((10, 170), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E33", str(rightArm_E33), 'Right Hand Arm Position', str(rightArm_E33),
-                                             'E33-Wrong RH middle or ring finger position'])
-                        draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    elif rightArm_E34 >= P_var:
-                        # draw_res_bow.text((10, 170), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E34", str(rightArm_E34), 'Right Hand Arm Position', str(rightArm_E34),
-                                             'E34-Right wrist position too inward'])
-                        draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
-                    elif rightArm_E35 >= P_var:
-                        # draw_res_bow.text((10, 170), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E35", str(rightArm_E35), 'Right Hand Arm Position', str(rightArm_E35),
-                                             'E35-Right wrist position too outward'])
-                        draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
-                    else:
-                        # draw_res_bow.text((10, 170), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(["Right Arm Position", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
-                    # draw_res_bow.text((10, 200), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
-                    ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
-                    if leftArm_E21 >= P_var:
-                        # draw_res_bow.text((10, 230), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E21", str(leftArm_E21), 'Left Hand Arm Position', str(leftArm_E21),
-                                             'E21-Left elbow too Hight'])
-                        draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                    elif leftArm_E22 >= P_var:
-                        # draw_res_bow.text((10, 230), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E22", str(leftArm_E22), 'Left Hand Arm Position', str(leftArm_E22),
-                                             'E22-Left elbow too Low'])
-                        draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                    elif leftArm_E23 >= P_var:
-                        # draw_res_bow.text((10, 230), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font,
-                        #                   fill=(b, g, r, a))
-                        warning_mess.append(["E23", str(leftArm_E23), 'Left Hand Arm Position', str(leftArm_E23),
-                                             'E23-Left elbow and wrist in a line'])
-                        draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                    else:
-                        # draw_res_bow.text((10, 230), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(
-                            ["Left Arm Position", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
-                    # draw_res_bow.text((10, 260), "===== Bow Erhu =====", font=result_font, fill=(b, g, r, a))
-                    is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1],
-                                                     bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
-                    bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
-                    erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), (erhu_line[1][0], erhu_line[1][1])]
-                    # print('Erhu Bow Line Shape:', bow_line_shape, erhu_line_shape)
-                    if is_orthogonal == False:
-                        # draw_res_bow.text((10, 290), E41_classname, font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(["Bow Erhu Position", "E41", "Bow Erhu Position", str(1.0),
-                                             "E41-Pole tilt to left - Bow hair and string must be orthogonal"])
-                        # draw_res_bow.line(bow_line_shape, fill='blue', width=4)
-                        # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
-                    else:
-                        warning_mess.append(["Bow Erhu Position", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
-                    resize_img = (256, 256)
-                    img_resized = np.array(img_pil.resize(resize_img))
-                    img_original = np.array(img_pil)
-                    # output_array.append([warning_mess, img_original])
-                    output_array.append([warning_mess])
-                    videoOut_1.write(img_original)
-                #
-                # for img_leftArm, left_arm_point in zip(x_test_video_leftArm, x_test_left_arm_point):
-                #     img_pil = Image.fromarray(img_leftArm)
-                #     draw_res_bow = ImageDraw.Draw(img_pil)
-                #     left_arm_rectangle_shape = [left_arm_point[0], left_arm_point[1]]
-                #     draw_res_bow.text((10, 20), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
-                #     if leftArm_E21 >= P_var:
-                #         draw_res_bow.text((10, 50), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                #     elif leftArm_E22 >= P_var:
-                #         draw_res_bow.text((10, 50), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                #     elif leftArm_E23 >= P_var:
-                #         draw_res_bow.text((10, 50), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                #     else:
-                #         draw_res_bow.text((10, 50), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                #     img_leftArm = np.array(img_pil)
-                #     videoOut_leftArm.write(img_leftArm)
-                #
-                # for img_rightArm, right_hand_point, right_arm_point in zip(x_test_video_rightArm, x_test_right_hand_point, x_test_right_arm_point):
-                #     img_pil = Image.fromarray(img_rightArm)
-                #     draw_res_bow = ImageDraw.Draw(img_pil)
-                #     right_hand_rectangle_shape = [right_hand_point[0], right_hand_point[1]]
-                #     right_arm_rectangle_shape = [right_arm_point[0], right_arm_point[1]]
-                #     draw_res_bow.text((10, 20), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
-                #     if rightArm_E31 >= P_var:
-                #         draw_res_bow.text((10, 50), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                #     elif rightArm_E32 >= P_var:
-                #         draw_res_bow.text((10, 50), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                #     elif rightArm_E33 >= P_var:
-                #         draw_res_bow.text((10, 50), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                #     elif rightArm_E34 >= P_var:
-                #         draw_res_bow.text((10, 50), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(right_arm_rectangle_shape, outline="blue", fill=None, width=4)
-                #     elif rightArm_E35 >= P_var:
-                #         draw_res_bow.text((10, 50), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font, fill=(b, g, r, a))
-                #         draw_res_bow.rectangle(right_arm_rectangle_shape, outline="blue", fill=None, width=4)
-                #     else:
-                #         draw_res_bow.text((10, 50), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                #     img_rightArm = np.array(img_pil)
-                #     videoOut_rightArm.write(img_rightArm)
-                #
-                # for bow_line, erhu_line in zip (x_test_bow_line_point, x_test_erhu_line_point):
-                #     is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1], bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
-                #     bow_line_shape = [(bow_line[0][0],bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
-                #     erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), (erhu_line[1][0], erhu_line[1][1])]
-                #     if is_orthogonal == False:
-                #         draw_res_bow.text((10, 230), E41_classname , font=result_font,fill=(b, g, r, a))
-                #         # draw_res_bow.line(bow_line_shape, fill='blue', width=4)
-                #         # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
-
-                x_test_bow = []
-                x_test_leftArm = []
-                x_test_leftHand = []
-                x_test_rightArm = []
-                x_test_rightHand = []
-                x_test_qinThong = []
-                x_test_qinZhen = []
-                x_test_video_bow = []
-                x_test_video_leftArm = []
-                x_test_video_leftHand = []
-                x_test_video_rightArm = []
-                x_test_video_rightHand = []
-                x_test_video_qinThong = []
-                x_test_video_qinZhen = []
-                x_test_video_original = []
-                x_test_video_bow_resized = []
-                x_test_video_leftArm_resized = []
-                x_test_video_leftHand_resized = []
-                x_test_video_rightArm_resized = []
-                x_test_video_rightHand_resized = []
-                x_test_video_qinThong_resized = []
-                x_test_video_qinZhen_resized = []
-                # break
+                    limit_counter += 1
+            except:
+                print("Something is wrong...")
+            # # else:
+            # #     skipped_frame += 1
         else:
-            frame_number += 1
+
+            limit_counter = 0
+            limit_counter_bow = 0
+            limit_counter_body = 0
+            limit_counter_erhu = 0
+            # continue
+            # frame_number +=1
+            # print('Original Image Count:', len(x_test_video_original))
+            # print('Image Bow Count:', len(x_test_video_bow_resized))
+            # print('Image LeftArm Count:', len(x_test_video_leftArm_resized))
+            # print('Image LeftHand Count:', len(x_test_video_leftHand_resized))
+            # print('Image RightArm Count:', len(x_test_video_rightArm_resized))
+            # print('Image RightHand Count:', len(x_test_video_rightHand_resized))
+            # print('Image QinThong Count:', len(x_test_video_qinThong_resized))
+            # print('Image QinZhen Count:', len(x_test_video_qinZhen_resized))
+            x_test_bow.append(x_test_video_bow_resized)
+            x_test_leftArm.append(x_test_video_leftArm_resized)
+            x_test_leftHand.append(x_test_video_leftHand_resized)
+            x_test_rightArm.append(x_test_video_rightArm_resized)
+            x_test_rightHand.append(x_test_video_rightHand_resized)
+            x_test_qinThong.append(x_test_video_qinThong_resized)
+            x_test_qinZhen.append(x_test_video_qinZhen_resized)
+
+            # test_x_bow          = np.array(x_test_bow)
+            # print('bow shape:', test_x_bow.shape)
+            # test_x_bow          = test_x_bow / 255.0
+
+            test_x_leftArm = np.array(x_test_leftArm)
+            # print('leftArm shape:', test_x_leftArm.shape)
+            test_x_leftArm = test_x_leftArm / 255.0
+
+            test_x_leftHand = np.array(x_test_leftHand)
+            # print('leftHand shape:', test_x_leftHand.shape)
+            test_x_leftHand = test_x_leftHand / 255.0
+
+            test_x_rightArm = np.array(x_test_rightArm)
+            # print('rightArm shape:', test_x_rightArm.shape)
+            test_x_rightArm = test_x_rightArm / 255.0
+
+            test_x_rightHand = np.array(x_test_rightHand)
+            # print('rightHand shape:', test_x_rightHand.shape)
+            test_x_rightHand = test_x_rightHand / 255.0
+
+            # test_x_qinThong     = np.array(x_test_qinThong)
+            # print('qinThong shape:', test_x_qinThong.shape)
+            # test_x_qinThong     = test_x_qinThong / 255.0
+            #
+            # test_x_qinZhen      = np.array(x_test_qinZhen)
+            # print('qinZhen shape:', test_x_qinZhen.shape)
+            # test_x_qinZhen      = test_x_qinZhen / 255.0
+
+            # prediction_leftArm  = model_left_arm.predict(test_x_leftArm)
+            # prediction_leftHand = model_left_hand.predict(test_x_leftHand)
+            # prediction_rightArm = model_right_arm.predict(test_x_rightArm)
+            # prediction_rightHand = model_right_hand.predict(test_x_rightHand)
+            prediction_leftArm = model_left.predict(test_x_leftArm)
+            # prediction_leftHand = model_left.predict(test_x_leftHand)
+            prediction_rightArm = model_right.predict(test_x_rightArm)
+            # prediction_rightHand = model_right.predict(test_x_rightHand)
+
+            print(prediction_rightArm)
+            # print(prediction_rightHand)
+            print(prediction_leftArm)
+            # print(prediction_leftHand)
+            prediction_right_max = np.argmax(prediction_rightArm[0])
+            prediction_left_max = np.argmax(prediction_leftArm[0])
+            rightArm_E31 = 0
+            rightArm_E32 = 0
+            rightArm_E33 = 0
+            rightArm_E34 = 0
+            rightArm_E35 = 0
+            leftArm_E21 = 0
+            leftArm_E22 = 0
+            leftArm_E23 = 0
+
+            if prediction_right_max == 0:
+                rightArm_E31 = round((prediction_rightArm[0][0]), 2)
+            elif prediction_right_max == 1:
+                rightArm_E32 = round((prediction_rightArm[0][1]), 2)
+            elif prediction_right_max == 2:
+                rightArm_E33 = round((prediction_rightArm[0][2]), 2)
+            elif prediction_right_max == 3:
+                rightArm_E34 = round((prediction_rightArm[0][3]), 2)
+            else:
+                rightArm_E35 = round((prediction_rightArm[0][4]), 2)
+
+            if prediction_left_max == 0:
+                leftArm_E21 = round((prediction_leftArm[0][0]), 2)
+            elif prediction_left_max == 1:
+                leftArm_E22 = round((prediction_leftArm[0][1]), 2)
+            else:
+                leftArm_E23 = round((prediction_leftArm[0][2]), 2)
+
+            # rightArm_E31 = round(prediction_rightHand[0][3],2)
+            # rightArm_E32 = round(prediction_rightHand[0][4],2)
+            # rightArm_E33 = round(prediction_rightHand[0][5],2)
+            # rightArm_E34 = round(prediction_rightArm[0][6],2)
+            # rightArm_E35 = round(prediction_rightArm[0][7],2)
+            # rightArm_E31 = round(np.argmax(prediction_rightHand), 2)
+            # rightArm_E32 = round(np.argmax(prediction_rightHand), 2)
+            # rightArm_E33 = round(np.argmax(prediction_rightHand), 2)
+            # rightArm_E34 = round(np.argmax(prediction_rightArm), 2)
+            # rightArm_E35 = round(np.argmax(prediction_rightArm), 2)
+            rightArm_E31_ClassName = 'E31-拇指握弓位置錯誤'
+            rightArm_E32_ClassName = 'E32-食指握弓桿位置錯誤'
+            rightArm_E33_ClassName = 'E33-中指或無名指觸弓位置錯誤'
+            rightArm_E34_ClassName = 'E34-右手腕持弓太向內翻'
+            rightArm_E35_ClassName = 'E35-右手腕持弓太向外翻'
+            rightArm_Normal_ClassName = 'N-右手正常持弓 '
+            # leftArm_E21 = round(np.argmax(prediction_leftArm),2)
+            # leftArm_E22 = round(np.argmax(prediction_leftArm),2)
+            # leftArm_E23 = round(np.argmax(prediction_leftHand),2)
+            print('leftArm_E21:', leftArm_E21)
+            print('leftArm_E22:', leftArm_E22)
+            print('leftArm_E23:', leftArm_E23)
+            print('rightArm_E31:', rightArm_E31)
+            print('rightArm_E32:', rightArm_E32)
+            print('rightArm_E33:', rightArm_E33)
+            print('rightArm_E34:', rightArm_E34)
+            print('rightArm_E35:', rightArm_E35)
+            leftArm_Normal_ClassName = 'N-左手正常'
+            leftArm_E21_ClassName = 'E21-左手肘過高'
+            leftArm_E22_ClassName = 'E22-左手肘太低'
+            leftArm_E23_ClassName = 'E23-手腕手肘放輕鬆連成一直線'
+            E11_classname = 'E11-頭要擺正'
+            E14_classname = 'E14-坐姿要正'
+            E15_classname = 'E15-兩膝與肩同寬'
+            E13_classname = 'E13-右肩太高'
+            E12_classname = 'E12-右肩太高'
+            E41_classname = 'E41-琴桿左傾斜 - 弓毛與琴弦必須垂直'
+            E42_classname = 'E42-琴桿右傾斜 - 弓毛與琴弦必須垂直'
+            E43_classname = 'E43-運弓軌跡必須保持一直線'
+            err_face = 0
+            err_body = 0
+            err_orthogonal = 0
+            err_bow = 0
+            err_erhu_left = 0
+            err_erhu_right = 0
+            err_right_shoulder = 0
+            err_left_shoulder = 0
+            err_knees_shoulder = 0
+            is_face_err = False
+            is_body_err = False
+            is_left_shoulder_err = False
+            is_right_shoulder_err = False
+            is_bow_err = False
+            is_knees_shoulder = False
+            is_erhu_left = False
+            is_erhu_right = False
+            is_not_orthogonal = False
+            for all_body_point in x_test_all_body_point:
+                head_coordinate = all_body_point[0]
+                body_coordinate = all_body_point[1]
+                knees_shoulder_distance = all_body_point[2]
+                degree_ear_face = all_body_point[3]
+                degree_body = all_body_point[4]
+                degree_shoulder = all_body_point[5]
+                hip_left_point = all_body_point[6]
+                hip_right_point = all_body_point[7]
+
+                if degree_ear_face >= K_var or degree_ear_face < (0 - K_var):
+                    err_face += 1
+                if degree_body > (90 + K_var) or degree_body < (90 - K_var):
+                    err_body += 1
+                if degree_shoulder > ((X_var / 90) * 100):
+                    err_right_shoulder += 1
+                elif degree_shoulder < (0 - ((X_var / 90) * 100)):
+                    err_left_shoulder += 1
+                if abs(knees_shoulder_distance) > K_var:
+                    err_knees_shoulder += 1
+
+                L1_angle = get_angle(erhu_line[0], erhu_line[1])
+                L2_angle = get_angle(bow_line[0], bow_line[1])
+                orthogonal_angle = abs(abs(L1_angle) - abs(L2_angle))
+                if (orthogonal_angle <= 90 - N_var and orthogonal_angle >= 90 + N_var):
+                    err_orthogonal += 1
+                    if L1_angle > (90 + N_var):
+                        err_erhu_left += 1
+                    else:
+                        err_erhu_right += 1
+                elif (L2_angle > (0 + N_var) or L2_angle < (0 - N_var)):
+                    err_bow += 1
+
+            if err_face > limit_sample // 2:
+                is_face_err = True
+            if err_bow > limit_sample // 2:
+                is_bow_err = True
+            if err_orthogonal > limit_sample // 2:
+                is_not_orthogonal = True
+            if err_erhu_left > limit_sample // 2:
+                is_erhu_left = True
+            if err_erhu_right > limit_sample // 2:
+                is_erhu_right = True
+            if err_body > limit_sample // 2:
+                is_body_err = True
+            if err_left_shoulder > limit_sample // 2:
+                is_left_shoulder_err = True
+            if err_right_shoulder > limit_sample // 2:
+                is_right_shoulder_err = True
+            if err_knees_shoulder > limit_sample // 2:
+                is_knees_shoulder = True
+
+            for img_original, ori_right_hand_point, ori_right_arm_point, ori_left_arm_point, all_body_point, bow_line, erhu_line in \
+                    zip(x_test_video_original, x_test_right_hand_point, x_test_right_arm_point, x_test_left_arm_point,
+                        x_test_all_body_point, x_test_bow_line_point, x_test_erhu_line_point):
+                warning_mess = []
+                img_pil = Image.fromarray(img_original)
+                draw_res_bow = ImageDraw.Draw(img_pil)
+                # print('Rectangle:', right_hand_point, right_arm_point, left_arm_point)
+                ori_right_hand_rectangle_shape = [ori_right_hand_point[0], ori_right_hand_point[1]]
+                ori_right_arm_rectangle_shape = [ori_right_arm_point[0], ori_right_arm_point[1]]
+                # print('Shape:', ori_right_hand_rectangle_shape, ori_right_arm_rectangle_shape)
+                # x_test_all_body_point.append([head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder])
+                head_coordinate = all_body_point[0]
+                body_coordinate = all_body_point[1]
+                knees_shoulder_distance = all_body_point[2]
+                degree_ear_face = all_body_point[3]
+                degree_body = all_body_point[4]
+                degree_shoulder = all_body_point[5]
+                hip_left_point = all_body_point[6]
+                hip_right_point = all_body_point[7]
+
+                # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
+                # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
+                cv2.rectangle(img_chinese, (10, 10), (100, 100), (255, 255, 255))
+                # draw_res_bow.rectangle([(5, 5), (300, 150)], outline=None, fill="#ffffff")
+
+                # draw_res_bow.text((10, 20), "===== Traditional Algorithm =====", font=result_font, fill=(b, g, r, a))
+
+                # E11 : Head position not normal ===================================================================== 0
+                # if degree_ear_face >= K_var or degree_ear_face < (0-K_var):
+                if is_face_err == True:
+                    # print('Face')
+                    # draw_res_bow.text((10, 50), E11_classname + ':' + str(degree_ear_face), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E11", str(degree_ear_face), 'Head Position', str(degree_ear_face),
+                                         'E11-Head position not normal (to L or R)'])
+                    draw_res_bow.rectangle(head_coordinate, outline="blue", fill=None, width=4)
+                else:
+                    # print('Else Face')
+                    # draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["Head_Normal", "Normal", 'Head Position', str(0), 'Normal'])
+
+                # E14 : Error Body Position ========================================================================== 1
+                # if degree_body > (90+K_var) or degree_body < (90-K_var):
+                if is_body_err == True:
+                    # print('Body')
+                    # draw_res_bow.text((10, 80), E14_classname + ':' + str(degree_body), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E14", str(degree_body), 'Body Position', str(degree_body),
+                                         'E14-Need to seat straight (to L or R)'])
+                    draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                else:
+                    # print('Else Body')
+                    # draw_res_bow.text((10, 80), 'Body Position : Normal', font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["Body_Normal", "Normal", 'Body Position', str(0), 'Normal'])
+
+                # E12 - E13 Left Shoulder too High / Right Shoulder too High ========================================= 2
+                # if degree_shoulder > ((X_var/90)*100):
+                if is_right_shoulder_err == True:
+                    # print('Shoulder')
+                    # draw_res_bow.text((10, 140), E13_classname + ':' + str(degree_shoulder), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E13", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
+                                         'E13-Right shoulder too hight '])
+                    draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                # elif degree_shoulder < (0-((X_var/90)*100)):
+                elif is_left_shoulder_err == True:
+                    # print('Else Shoulder')
+                    # draw_res_bow.text((10, 140), E12_classname + ':' + str(degree_shoulder), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E12", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
+                                         'E12-Left shoulder too hight'])
+                    draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                else:
+                    # print('Else Shoulder')
+                    # draw_res_bow.text((10, 140), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(['Shoulder_Normal', 'Normal', 'Shoulders Position', str(0), 'Normal'])
+
+                # E31 Error Right Arm ================================================================================ 3
+                # draw_res_bow.text((10, 170), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
+                if rightArm_E31 >= P_var:
+                    # print('Right Arm')
+                    # draw_res_bow.text((10, 200), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Arm Position', str(rightArm_E31),
+                                         'E31-Wrong RH thumb position'])
+                    draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                elif rightArm_E32 >= P_var:
+                    # print('Else Right Arm')
+                    # draw_res_bow.text((10, 200), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font,fill=(b, g, r, a))
+                    warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Arm Position', str(rightArm_E32),
+                                         'E32-Wrong RH index finger position'])
+                    draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                elif rightArm_E33 >= P_var:
+                    # print('Else Right Arm')
+                    # draw_res_bow.text((10, 200), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E33", str(rightArm_E33), 'Right Hand Arm Position', str(rightArm_E33),
+                                         'E33-Wrong RH middle or ring finger position'])
+                    draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                elif rightArm_E34 >= P_var:
+                    # print('Else Right Arm')
+                    # draw_res_bow.text((10, 200), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E34", str(rightArm_E34), 'Right Hand Arm Position', str(rightArm_E34),
+                                         'E34-Right wrist position too inward'])
+                    draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+                elif rightArm_E35 >= P_var:
+                    # print('Else Right Arm')
+                    # draw_res_bow.text((10, 200), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E35", str(rightArm_E35), 'Right Hand Arm Position', str(rightArm_E35),
+                                         'E35-Right wrist position too outward'])
+                    draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+                else:
+                    # print('Else Right Arm')
+                    # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
+
+                # E21 Error Left Arm ================================================================================= 4
+                # draw_res_bow.text((10, 230), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
+                ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
+                if leftArm_E21 >= P_var:
+                    # print('Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E21", str(leftArm_E21), 'Left Hand Arm Position', str(leftArm_E21),
+                                         'E21-Left elbow too Hight'])
+                    draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                elif leftArm_E22 >= P_var:
+                    # print('Else Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(
+                        ["E22", str(leftArm_E22), 'Left Hand Arm Position', str(leftArm_E22), 'E22-Left elbow too Low'])
+                    draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                elif leftArm_E23 >= P_var:
+                    # print('Else Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E23", str(leftArm_E23), 'Left Hand Arm Position', str(leftArm_E23),
+                                         'E23-Left elbow and wrist in a line'])
+                    draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                else:
+                    # print('Else Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
+
+                # E41 Error Bow Erhu ================================================================================= 5
+                bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
+                erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), hip_left_point]
+                # print('Erhu Bow Line Shape:', bow_line_shape, erhu_line_shape)
+                # if is_orthogonal == False:
+                if is_not_orthogonal == True:
+                    L1_angle = get_angle(erhu_line[0], erhu_line[1])
+                    L2_angle = get_angle(bow_line[0], bow_line[1])
+                    if is_erhu_left == True:
+                        # draw_res_bow.text((10, 320), E41_classname, font=result_font, fill=(b, g, r, a))
+                        warning_mess.append(["E41", str(L1_angle), "Erhu Position", str(L1_angle),
+                                             "E41-Pole tilt to left - Bow hair and string must be orthogonal"])
+                        draw_res_bow.line(bow_line_shape, fill='blue', width=4)
+                        draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
+                    else:
+                        # draw_res_bow.text((10, 320), E42_classname, font=result_font, fill=(b, g, r, a))
+                        warning_mess.append(["E42", str(L1_angle), "Erhu Position", str(L1_angle),
+                                             "E42-Pole tilt to right - Bow hair and string must be orthogonal"])
+                        draw_res_bow.line(bow_line_shape, fill='blue', width=4)
+                        draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
+                elif is_bow_err == True:
+                    # draw_res_bow.text((10, 320), E43_classname, font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E43", str(L2_angle), "Bow Position", str(L2_angle),
+                                         "E43-Trace of bow must be in straight line"])
+                    draw_res_bow.line(bow_line_shape, fill='blue', width=4)
+                    # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
+                else:
+                    # print('Else Orthogonal')
+                    # draw_res_bow.text((10, 320), 'Bow and Erhu is Orthogonal', font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["Bow_normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
+
+                # E15 Error Knees Position =========================================================================== 6
+                if is_knees_shoulder == True:
+                    # draw_res_bow.text((10, 110), E15_classname + ':' + str(knees_shoulder_distance), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E15", str(knees_shoulder_distance), 'Knees Position', str(degree_body),
+                                         'E15-Put knees in normal position'])
+                    # draw_res_bow.rectangle((hip_left_point, hip_right_point), outline="blue", fill=None, width=4)
+                else:
+                    # draw_res_bow.text((10, 110), 'Knees Position : Normal', font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["Knees_Normal", "Normal", 'Knees Position', str(0), 'Normal'])
+                resize_img = (256, 256)
+                img_resized = np.array(img_pil.resize(resize_img))
+                img_original = np.array(img_pil)
+                # output_array.append([warning_mess, img_original])
+                output_array.append([warning_mess])
+                videoOut_1.write(img_original)
+            #
+            # for img_leftArm, left_arm_point in zip(x_test_video_leftArm, x_test_left_arm_point):
+            #     img_pil = Image.fromarray(img_leftArm)
+            #     draw_res_bow = ImageDraw.Draw(img_pil)
+            #     left_arm_rectangle_shape = [left_arm_point[0], left_arm_point[1]]
+            #     draw_res_bow.text((10, 20), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
+            #     if leftArm_E21 >= P_var:
+            #         draw_res_bow.text((10, 50), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+            #     elif leftArm_E22 >= P_var:
+            #         draw_res_bow.text((10, 50), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+            #     elif leftArm_E23 >= P_var:
+            #         draw_res_bow.text((10, 50), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+            #     else:
+            #         draw_res_bow.text((10, 50), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+            #     img_leftArm = np.array(img_pil)
+            #     videoOut_leftArm.write(img_leftArm)
+            #
+            # for img_rightArm, right_hand_point, right_arm_point in zip(x_test_video_rightArm, x_test_right_hand_point, x_test_right_arm_point):
+            #     img_pil = Image.fromarray(img_rightArm)
+            #     draw_res_bow = ImageDraw.Draw(img_pil)
+            #     right_hand_rectangle_shape = [right_hand_point[0], right_hand_point[1]]
+            #     right_arm_rectangle_shape = [right_arm_point[0], right_arm_point[1]]
+            #     draw_res_bow.text((10, 20), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
+            #     if rightArm_E31 >= P_var:
+            #         draw_res_bow.text((10, 50), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+            #     elif rightArm_E32 >= P_var:
+            #         draw_res_bow.text((10, 50), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+            #     elif rightArm_E33 >= P_var:
+            #         draw_res_bow.text((10, 50), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+            #     elif rightArm_E34 >= P_var:
+            #         draw_res_bow.text((10, 50), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+            #     elif rightArm_E35 >= P_var:
+            #         draw_res_bow.text((10, 50), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font, fill=(b, g, r, a))
+            #         draw_res_bow.rectangle(right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+            #     else:
+            #         draw_res_bow.text((10, 50), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+            #     img_rightArm = np.array(img_pil)
+            #     videoOut_rightArm.write(img_rightArm)
+            #
+            # for bow_line, erhu_line in zip (x_test_bow_line_point, x_test_erhu_line_point):
+            #     is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1], bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
+            #     bow_line_shape = [(bow_line[0][0],bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
+            #     erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), (erhu_line[1][0], erhu_line[1][1])]
+            #     if is_orthogonal == False:
+            #         draw_res_bow.text((10, 230), E41_classname , font=result_font,fill=(b, g, r, a))
+            #         # draw_res_bow.line(bow_line_shape, fill='blue', width=4)
+            #         # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
+
+            x_test_bow = []
+            x_test_leftArm = []
+            x_test_leftHand = []
+            x_test_rightArm = []
+            x_test_rightHand = []
+            x_test_qinThong = []
+            x_test_qinZhen = []
+            x_test_video_bow = []
+            x_test_video_leftArm = []
+            x_test_video_leftHand = []
+            x_test_video_rightArm = []
+            x_test_video_rightHand = []
+            x_test_video_qinThong = []
+            x_test_video_qinZhen = []
+            x_test_video_original = []
+            x_test_video_bow_resized = []
+            x_test_video_leftArm_resized = []
+            x_test_video_leftHand_resized = []
+            x_test_video_rightArm_resized = []
+            x_test_video_rightHand_resized = []
+            x_test_video_qinThong_resized = []
+            x_test_video_qinZhen_resized = []
+            # break
+        # else:
+        #     frame_number += 1
     # print(output_array)
     # np.savez_compressed(os.path.join(result_folder, filename + "_" + curr_time), output_array)
     np.savez_compressed(os.path.join(result_folder, filename), output_array)

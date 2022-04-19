@@ -125,7 +125,7 @@ def send_video():
 
     original_filename = video.filename[:-4]
 
-    video.filename = f"{date_time}_{original_filename}.mp4"
+    video.filename = f"{original_filename}_{date_time}.mp4"
 
     # Saved Video Path
     # filename = UPLOAD_DIR + video.filename
