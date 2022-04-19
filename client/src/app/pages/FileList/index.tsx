@@ -105,7 +105,8 @@ export function FileList(props: Props) {
               File List
             </div>
             <div className="text-center text-md font-light font-sans text-red-500 mb-4">
-              *click on a filename to predict the video sentence
+              *Some files might take some time to predict, Thanks for your
+              patience & understanding
             </div>
             <div className="flex flex-col bg-white w-full overflow-y-auto">
               {datalist.map((item, index) => {
