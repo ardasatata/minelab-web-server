@@ -97,7 +97,7 @@ class Worker(object):
                     json_data = json.dumps(data)
                     self.socketio.emit('image', json_data, namespace="/work")
                     # socketio.sleep(0.05)
-                    eventlet.sleep(0.1)
+                    eventlet.sleep(0.05)
                 else:
                     self.switch = False
                     break
