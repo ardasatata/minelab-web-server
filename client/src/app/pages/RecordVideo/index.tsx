@@ -136,14 +136,15 @@ export function RecordVideo(props: Props) {
                   video file for research purposes.
                 </h1>
               </>
-            ) : null}
-
-            <div className={'flex flex-col items-center'}>
-              <h1 className={'text-4xl mb-4 text-amber-50'}>
-                Make sure to follow this guideline below before you record a video!
-              </h1>
-              <img src={guide} className={'max-w-4xl'} />
-            </div>
+            ) : (
+              <div className={'flex flex-col items-center'}>
+                <h1 className={'text-4xl mb-4 text-amber-50'}>
+                  Make sure to follow this guideline below before you record a
+                  video!
+                </h1>
+                <img src={guide} className={'max-w-4xl'} />
+              </div>
+            )}
 
             {file !== null ? (
               <h1 className={'text-5xl mb-12'}>
