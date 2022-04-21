@@ -24,6 +24,7 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import { NavBar } from '../../components/NavBar';
+import guide from '../../../assets/guide.png';
 
 interface Props {}
 
@@ -136,6 +137,13 @@ export function RecordVideo(props: Props) {
                 </h1>
               </>
             ) : null}
+
+            <div className={'flex flex-col items-center'}>
+              <h1 className={'text-4xl mb-4 text-amber-50'}>
+                Make sure to follow this guideline below before you record a video!
+              </h1>
+              <img src={guide} className={'max-w-4xl'} />
+            </div>
 
             {file !== null ? (
               <h1 className={'text-5xl mb-12'}>
