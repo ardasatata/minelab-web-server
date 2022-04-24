@@ -87,7 +87,11 @@ b, g, r, a = 0, 255, 0, 0
 chinese_font = './util/simsun.ttc'
 
 result_font = ImageFont.truetype(os.path.join(thisfolder, 'util/simsun.ttc'), 28)
-
+coordTop = []
+coordBottom = []
+coordLeft = []
+coordRight = []
+smoothingLeng = 10
 
 def get_contours(frame):
     image = frame.copy()
@@ -842,6 +846,136 @@ def getImages(folder):
             print('files:', files)
     return data
 
+def check_player_postition(video_path):
+    return False
+    # mp_holistic_checker = mp.solutions.holistic
+    # coordTop_checker = []
+    # topLocation = 0, 0
+    # smoothingLeng_checker = 10
+    # videoInput = cv2.VideoCapture(video_path)
+    # # segment_image = custom_segmentation()
+    # LABELS = ["body", "bow", "erhu"]
+    # erhu_detected = True
+    # frame_tolerance = 30
+    # frame_number = 0
+    # # segment_image.inferConfig(num_classes=3, class_names=LABELS)
+    # # segment_image.load_model(
+    # #     os.path.join(thisfolder, "model/SegmentationModel/4_5_dataset_13032022/mask_rcnn_model.081-0.129956.h5"))
+    # while videoInput.isOpened():
+    #     if frame_number > frame_tolerance:
+    #         break
+    #     frame_number+=1
+    #     success, frame = videoInput.read()
+    #     if not success:
+    #         break
+    #     image = frame.copy()
+    #     try:
+    #         with mp_holistic_checker.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3) as holistic:
+    #             image.flags.writeable = False
+    #             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #             results = holistic.process(image)
+    #             image_height, image_width, _ = image.shape
+    #             image.flags.writeable = True
+    #             y_LK = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_KNEE].y * image_height)
+    #             y_RK = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_KNEE].y * image_height)
+    #             if (y_RK < image_height) and (y_LK < image_height):
+    #                 knee_detected = True
+    #             else:
+    #                 knee_detected = False
+    #         # seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
+    #         # segLeng = len(seg_mask['scores'])
+    #         # if segLeng >= 3:
+    #         #     for i in range(segLeng):
+    #         #         mask = frame.copy()
+    #         #         id = seg_mask['class_ids'][i]
+    #         #         label = LABELS[int(id) - 1]
+    #         #         if mask.shape[0] == seg_mask['masks'].shape[0] and mask.shape[1] == seg_mask['masks'].shape[1]:
+    #         #             mask[seg_mask['masks'][:, :, i] == False] = (0, 0, 0)
+    #         #             if label == 'erhu':
+    #         #                 img_erhu = mask.copy()
+    #         #                 grayIMG = cv2.cvtColor(img_erhu, cv2.COLOR_BGR2GRAY)
+    #         #                 tmp = np.argwhere(grayIMG > 0)
+    #         #                 topY = np.amin(tmp[:, 0])
+    #         #                 tmp = np.argwhere(grayIMG[topY] > 0)
+    #         #                 topX = np.average(tmp)
+    #         #                 topLocation = topX, topY
+    #         #                 while len(coordTop_checker) >= smoothingLeng_checker:
+    #         #                     coordTop_checker.pop(0)
+    #         #                 coordTop_checker.append(topLocation)
+    #         #                 topLocation = np.average(coordTop_checker, axis=0)
+    #         #                 erhu_detected = True
+    #         #                 break
+    #     except:
+    #         print("Something is wrong...")
+    #
+    # if erhu_detected == True:
+    #     if int(topLocation[1]) < 50 or knee_detected == False:
+    #         return False
+    #     else:
+    #         return True
+    # else:
+    #     return False
+
+def new_erhu_segment(frame):
+    img = frame.copy()
+    grayIMG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    tmp = np.argwhere(grayIMG > 0)
+    topY = np.amin(tmp[:, 0])
+    bottomY = np.amax(tmp[:, 0])
+    tmp = np.argwhere(grayIMG[topY] > 0)
+    topX = np.average(tmp)
+    topLocation = topX, topY
+    tmp = np.argwhere(grayIMG[bottomY] > 0)
+    bottomX = np.average(tmp)
+    bottomLocation = bottomX, bottomY
+
+    while len(coordTop) >= smoothingLeng:
+        coordTop.pop(0)
+        coordBottom.pop(0)
+
+    coordTop.append(topLocation)
+    coordBottom.append(bottomLocation)
+    topLocation = np.average(coordTop, axis=0)
+    bottomLocation = np.average(coordBottom, axis=0)
+
+    img = cv2.line(img, (int(topLocation[0]), int(topLocation[1])), (int(bottomLocation[0]), int(bottomLocation[1])),
+                   (0, 255, 0), 2)
+    erhu_line_coord = [(int(topLocation[0]), int(topLocation[1])), (int(bottomLocation[0]), int(bottomLocation[1]))]
+
+    return img, erhu_line_coord
+
+
+def new_bow_segment(frame):
+    img = frame.copy()
+    grayIMG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    tmp = np.argwhere(grayIMG > 0)
+    leftX = np.amin(tmp[:, 1])
+    rightX = np.amax(tmp[:, 1])
+
+    tmp = np.argwhere(grayIMG[:, leftX] > 0)
+    leftY = np.average(tmp)
+    leftLocation = leftX, leftY
+
+    tmp = np.argwhere(grayIMG[:, rightX] > 0)
+    rightY = np.average(tmp)
+    rightLocation = rightX, rightY
+
+    while len(coordLeft) >= smoothingLeng:
+        coordLeft.pop(0)
+        coordRight.pop(0)
+
+    coordLeft.append(leftLocation)
+    coordRight.append(rightLocation)
+    leftLocation = np.average(coordLeft, axis=0)
+    rightLocation = np.average(coordRight, axis=0)
+
+    img = cv2.line(img, (int(leftLocation[0]), int(leftLocation[1])), (int(rightLocation[0]), int(rightLocation[1])),
+                   (0, 255, 0), 2)
+    bow_line = [(int(leftLocation[0]), int(leftLocation[1])), (int(rightLocation[0]), int(rightLocation[1]))]
+
+    return img, bow_line
+
 
 def main_predict(video_input):
     start_now = datetime.now()
@@ -958,6 +1092,7 @@ def main_predict(video_input):
     # left_arm_point  = []
     # right_arm_point = []
     # right_hand_point = []
+    first_frame = True
     while videoInput.isOpened():
         # if (frame_number > frame_start) :
         if limit_counter < limit_sample:
@@ -965,18 +1100,23 @@ def main_predict(video_input):
             success, frame = videoInput.read()
             if not success:
                 break
+            # if first_frame == True:
+            #     if check_player_postition(frame) == False:
+            #        return False
+            #     first_frame = False
+            #     # exit()
             try:
-                droped_img = drop_backgroud(frame.copy())
-                seg_mask, seg_output = segment_image.segmentFrame(droped_img.copy())
+                # droped_img = drop_backgroud(frame.copy())
+                seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
                 segLeng = len(seg_mask['scores'])
                 # print(seg_mask['scores'])
                 # print('Number of Segment:', segLeng)
-                if segLeng >= 2:
+                if segLeng >= 3:
                     # img_body = body_dilation(frame.copy())
                     image = frame.copy()
-                    print("Frame ", str(frame_number), " processed!")
+                    # print("Frame ", str(frame_number), " processed!")
                     for i in range(segLeng):
-                        mask = droped_img.copy()
+                        mask = frame.copy()
                         id = seg_mask['class_ids'][i]
                         label = LABELS[int(id) - 1]
                         if mask.shape[0] == seg_mask['masks'].shape[0] and mask.shape[1] == seg_mask['masks'].shape[1]:
@@ -986,61 +1126,69 @@ def main_predict(video_input):
                                 # cv2.imshow('erhu', mask)
                                 # cv2.waitKey(1)
                                 # counter_erhu +=1
-                                image, erhu_line, QinZhenPart, QinThongPart = erhu_segment(image, mask)
+                                img, erhu_line = new_erhu_segment(mask)
+                                # image, erhu_line, QinZhenPart, QinThongPart = erhu_segment(image, mask)
                                 limit_counter_erhu += 1
-                                x_test_erhu_line_point.append(erhu_line)
-                                img_resized_qinThong = cv2.resize(QinThongPart, (img_height, img_width))
-                                if len(x_test_video_qinThong_resized) < limit_sample:
-                                    x_test_video_qinThong_resized.append(img_resized_qinThong)
-                                    x_test_video_qinThong.append(mask)
-                                    img_resized_qinZhen = cv2.resize(QinZhenPart, (img_height, img_width))
-                                if len(x_test_video_qinZhen_resized) < limit_sample:
-                                    x_test_video_qinZhen_resized.append(img_resized_qinZhen)
-                                    x_test_video_qinZhen.append(mask)
+                                if len(x_test_erhu_line_point) < limit_sample:
+                                    x_test_erhu_line_point.append(erhu_line)
+                                # if len(x_test_video_qinThong_resized) < limit_sample:
+                                #     img_resized_qinThong = cv2.resize(QinThongPart, (img_height, img_width))
+                                #     x_test_video_qinThong_resized.append(img_resized_qinThong)
+                                #     x_test_video_qinThong.append(mask)
+                                # if len(x_test_video_qinZhen_resized) < limit_sample:
+                                #     img_resized_qinZhen = cv2.resize(QinZhenPart, (img_height, img_width))
+                                #     x_test_video_qinZhen_resized.append(img_resized_qinZhen)
+                                #     x_test_video_qinZhen.append(mask)
                             elif label == 'body':
                                 # counter_body += 1
                                 image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
                                 halfBodyPart, leftArmPartOri, rightArmPartOri, leftHandPartOri, \
                                 rightHandPartOri, left_arm_point, right_arm_point, right_hand_point, head_coordinate, body_coordinate, \
-                                knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right = body_segment(image, mask)
+                                knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right = body_segment(
+                                    image, mask)
                                 limit_counter_body += 1
+                                # cv2.imshow('Mask', image)
                                 # cv2.imshow('leftHand', leftHandPart)
                                 # cv2.imshow('leftArm', leftArmPart)
                                 # cv2.imshow('RightArm', rightArmPart)
                                 # cv2.imshow('RightHand', rightHandPart)
                                 # cv2.waitKey(1)
-                                img_resized_leftHand = cv2.resize(leftHandPart, (img_height, img_width))
                                 if len(x_test_video_leftHand_resized) < limit_sample:
+                                    img_resized_leftHand = cv2.resize(leftHandPart, (img_height, img_width))
                                     x_test_video_leftHand_resized.append(img_resized_leftHand)
                                     x_test_video_leftHand.append(leftHandPartOri)
-                                img_resized_rightHand = cv2.resize(rightHandPart, (img_height, img_width))
                                 if len(x_test_video_rightHand_resized) < limit_sample:
+                                    img_resized_rightHand = cv2.resize(rightHandPart, (img_height, img_width))
                                     x_test_video_rightHand_resized.append(img_resized_rightHand)
                                     x_test_video_rightHand.append(rightHandPartOri)
                                     x_test_right_hand_point.append(right_hand_point)
-                                img_resized_leftArm = cv2.resize(leftArmPart, (img_height, img_width))
                                 if len(x_test_video_leftArm_resized) < limit_sample:
+                                    img_resized_leftArm = cv2.resize(leftArmPart, (img_height, img_width))
                                     x_test_video_leftArm_resized.append(img_resized_leftArm)
                                     x_test_video_leftArm.append(leftArmPartOri)
                                     x_test_left_arm_point.append(left_arm_point)
-                                img_resized_rightArm = cv2.resize(rightArmPart, (img_height, img_width))
                                 if len(x_test_video_rightArm_resized) < limit_sample:
+                                    img_resized_rightArm = cv2.resize(rightArmPart, (img_height, img_width))
                                     x_test_video_rightArm_resized.append(img_resized_rightArm)
                                     x_test_video_rightArm.append(rightArmPartOri)
                                     x_test_right_arm_point.append(right_arm_point)
-                                    x_test_all_body_point.append([head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right])
+                                if len(x_test_all_body_point) < limit_sample:
+                                    x_test_all_body_point.append(
+                                        [head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face,
+                                         degree_body, degree_shoulder, hip_left, hip_right])
                             elif label == 'bow':
                                 # cv2.imshow('bow', mask)
                                 # cv2.waitKey(1)
                                 # counter_bow += 1
-                                image, bow_line, bow_cropped, bow_angle = bow_segment(image, mask)
+                                img, bow_line = new_bow_segment(mask)
+                                # image, bow_line, bow_cropped, bow_angle = bow_segment(image, mask)
                                 limit_counter_bow += 1
-                                img_resized_bow = cv2.resize(bow_cropped, (img_height, img_width))
                                 if len(x_test_video_bow_resized) < limit_sample:
-                                    x_test_video_bow_resized.append(img_resized_bow)
+                                    # img_resized_bow = cv2.resize(bow_cropped, (img_height, img_width))
+                                    # x_test_video_bow_resized.append(img_resized_bow)
                                     x_test_bow_line_point.append(bow_line)
-                                    x_test_video_bow.append(mask)
-                                    x_test_bow_point.append(bow_angle)
+                                    # x_test_video_bow.append(mask)
+                                    # x_test_bow_point.append(bow_angle)
                     # is_orthogonal = check_orthogonal(erhu_line[0][0], erhu_line[1][1], erhu_line[1][0], erhu_line[1][1], bow_line[0][0], bow_line[0][1], bow_line[1][0], bow_line[1][1])
                     x_test_video_original.append(image)
                     frame_number += 1
@@ -1065,7 +1213,7 @@ def main_predict(video_input):
             # print('Image RightHand Count:', len(x_test_video_rightHand_resized))
             # print('Image QinThong Count:', len(x_test_video_qinThong_resized))
             # print('Image QinZhen Count:', len(x_test_video_qinZhen_resized))
-            x_test_bow.append(x_test_video_bow_resized)
+            # x_test_bow.append(x_test_video_bow_resized)
             x_test_leftArm.append(x_test_video_leftArm_resized)
             x_test_leftHand.append(x_test_video_leftHand_resized)
             x_test_rightArm.append(x_test_video_rightArm_resized)
@@ -1200,7 +1348,7 @@ def main_predict(video_input):
             is_erhu_left = False
             is_erhu_right = False
             is_not_orthogonal = False
-            for all_body_point in x_test_all_body_point:
+            for (all_body_point, bow_line, erhu_line) in zip(x_test_all_body_point, x_test_bow_line_point, x_test_erhu_line_point):
                 head_coordinate = all_body_point[0]
                 body_coordinate = all_body_point[1]
                 knees_shoulder_distance = all_body_point[2]
@@ -1224,7 +1372,7 @@ def main_predict(video_input):
                 L1_angle = get_angle(erhu_line[0], erhu_line[1])
                 L2_angle = get_angle(bow_line[0], bow_line[1])
                 orthogonal_angle = abs(abs(L1_angle) - abs(L2_angle))
-                if (orthogonal_angle <= 90 - N_var and orthogonal_angle >= 90 + N_var):
+                if (orthogonal_angle <= 90 - N_var or orthogonal_angle >= 90 + N_var):
                     err_orthogonal += 1
                     if L1_angle > (90 + N_var):
                         err_erhu_left += 1
@@ -1389,8 +1537,10 @@ def main_predict(video_input):
                     warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
 
                 # E41 Error Bow Erhu ================================================================================= 5
-                bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
-                erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), hip_left_point]
+                # bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
+                # erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), hip_left_point]
+                erhu_line_shape = erhu_line
+                bow_line_shape = bow_line
                 # print('Erhu Bow Line Shape:', bow_line_shape, erhu_line_shape)
                 # if is_orthogonal == False:
                 if is_not_orthogonal == True:
@@ -1496,6 +1646,13 @@ def main_predict(video_input):
             x_test_rightHand = []
             x_test_qinThong = []
             x_test_qinZhen = []
+            x_test_video_bow_resized = []
+            x_test_video_leftArm_resized = []
+            x_test_video_leftHand_resized = []
+            x_test_video_rightArm_resized = []
+            x_test_video_rightHand_resized = []
+            x_test_video_qinThong_resized = []
+            x_test_video_qinZhen_resized = []
             x_test_video_bow = []
             x_test_video_leftArm = []
             x_test_video_leftHand = []
@@ -1504,13 +1661,13 @@ def main_predict(video_input):
             x_test_video_qinThong = []
             x_test_video_qinZhen = []
             x_test_video_original = []
-            x_test_video_bow_resized = []
-            x_test_video_leftArm_resized = []
-            x_test_video_leftHand_resized = []
-            x_test_video_rightArm_resized = []
-            x_test_video_rightHand_resized = []
-            x_test_video_qinThong_resized = []
-            x_test_video_qinZhen_resized = []
+            x_test_right_hand_point = []
+            x_test_right_arm_point = []
+            x_test_left_arm_point = []
+            x_test_all_body_point = []
+            x_test_erhu_line_point = []
+            x_test_bow_line_point = []
+            x_test_bow_point = []
             # break
         # else:
         #     frame_number += 1

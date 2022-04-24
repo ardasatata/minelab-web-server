@@ -22,7 +22,7 @@ import skvideo.io
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
 
-# from classifier.ErhuPrediction3DCNNLSTM_class import main_predict
+# from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
 
 # from PIL import Image
 
@@ -136,26 +136,28 @@ def send_video():
         "fileName": date_time
     }
 
-    # run classifier sub-process
-    print("processing...", filename)
-    subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename], stdout=subprocess.DEVNULL,
-                     stderr=subprocess.STDOUT)
+    print("saving...", filename)
+    video.save(UPLOAD_DIR + filename)
 
     try:
-        print("saving...", filename)
-        video.save(UPLOAD_DIR + filename)
+        # # run checker sub-process
+        # print("chekcing...", filename)
+        # subprocess.run(['python', './classifier/checker.py', UPLOAD_DIR + filename])
 
-        # main_predict(filename)
-        # os.system(f"python ./classifier/classifier.py {UPLOAD_DIR +filename}")
-
-        return value
-    except:
+        # run classifier sub-process
+        print("processing...", filename)
+        subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename], stdout=subprocess.DEVNULL,
+                         stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print("Unexpected error:", e)
         value = {
             "ok": False,
             "fileName": filename
         }
         print("error uploading file")
         return value
+
+    return value
 
 
 @app.route('/predict-list')
