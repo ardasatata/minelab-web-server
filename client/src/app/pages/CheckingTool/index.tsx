@@ -11,7 +11,11 @@ import { Helmet } from 'react-helmet-async';
 
 import { FileUploader } from 'react-drag-drop-files';
 import { useEffect, useState } from 'react';
-import {ArrowUpOutlined, CloseOutlined, LoadingOutlined} from '@ant-design/icons';
+import {
+  ArrowUpOutlined,
+  CloseOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
 import axios from 'axios';
 import { NavBar } from '../../components/NavBar';
 import guide from '../../../assets/guide.png';
@@ -167,12 +171,13 @@ export function CheckingTool(props: Props) {
               'flex flex-col items-center justify-center text-white w-full'
             }
           >
-
-            <div className={"flex flex-row"}>
-              <div className={"flex flex-col items-center flex-1"}>
-                <h1>
-                  SERVER
-                </h1>
+            <div className={'text-sm text-black'}>
+              chrome://flags/#unsafely-treat-insecure-origin-as-secure
+              <div>http://140.115.51.243:3000/checking</div>
+            </div>
+            <div className={'flex flex-row'}>
+              <div className={'flex flex-col items-center flex-1'}>
+                <h1>SERVER</h1>
                 {data ? (
                   <img
                     src={img}
@@ -189,10 +194,8 @@ export function CheckingTool(props: Props) {
                 )}
               </div>
 
-              <div className={"flex flex-col items-center flex-1"}>
-                <h1>
-                  ORIGIN
-                </h1>
+              <div className={'flex flex-col items-center flex-1'}>
+                <h1>ORIGIN</h1>
                 {/*@ts-ignore*/}
                 <Webcam
                   // @ts-ignore
@@ -200,7 +203,6 @@ export function CheckingTool(props: Props) {
                   // @ts-ignore
                   ref={webcamRef}
                   mirrored={true}
-
                 />
               </div>
             </div>
