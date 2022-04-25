@@ -10,6 +10,7 @@ module.exports = {
   plugins: ['prettier'],
   rules: {
     'prettier/prettier': ['error', prettierOptions],
+    '@typescript-eslint/ban-ts-ignore': 'off',
   },
   overrides: [
     {
