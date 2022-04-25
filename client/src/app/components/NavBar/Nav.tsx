@@ -2,7 +2,11 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import { ReactComponent as DocumentationIcon } from './assets/documentation-icon.svg';
 import { ReactComponent as GithubIcon } from './assets/github-icon.svg';
-import {ArrowUpOutlined, OrderedListOutlined} from "@ant-design/icons";
+import {
+  ArrowUpOutlined,
+  OrderedListOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 
 export function Nav() {
   return (
@@ -22,6 +26,14 @@ export function Nav() {
       >
         <ArrowUpOutlined className={'mr-2'} />
         Upload Video
+      </Item>
+      <Item
+        href={process.env.PUBLIC_URL + `/checking`}
+        title="Github Page"
+        rel="noopener noreferrer"
+      >
+        <SearchOutlined className={'mr-2'} />
+        Checking Tool
       </Item>
     </Wrapper>
   );

@@ -12,6 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import { FileUploader } from 'react-drag-drop-files';
 import { useEffect, useState } from 'react';
 import {
+  AlertOutlined,
   ArrowUpOutlined,
   CloseOutlined,
   LoadingOutlined,
@@ -36,7 +37,12 @@ export function CheckingTool(props: Props) {
   const [webcamFrame, setWebcamFrame] = useState<any>(null);
 
   const [img, setImg] = useState<string>('');
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<any>({
+    ok: false,
+    message: '',
+  });
+
+  const [showOriginal, setShowOriginal] = useState<boolean>(false);
 
   const handleStartCaptureClick = React.useCallback(() => {
     setCapturing(true);
@@ -153,6 +159,10 @@ export function CheckingTool(props: Props) {
     location.reload();
   };
 
+  const toggleOriginal = () => {
+    setShowOriginal(!showOriginal);
+  };
+
   // @ts-ignore
   return (
     <>
@@ -175,35 +185,36 @@ export function CheckingTool(props: Props) {
               chrome://flags/#unsafely-treat-insecure-origin-as-secure
               <div>http://140.115.51.243:3000/checking</div>
             </div>
-            <div className={'flex flex-row'}>
-              <div className={'flex flex-col items-center flex-1'}>
-                <h1>SERVER</h1>
+            <div className={'flex flex-row max-w-7xl w-full'}>
+              <div className={'flex flex-col items-center z-10 mx-auto h-full'}>
+                <h1
+                  className={
+                    !data.ok
+                      ? 'text-3xl mb-8 text-green-200'
+                      : 'text-3xl mb-8 text-red-500'
+                  }
+                >
+                  {data.message}
+                </h1>
                 {data ? (
                   <img
                     src={img}
                     alt={'main-stream'}
-                    className={'object-contain'}
-                    // style={{
-                    //   aspectRatio: '16/9',
-                    // }}
+                    className={
+                      !data.ok
+                        ? 'object-contain border-4 border-green-500'
+                        : 'object-contain border-4 border-red-500'
+                    }
+                    style={{
+                      aspectRatio: '16/9',
+                      height: 720,
+                    }}
                   />
                 ) : (
                   <div className={'text-white text-9xl m-auto'} onClick={play}>
                     <LoadingOutlined />
                   </div>
                 )}
-              </div>
-
-              <div className={'flex flex-col items-center flex-1'}>
-                <h1>ORIGIN</h1>
-                {/*@ts-ignore*/}
-                <Webcam
-                  // @ts-ignore
-                  audio={false}
-                  // @ts-ignore
-                  ref={webcamRef}
-                  mirrored={true}
-                />
               </div>
             </div>
 
@@ -215,6 +226,35 @@ export function CheckingTool(props: Props) {
             {/*{recordedChunks.length > 0 && (*/}
             {/*  <button onClick={handleDownload}>Download</button>*/}
             {/*)}*/}
+            <div className={'flex w-full items-center justify-center mt-8'}>
+              <button
+                className={'bg-blue-500 rounded-md p-2'}
+                onClick={toggleOriginal}
+              >
+                <AlertOutlined className={'mr-2'} />
+                Toggle Original
+              </button>
+            </div>
+            <div
+              className={
+                showOriginal
+                  ? 'flex flex-col items-center'
+                  : 'flex flex-col items-center absolute flex-0 mx-auto bg-black'
+              }
+            >
+              <h1>{showOriginal ? 'ORIGINAL' : '.'}</h1>
+              {/*@ts-ignore*/}
+              <Webcam
+                // @ts-ignore
+                audio={false}
+                // @ts-ignore
+                ref={webcamRef}
+                mirrored={true}
+                hidden={false}
+                // height={120}
+                // width={120}
+              />
+            </div>
           </div>
         </div>
         {/*<div className={'h-full flex bg-white w-1/4'}>cok</div>*/}
