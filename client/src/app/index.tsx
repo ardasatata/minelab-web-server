@@ -17,7 +17,8 @@ import { NotFoundPage } from './pages/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 import { RecordVideo } from './pages/RecordVideo';
 import { PlayVideo } from './pages/PlayVideo';
-import {FileList} from "./pages/FileList";
+import { FileList } from './pages/FileList';
+import { CheckingTool } from './pages/CheckingTool';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -28,7 +29,10 @@ export function App() {
         defaultTitle="Erhu Trainer | 二胡學習"
         htmlAttributes={{ lang: i18n.language }}
       >
-        <meta name="description" content="An Erhu Trainer|二胡學習 application" />
+        <meta
+          name="description"
+          content="An Erhu Trainer|二胡學習 application"
+        />
       </Helmet>
 
       <Switch>
@@ -51,6 +55,11 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/playback'}
           component={() => <PlayVideo />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/checking'}
+          component={() => <CheckingTool />}
         />
         <Route component={NotFoundPage} />
       </Switch>
