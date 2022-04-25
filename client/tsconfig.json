@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -16,7 +16,8 @@
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "noImplicitUseStrict": true
   },
   "include": ["src", "internals/startingTemplate/**/*"],
   "ts-node": {
@@ -25,7 +26,9 @@
       "module": "commonjs",
       "moduleResolution": "node",
       "noEmit": true,
-      "allowSyntheticDefaultImports": true
+      "allowSyntheticDefaultImports": true,
+      "noImplicitUseStrict": true,
+      "strict": false
     }
   }
 }
