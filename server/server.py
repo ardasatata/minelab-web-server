@@ -18,7 +18,7 @@ import subprocess
 
 import sys
 
-from server.util import readb64
+from util import readb64
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
 
