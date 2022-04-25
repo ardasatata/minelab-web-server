@@ -3,7 +3,6 @@ import os.path
 from flask import Flask, render_template, request, Response, jsonify
 from flask_socketio import SocketIO, emit
 from datetime import datetime
-from time import sleep
 import cv2
 import json
 import base64
@@ -18,13 +17,12 @@ from flask_cors import CORS, cross_origin
 import subprocess
 
 import sys
-import skvideo.io
+
+from server.util import readb64
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
 
 # from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
-
-# from PIL import Image
 
 eventlet.monkey_patch()
 
@@ -158,6 +156,35 @@ def send_video():
         return value
 
     return value
+
+
+@socketio.on('webcam-stream', namespace='/work')
+def start_work(data):
+
+    img = readb64(data)
+    print('receive webcam stream ', img)
+
+    while True:
+        cv2.imshow('webcam', img)
+        cv2.waitKey(1000)
+        cv2.destroyAllWindows()
+        break
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
+
+
+    """
+    frame prediction goes here ~~~
+    """
+
+    data = {
+        "ok": False,
+        "message": 'All Ok'
+    }
+
+    data = {'image': img, 'data': data}
+    json_data = json.dumps(data)
+    emit('image', json_data, namespace="/work")
 
 
 @app.route('/predict-list')
