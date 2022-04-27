@@ -25,7 +25,7 @@ import { io } from 'socket.io-client';
 
 interface Props {}
 
-const FPS = 1;
+const FPS = 2;
 
 export function CheckingTool(props: Props) {
   const webcamRef = React.useRef(null);
@@ -189,7 +189,7 @@ export function CheckingTool(props: Props) {
               <div className={'flex flex-col items-center z-10 mx-auto h-full'}>
                 <h1
                   className={
-                    !data.ok
+                    data.ok
                       ? 'text-3xl mb-8 text-green-200'
                       : 'text-3xl mb-8 text-red-500'
                   }
@@ -201,7 +201,7 @@ export function CheckingTool(props: Props) {
                     src={img}
                     alt={'main-stream'}
                     className={
-                      !data.ok
+                      data.ok
                         ? 'object-contain border-4 border-green-500'
                         : 'object-contain border-4 border-red-500'
                     }
