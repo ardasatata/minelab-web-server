@@ -20,10 +20,11 @@ import sys
 
 from util import readb64
 
-import random
+# import random
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
 
+from classifier.timeout import timeout
 from classifier.checking_tool import check_player_img_postition
 
 # from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
@@ -43,46 +44,6 @@ workerObject = None
 PREDICTION_DIR = r"./predict/"
 UPLOAD_DIR = r"./upload/"
 
-import signal
-from contextlib import contextmanager
-
-class TimeoutException(Exception): pass
-
-@contextmanager
-def time_limit(seconds):
-    def signal_handler(signum, frame):
-        raise TimeoutException("Timed out!")
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(seconds)
-    try:
-        yield
-    finally:
-        signal.alarm(0)
-
-from multiprocessing import Process
-from time import sleep
-
-def f(time):
-    sleep(time)
-
-
-def run_with_limited_time(func, args, kwargs, time):
-    """Runs a function with time limit
-
-    :param func: The function to run
-    :param args: The functions args, given as tuple
-    :param kwargs: The functions keywords, given as dict
-    :param time: The time limit in seconds
-    :return: True if the function ended successfully. False if it was terminated.
-    """
-    p = Process(target=func, args=args, kwargs=kwargs)
-    p.start()
-    p.join(time)
-    if p.is_alive():
-        p.terminate()
-        return False
-
-    return True
 
 class Worker(object):
     switch = False
@@ -220,20 +181,22 @@ def start_work(data):
     frame prediction goes here ~~~
     """
 
-    try:
-        with time_limit(1):
-            isError, img, list_err = check_player_img_postition(img)
-    except TimeoutException as e:
-        print("Timed out!")
+    # try:
+    #     isError, img, list_err = check_player_img_postition(img)
+    #     # signal.alarm(1)
+    # except TimeoutException as e:
+    #     print("Timed out!")
+
+    isError, img, list_err = check_player_img_postition(img)
 
     # simulate error
     # isError = bool(random.getrandbits(1))
-    message = "All Ok!"
+    message = ""
 
     # print(isError)
 
-    if isError:
-        message = 'Error occurred'
+    # if isError:
+    #     message = 'Error occurred'
 
     while True:
         cv2.imshow('webcam', img)
@@ -244,7 +207,7 @@ def start_work(data):
         #     break
 
     data = {
-        "ok": not isError,
+        "ok": isError,
         "message": message
     }
 
