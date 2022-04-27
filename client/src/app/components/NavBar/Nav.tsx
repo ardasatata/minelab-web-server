@@ -6,6 +6,7 @@ import {
   ArrowUpOutlined,
   OrderedListOutlined,
   SearchOutlined,
+  VideoCameraAddOutlined,
 } from '@ant-design/icons';
 
 export function Nav() {
@@ -34,6 +35,14 @@ export function Nav() {
       >
         <SearchOutlined className={'mr-2'} />
         Checking Tool
+      </Item>
+      <Item
+        href={process.env.PUBLIC_URL + `/collection`}
+        title="Github Page"
+        rel="noopener noreferrer"
+      >
+        <VideoCameraAddOutlined className={'mr-2'} />
+        Record Tool
       </Item>
     </Wrapper>
   );

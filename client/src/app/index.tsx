@@ -19,6 +19,7 @@ import { RecordVideo } from './pages/RecordVideo';
 import { PlayVideo } from './pages/PlayVideo';
 import { FileList } from './pages/FileList';
 import { CheckingTool } from './pages/CheckingTool';
+import Collection from './pages/Collection';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -60,6 +61,11 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/checking'}
           component={() => <CheckingTool />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/collection'}
+          component={() => <Collection />}
         />
         <Route component={NotFoundPage} />
       </Switch>
