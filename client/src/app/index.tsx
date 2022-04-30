@@ -20,6 +20,7 @@ import { PlayVideo } from './pages/PlayVideo';
 import { FileList } from './pages/FileList';
 import { CheckingTool } from './pages/CheckingTool';
 import Collection from './pages/Collection';
+import { AutoRecord } from './pages/AutoRecord';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -66,6 +67,11 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/collection'}
           component={() => <Collection />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/auto-record'}
+          component={() => <AutoRecord />}
         />
         <Route component={NotFoundPage} />
       </Switch>
