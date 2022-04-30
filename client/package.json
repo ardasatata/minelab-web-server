@@ -76,7 +76,7 @@
     "web-vitals": "2.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "HOST='0.0.0.0' PORT=4000 HTTPS=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

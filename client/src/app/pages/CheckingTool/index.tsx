@@ -112,9 +112,10 @@ export function CheckingTool(props: Props) {
 
   // @ts-ignore
   useEffect(() => {
-    const newSocket = io(`http://140.115.51.243:5000/stream-checking`, {
+    const newSocket = io(`https://140.115.51.243:5000/stream-checking`, {
       transports: ['websocket'],
       upgrade: false,
+      secure: true
     });
     // @ts-ignore
     newSocket.connect();

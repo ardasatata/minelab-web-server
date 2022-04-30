@@ -120,6 +120,7 @@ class Worker(object):
 @cross_origin()
 def send_video():
     video = request.files.get('video')
+    print('received..',video.filename)
 
     now = datetime.now()  # current date and time
 
@@ -149,8 +150,9 @@ def send_video():
 
         # run classifier sub-process
         print("processing...", filename)
-        subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename], stdout=subprocess.DEVNULL,
-                         stderr=subprocess.STDOUT)
+        subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename])
+        # subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename], stdout=subprocess.STDOUT,
+        #                  stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)
         value = {
@@ -292,4 +294,5 @@ def stop_work():
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host='140.115.51.243', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt", keyfile="server/140_115_51_243.key")
+    # socketio.run(app, debug=True, host='0.0.0.0', port=5000)

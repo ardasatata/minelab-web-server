@@ -61,7 +61,7 @@ export function FileList(props: Props) {
     formData.append('video', blob, file[0].name);
 
     const result = await axios.post(
-      'http://140.115.51.243:5000/send-video',
+      'https://140.115.51.243/api/send-video',
       formData,
       { headers },
     );
@@ -77,7 +77,7 @@ export function FileList(props: Props) {
     const getFileList = async () => {
       setIsloading(true);
 
-      const data = await axios.get('http://140.115.51.243:5000/predict-list');
+      const data = await axios.get('https://140.115.51.243/api/predict-list');
 
       console.log(data.data.filepath);
       setDatalist(data.data.filepath);

@@ -72,7 +72,7 @@ export function RecordVideo(props: Props) {
     formData.append('video', blob, file[0].name);
 
     const result = await axios.post(
-      'http://140.115.51.243:5000/send-video',
+      'https://140.115.51.243/api/send-video',
       formData,
       { headers },
     );

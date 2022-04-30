@@ -271,7 +271,7 @@ export function PlayVideo(props: Props) {
 
   // @ts-ignore
   useEffect(() => {
-    const newSocket = io(`http://140.115.51.243:5000/work`, {
+    const newSocket = io(`https://140.115.51.243:5000/work`, {
       transports: ['websocket'],
       upgrade: false,
     });
