@@ -10,9 +10,6 @@ import { NavBar } from '../../components/NavBar';
 import { PageWrapperMain } from '../RecordVideo';
 import axios from 'axios';
 
-// import Select from 'react-select';
-// import { optionsLabel, optionsSubject } from './const';
-
 const RECORDER_TIME_CONFIG = {
   countdownTime: 3000,
   timeLimit: 8000,
@@ -23,23 +20,10 @@ function Collection() {
 
   const [isLoading, setIsloading] = useState(false);
 
-  const [selectedOption, setSelectedOption] = useState('2');
-  const [selectedSubject, setSelectSubject] = useState('2');
-
   const [filename, setFilename] = useState(null);
   const [duration, setDuration] = useState(1);
 
   const [videoBlob, setVideoBlob] = useState(null);
-
-  // const uploadVideo = async (file, label, subject) => {
-  //   setIsloading(true);
-  //   // const response = await api.uploadVideo(file, label, subject);
-  //
-  //   // console.log(response);
-  //
-  //   setIsloading(false);
-  //   setPrediction('Video Uploaded');
-  // };
 
   const renderVideoRecorder = () => {
     if (filename === null || filename === '') {
@@ -84,7 +68,7 @@ function Collection() {
   };
 
   const reset = async () => {
-    window.location.reload(false);
+    window.location.reload();
   };
 
   const startUpload = async () => {
@@ -183,6 +167,7 @@ function Collection() {
                           placeholder="please enter duration "
                           value={duration}
                           onChange={event => {
+                            // @ts-ignore
                             setDuration(event.target.value);
                           }}
                         />

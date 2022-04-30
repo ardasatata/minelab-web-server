@@ -9,19 +9,13 @@ import { StyleConstants } from '../../../styles/StyleConstants';
 import { PageWrapper } from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
 
-import { FileUploader } from 'react-drag-drop-files';
 import { useEffect, useState } from 'react';
-import {
-  AlertOutlined,
-  ArrowUpOutlined,
-  CloseOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons';
-import axios from 'axios';
+import { AlertOutlined, LoadingOutlined } from '@ant-design/icons';
 import { NavBar } from '../../components/NavBar';
-import guide from '../../../assets/guide.png';
 import Webcam from 'react-webcam';
 import { io } from 'socket.io-client';
+
+import { useAlert } from 'react-alert';
 
 interface Props {}
 
@@ -43,6 +37,8 @@ export function CheckingTool(props: Props) {
   });
 
   const [showOriginal, setShowOriginal] = useState<boolean>(false);
+
+  const alert = useAlert();
 
   const handleStartCaptureClick = React.useCallback(() => {
     setCapturing(true);
@@ -115,7 +111,7 @@ export function CheckingTool(props: Props) {
     const newSocket = io(`https://140.115.51.243:5000/stream-checking`, {
       transports: ['websocket'],
       upgrade: false,
-      secure: true
+      secure: true,
     });
     // @ts-ignore
     newSocket.connect();
@@ -162,6 +158,7 @@ export function CheckingTool(props: Props) {
 
   const toggleOriginal = () => {
     setShowOriginal(!showOriginal);
+    alert.success("It's ok now!");
   };
 
   // @ts-ignore
