@@ -10,6 +10,9 @@ import { NavBar } from '../../components/NavBar';
 import { PageWrapperMain } from '../RecordVideo';
 import axios from 'axios';
 
+import { useAlert } from 'react-alert';
+import { sleep } from '../../../utils/sleep';
+
 const RECORDER_TIME_CONFIG = {
   countdownTime: 3000,
   timeLimit: 8000,
@@ -24,6 +27,8 @@ function Collection() {
   const [duration, setDuration] = useState(1);
 
   const [videoBlob, setVideoBlob] = useState(null);
+
+  const alert = useAlert();
 
   const renderVideoRecorder = () => {
     if (filename === null || filename === '') {
@@ -96,9 +101,19 @@ function Collection() {
     if (result.data.ok) {
       // setIsUploaded(true);
       // setFile(null);
+      setFilename(null);
+      setDuration(1);
+      setVideoBlob(null);
+      alert.success('File Uploaded Successfully!');
+      sleep(3000);
+      // await reset();
     } else {
-      // setIsError(true);
-      // setIsUploaded(false);
+      setFilename(null);
+      setDuration(1);
+      setVideoBlob(null);
+      alert.error('Error Occurred');
+      sleep(3000);
+      // await reset();
     }
   };
 
@@ -196,7 +211,7 @@ function Collection() {
                         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="button"
                       >
-                        Record New
+                        Refresh Page
                       </button>
                     </div>
                   </div>

@@ -55,6 +55,8 @@ export function AutoRecord(props: Props) {
     );
     // @ts-ignore
     mediaRecorderRef.current.start();
+
+    alert.info('Recording Start');
   }, [webcamRef, setCapturing, mediaRecorderRef]);
 
   const handleDataAvailable = React.useCallback(
@@ -70,6 +72,7 @@ export function AutoRecord(props: Props) {
     // @ts-ignore
     mediaRecorderRef.current.stop();
     setCapturing(false);
+    alert.error('Recording Stop');
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const handleDownload = React.useCallback(() => {
@@ -188,75 +191,67 @@ export function AutoRecord(props: Props) {
         <div className={'flex h-full w-full bg-black'}>
           <div
             className={
+              'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'
+            }
+            style={{
+              maxWidth: 480,
+            }}
+          >
+            <div className={'flex flex-col'}>
+              {capturing ? (
+                <button onClick={handleStopCaptureClick}>Stop Capture</button>
+              ) : (
+                <button onClick={handleStartCaptureClick}>Start Capture</button>
+              )}
+              {recordedChunks.length > 0 && (
+                <button onClick={handleDownload}>Download</button>
+              )}
+            </div>
+
+            <h1
+              className={
+                data.ok
+                  ? 'text-3xl mb-2 text-green-200'
+                  : 'text-3xl mb-2 text-red-500'
+              }
+            >
+              {data.message}
+            </h1>
+            {data ? (
+              <img
+                src={img}
+                alt={'main-stream'}
+                className={
+                  data.ok
+                    ? 'object-contain border-4 border-green-500'
+                    : 'object-contain border-4 border-red-500'
+                }
+              />
+            ) : (
+              <div className={'text-white text-9xl m-auto'} onClick={play}>
+                <LoadingOutlined />
+              </div>
+            )}
+            <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>
+              Pose Checker
+            </p>
+          </div>
+
+          <div
+            className={
               'flex flex-col items-center justify-center text-white w-full'
             }
           >
-            <div className={'text-sm text-black'}>
-              chrome://flags/#unsafely-treat-insecure-origin-as-secure
-              <div>http://140.115.51.243:3000/checking</div>
-            </div>
-            <div className={'flex flex-row max-w-7xl w-full'}>
-              <div className={'flex flex-col items-center z-10 mx-auto h-full'}>
-                <h1
-                  className={
-                    data.ok
-                      ? 'text-3xl mb-8 text-green-200'
-                      : 'text-3xl mb-8 text-red-500'
-                  }
-                >
-                  {data.message}
-                </h1>
-                {data ? (
-                  <img
-                    src={img}
-                    alt={'main-stream'}
-                    className={
-                      data.ok
-                        ? 'object-contain border-4 border-green-500'
-                        : 'object-contain border-4 border-red-500'
-                    }
-                    style={{
-                      // aspectRatio: '16/9',
-                      minHeight: 480,
-                    }}
-                  />
-                ) : (
-                  <div className={'text-white text-9xl m-auto'} onClick={play}>
-                    <LoadingOutlined />
-                  </div>
-                )}
-              </div>
-            </div>
+            <div className={'flex flex-row max-w-7xl w-full'}></div>
 
-            {/*{capturing ? (*/}
-            {/*  <button onClick={handleStopCaptureClick}>Stop Capture</button>*/}
-            {/*) : (*/}
-            {/*  <button onClick={handleStartCaptureClick}>Start Capture</button>*/}
-            {/*)}*/}
-            {/*{recordedChunks.length > 0 && (*/}
-            {/*  <button onClick={handleDownload}>Download</button>*/}
-            {/*)}*/}
-            {/*<div className={'flex w-full items-center justify-center mt-8'}>*/}
-            {/*  <button*/}
-            {/*    className={'bg-blue-500 rounded-md p-2'}*/}
-            {/*    onClick={toggleOriginal}*/}
-            {/*  >*/}
-            {/*    <AlertOutlined className={'mr-2'} />*/}
-            {/*    Toggle Original*/}
-            {/*  </button>*/}
-            {/*</div>*/}
             <div
               className={
                 showOriginal
                   ? 'flex flex-col items-center'
                   : 'flex flex-col items-center absolute flex-0 mx-auto bg-black'
               }
-              style={{
-                backgroundColor: 'black',
-                zIndex: -100,
-              }}
             >
-              <h1>{showOriginal ? 'ORIGINAL' : '.'}</h1>
+              {/*<h1>{showOriginal ? 'ORIGINAL' : '.'}</h1>*/}
               {/*@ts-ignore*/}
               <Webcam
                 // @ts-ignore
@@ -265,8 +260,8 @@ export function AutoRecord(props: Props) {
                 ref={webcamRef}
                 mirrored={true}
                 hidden={false}
-                height={1280}
-                width={720}
+                height={1920}
+                width={1080}
               />
             </div>
           </div>
