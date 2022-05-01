@@ -102,14 +102,13 @@ function Collection() {
       // setIsUploaded(true);
       // setFile(null);
       setFilename(null);
-      setDuration(1);
       setVideoBlob(null);
       alert.success('File Uploaded Successfully!');
+      alert.success(`Saved as ${result.data.filename}`);
       sleep(3000);
       // await reset();
     } else {
       setFilename(null);
-      setDuration(1);
       setVideoBlob(null);
       alert.error('Error Occurred');
       sleep(3000);

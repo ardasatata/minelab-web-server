@@ -16,6 +16,8 @@ import Webcam from 'react-webcam';
 import { io } from 'socket.io-client';
 
 import { useAlert } from 'react-alert';
+import { sleep } from '../../../utils/sleep';
+import axios from 'axios';
 
 interface Props {}
 
@@ -41,6 +43,8 @@ export function AutoRecord(props: Props) {
   const [isFrameOk, setIsFrameOk] = useState<boolean>(false);
 
   const alert = useAlert();
+
+  const [isLoading, setIsloading] = useState(true);
 
   const handleStartCaptureClick = React.useCallback(() => {
     setCapturing(true);
@@ -112,10 +116,53 @@ export function AutoRecord(props: Props) {
   }, [capture, setSocket]);
 
   useEffect(() => {
-    if (isFrameOk) {
-      alert.success("It's ok now!");
+    setInterval(() => {
+      setIsloading(false);
+    }, 3000);
+  });
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isFrameOk) {
+        alert.success('Position OK!');
+      } else {
+        alert.error('Position Wrong');
+      }
     }
-  }, [isFrameOk]);
+  }, [
+    alert,
+    handleStartCaptureClick,
+    handleStopCaptureClick,
+    isFrameOk,
+    isLoading,
+  ]);
+
+  const uploadFile = async (blob, filename) => {
+    const headers = {
+      'Content-Type': 'multipart/form-data',
+      'Access-Control-Allow-Origin': '*',
+    };
+
+    const formData = new FormData();
+    // @ts-ignore
+    formData.append('video', blob, `${filename}.mp4`);
+
+    const result = await axios.post(
+      'https://140.115.51.243/api/send-video',
+      formData,
+      { headers },
+    );
+
+    console.log(result);
+
+    if (result.data.ok) {
+      alert.success(`File Uploaded Successfully as ${result.data.filename}`);
+      // await reset();
+    } else {
+      alert.error('Error Occurred');
+      // await reset();
+    }
+  };
 
   // @ts-ignore
   useEffect(() => {
@@ -136,22 +183,21 @@ export function AutoRecord(props: Props) {
 
       if (obj.data.ok) {
         setIsFrameOk(true);
+        // if (!capturing) {
+        //   handleStartCaptureClick();
+        // }
+      } else {
+        setIsFrameOk(false);
+        // if (capturing) {
+        //   handleStopCaptureClick();
+        // }
       }
-
-      // let labelsNew = labels;
-
-      // labelsNew.push(obj.frame);
-      // setLabels(Object.assign({}, labels, labelsNew));
 
       console.log(obj);
     });
 
-    // setInterval(() => {
-    //   capture();
-    // }, 1000 / FPS);
-
     return () => newSocket.close();
-  }, [setSocket]);
+  }, [capturing, handleStartCaptureClick, handleStopCaptureClick, setSocket]);
 
   useEffect(() => {
     if (webcamFrame) {
@@ -160,16 +206,6 @@ export function AutoRecord(props: Props) {
       // console.log(socket);
     }
   }, [socket, setSocket, webcamFrame]);
-
-  const play = () => {
-    // socket.emit('play', query.get('title'));
-  };
-
-  const stop = () => {
-    socket.emit('stop');
-    // eslint-disable-next-line no-restricted-globals
-    location.reload();
-  };
 
   const toggleOriginal = () => {
     setShowOriginal(!showOriginal);
@@ -188,85 +224,90 @@ export function AutoRecord(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain>
-        <div className={'flex h-full w-full bg-black'}>
-          <div
-            className={
-              'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'
-            }
-            style={{
-              maxWidth: 480,
-            }}
-          >
-            <div className={'flex flex-col'}>
-              {capturing ? (
-                <button onClick={handleStopCaptureClick}>Stop Capture</button>
-              ) : (
-                <button onClick={handleStartCaptureClick}>Start Capture</button>
-              )}
-              {recordedChunks.length > 0 && (
-                <button onClick={handleDownload}>Download</button>
-              )}
-            </div>
-
-            <h1
+        {isLoading ? (
+          <div className={'text-white text-9xl m-auto'}>
+            <LoadingOutlined />
+          </div>
+        ) : (
+          <div className={'flex h-full w-full bg-black'}>
+            <div
               className={
-                data.ok
-                  ? 'text-3xl mb-2 text-green-200'
-                  : 'text-3xl mb-2 text-red-500'
+                'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'
               }
+              style={{
+                maxWidth: 480,
+              }}
             >
-              {data.message}
-            </h1>
-            {data ? (
-              <img
-                src={img}
-                alt={'main-stream'}
+              <div className={'flex flex-col'}>
+                {capturing ? (
+                  <button onClick={handleStopCaptureClick}>Stop Capture</button>
+                ) : (
+                  <button onClick={handleStartCaptureClick}>
+                    Start Capture
+                  </button>
+                )}
+                {recordedChunks.length > 0 && (
+                  <button onClick={handleDownload}>Download</button>
+                )}
+              </div>
+
+              <h1
                 className={
                   data.ok
-                    ? 'object-contain border-4 border-green-500'
-                    : 'object-contain border-4 border-red-500'
+                    ? 'text-3xl mb-2 text-green-200'
+                    : 'text-3xl mb-2 text-red-500'
                 }
-              />
-            ) : (
-              <div className={'text-white text-9xl m-auto'} onClick={play}>
-                <LoadingOutlined />
-              </div>
-            )}
-            <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>
-              Pose Checker
-            </p>
-          </div>
-
-          <div
-            className={
-              'flex flex-col items-center justify-center text-white w-full'
-            }
-          >
-            <div className={'flex flex-row max-w-7xl w-full'}></div>
+              >
+                {data.message}
+              </h1>
+              {data ? (
+                <img
+                  src={img}
+                  alt={'main-stream'}
+                  className={
+                    data.ok
+                      ? 'object-contain border-4 border-green-500'
+                      : 'object-contain border-4 border-red-500'
+                  }
+                />
+              ) : (
+                <></>
+              )}
+              <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>
+                Pose Checker
+              </p>
+            </div>
 
             <div
               className={
-                showOriginal
-                  ? 'flex flex-col items-center'
-                  : 'flex flex-col items-center absolute flex-0 mx-auto bg-black'
+                'flex flex-col items-center justify-center text-white w-full'
               }
             >
-              {/*<h1>{showOriginal ? 'ORIGINAL' : '.'}</h1>*/}
-              {/*@ts-ignore*/}
-              <Webcam
-                // @ts-ignore
-                audio={false}
-                // @ts-ignore
-                ref={webcamRef}
-                mirrored={true}
-                hidden={false}
-                height={1920}
-                width={1080}
-              />
+              <div className={'flex flex-row max-w-7xl w-full'}></div>
+
+              <div
+                className={
+                  showOriginal
+                    ? 'flex flex-col items-center'
+                    : 'flex flex-col items-center absolute flex-0 mx-auto bg-black'
+                }
+              >
+                {/*<h1>{showOriginal ? 'ORIGINAL' : '.'}</h1>*/}
+                {/*@ts-ignore*/}
+                <Webcam
+                  // @ts-ignore
+                  audio={false}
+                  // @ts-ignore
+                  ref={webcamRef}
+                  mirrored={true}
+                  hidden={false}
+                  height={1920}
+                  width={1080}
+                />
+              </div>
             </div>
           </div>
-        </div>
-        {/*<div className={'h-full flex bg-white w-1/4'}>cok</div>*/}
+        )}
       </PageWrapperMain>
     </>
   );
