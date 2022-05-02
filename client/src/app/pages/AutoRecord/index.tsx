@@ -10,18 +10,21 @@ import { PageWrapper } from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
 
 import { useEffect, useState } from 'react';
-import { AlertOutlined, LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons';
 import { NavBar } from '../../components/NavBar';
 import Webcam from 'react-webcam';
 import { io } from 'socket.io-client';
 
 import { useAlert } from 'react-alert';
-import { sleep } from '../../../utils/sleep';
 import axios from 'axios';
+import { ReactComponent as KneeIcon } from '../PlayVideo/assets/knee.svg';
+import { ReactComponent as BowIcon } from '../PlayVideo/assets/bow.svg';
+import { ReactComponent as TorsoIcon } from '../PlayVideo/assets/torso.svg';
 
 interface Props {}
 
 const FPS = 1;
+// const COUNTER_LIMIT = 2;
 
 export function AutoRecord(props: Props) {
   const webcamRef = React.useRef(null);
@@ -45,6 +48,17 @@ export function AutoRecord(props: Props) {
   const alert = useAlert();
 
   const [isLoading, setIsloading] = useState(true);
+  const [isRefreshLoading, setIsRefreshLoading] = useState(false);
+
+  // const [recordCounter, setRecordCounter] = useState<number>(0);
+  //
+  // const incrementCounter = () => {
+  //   setRecordCounter(recordCounter + 1);
+  // };
+  //
+  // const resetCounter = () => {
+  //   setRecordCounter(0);
+  // };
 
   const handleStartCaptureClick = React.useCallback(() => {
     setCapturing(true);
@@ -60,7 +74,7 @@ export function AutoRecord(props: Props) {
     // @ts-ignore
     mediaRecorderRef.current.start();
 
-    alert.info('Recording Start');
+    alert.info('Recording Start ▶️');
   }, [webcamRef, setCapturing, mediaRecorderRef]);
 
   const handleDataAvailable = React.useCallback(
@@ -76,7 +90,7 @@ export function AutoRecord(props: Props) {
     // @ts-ignore
     mediaRecorderRef.current.stop();
     setCapturing(false);
-    alert.error('Recording Stop');
+    alert.info('Recording Stop 🛑');
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const handleDownload = React.useCallback(() => {
@@ -108,12 +122,10 @@ export function AutoRecord(props: Props) {
   }, [webcamRef, socket]);
 
   useEffect(() => {
-    if (socket) {
-      setInterval(() => {
-        capture();
-      }, 1000 / FPS);
-    }
-  }, [capture, setSocket]);
+    setInterval(() => {
+      capture();
+    }, 1000 / FPS);
+  }, []);
 
   useEffect(() => {
     setInterval(() => {
@@ -124,9 +136,9 @@ export function AutoRecord(props: Props) {
   useEffect(() => {
     if (!isLoading) {
       if (isFrameOk) {
-        alert.success('Position OK!');
+        alert.success('Position OK! ✅');
       } else {
-        alert.error('Position Wrong');
+        alert.error('Check your pose! ☝🏻 ');
       }
     }
   }, [
@@ -157,10 +169,8 @@ export function AutoRecord(props: Props) {
 
     if (result.data.ok) {
       alert.success(`File Uploaded Successfully as ${result.data.filename}`);
-      // await reset();
     } else {
       alert.error('Error Occurred');
-      // await reset();
     }
   };
 
@@ -183,14 +193,15 @@ export function AutoRecord(props: Props) {
 
       if (obj.data.ok) {
         setIsFrameOk(true);
-        // if (!capturing) {
-        //   handleStartCaptureClick();
-        // }
+        // incrementCounter();
+        if (!capturing) {
+          handleStartCaptureClick();
+        }
       } else {
         setIsFrameOk(false);
-        // if (capturing) {
-        //   handleStopCaptureClick();
-        // }
+        if (capturing) {
+          handleStopCaptureClick();
+        }
       }
 
       console.log(obj);
@@ -198,6 +209,29 @@ export function AutoRecord(props: Props) {
 
     return () => newSocket.close();
   }, [capturing, handleStartCaptureClick, handleStopCaptureClick, setSocket]);
+
+  function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  const reset = async () => {
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    if (recordedChunks.length > 0) {
+      setIsRefreshLoading(true);
+      const blob = new Blob(recordedChunks, {
+        type: 'video/webm',
+      });
+      console.log(blob);
+      if (!isRefreshLoading) {
+        uploadFile(blob, '').then(r => {
+          timeout(5000).then(() => reset());
+        });
+      }
+    }
+  }, [recordedChunks, uploadFile, isRefreshLoading]);
 
   useEffect(() => {
     if (webcamFrame) {
@@ -224,9 +258,76 @@ export function AutoRecord(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain>
-        {isLoading ? (
-          <div className={'text-white text-9xl m-auto'}>
-            <LoadingOutlined />
+        <div
+          className={'pl-8 pt-4 absolute z-10 pr-4 pb-4'}
+          style={{ backgroundColor: 'rgba(0,47,105,0.50)' }}
+        >
+          {capturing ? (
+            <div className={'flex flex-row'}>
+              <div
+                className={'bg-red-500 h-8 w-8 rounded-full animate-pulse mr-4'}
+              />
+              <h1 className={'text-white text-3xl'}>Recording...</h1>
+            </div>
+          ) : (
+            <div className={'flex flex-col'}>
+              <h1 className={'text-white text-3xl'}>
+                Please check below position :
+              </h1>
+              <h1 className={'text-white text-3xl'}>
+                {data.errors ? (
+                  <div className={'flex flex-col pt-2 text-xl text-bold'}>
+                    <div
+                      className={
+                        data.errors[0]
+                          ? 'flex items-center mb-2 text-green-300'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <KneeIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>{`兩膝`}</div>
+                    </div>
+                    <div
+                      className={
+                        data.errors[1]
+                          ? 'flex items-center mb-2 text-green-300'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>{`上的二胡`}</div>
+                    </div>
+                    <div
+                      className={
+                        data.errors[2]
+                          ? 'flex items-center mb-2 text-green-300'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <TorsoIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>{`身體`}</div>
+                    </div>
+                  </div>
+                ) : null}
+              </h1>
+            </div>
+          )}
+        </div>
+
+        {isLoading || isRefreshLoading ? (
+          <div
+            className={
+              'flex flex-col text-white text-7xl m-auto items-center justify-center'
+            }
+          >
+            <LoadingOutlined className={'mb-12'} />
+            {isRefreshLoading ? (
+              <div className={'text-7xl'}>
+                Please wait... ⌛, we're processing your video 🔨
+              </div>
+            ) : (
+              <div className={'text-7xl'}>Please wait... ⌛</div>
+            )}
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black'}>
@@ -238,18 +339,18 @@ export function AutoRecord(props: Props) {
                 maxWidth: 480,
               }}
             >
-              <div className={'flex flex-col'}>
-                {capturing ? (
-                  <button onClick={handleStopCaptureClick}>Stop Capture</button>
-                ) : (
-                  <button onClick={handleStartCaptureClick}>
-                    Start Capture
-                  </button>
-                )}
-                {recordedChunks.length > 0 && (
-                  <button onClick={handleDownload}>Download</button>
-                )}
-              </div>
+              {/*<div className={'flex flex-col'}>*/}
+              {/*  {capturing ? (*/}
+              {/*    <button onClick={handleStopCaptureClick}>Stop Capture</button>*/}
+              {/*  ) : (*/}
+              {/*    <button onClick={handleStartCaptureClick}>*/}
+              {/*      Start Capture*/}
+              {/*    </button>*/}
+              {/*  )}*/}
+              {/*  /!*{recordedChunks.length > 0 && (*!/*/}
+              {/*  /!*  <button onClick={handleDownload}>Download</button>*!/*/}
+              {/*  /!*)}*!/*/}
+              {/*</div>*/}
 
               <h1
                 className={
@@ -274,7 +375,7 @@ export function AutoRecord(props: Props) {
                 <></>
               )}
               <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>
-                Pose Checker
+                Pose Checker 🔍
               </p>
             </div>
 
@@ -292,7 +393,6 @@ export function AutoRecord(props: Props) {
                     : 'flex flex-col items-center absolute flex-0 mx-auto bg-black'
                 }
               >
-                {/*<h1>{showOriginal ? 'ORIGINAL' : '.'}</h1>*/}
                 {/*@ts-ignore*/}
                 <Webcam
                   // @ts-ignore
