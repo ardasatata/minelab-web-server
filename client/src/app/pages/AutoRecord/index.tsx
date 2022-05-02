@@ -21,6 +21,17 @@ import { ReactComponent as KneeIcon } from '../PlayVideo/assets/knee.svg';
 import { ReactComponent as BowIcon } from '../PlayVideo/assets/bow.svg';
 import { ReactComponent as TorsoIcon } from '../PlayVideo/assets/torso.svg';
 
+import Overlay from 'react-overlay-component';
+import guide from '../../../assets/guide.png';
+
+const configs = {
+  animate: true,
+  // clickDismiss: false,
+  // escapeDismiss: false,
+  // focusOutline: false,
+  // contentClass: 'bg-black',
+};
+
 interface Props {}
 
 const FPS = 1;
@@ -49,6 +60,10 @@ export function AutoRecord(props: Props) {
 
   const [isLoading, setIsloading] = useState(true);
   const [isRefreshLoading, setIsRefreshLoading] = useState(false);
+
+  const [isOpen, setOverlay] = useState(false);
+
+  const closeOverlay = () => setOverlay(false);
 
   // const [recordCounter, setRecordCounter] = useState<number>(0);
   //
@@ -128,26 +143,28 @@ export function AutoRecord(props: Props) {
   }, []);
 
   useEffect(() => {
-    setInterval(() => {
+    setOverlay(true);
+    setTimeout(() => {
       setIsloading(false);
+      closeOverlay();
     }, 3000);
-  });
+  }, []);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (isFrameOk) {
-        alert.success('Position OK! ✅');
-      } else {
-        alert.error('Check your pose! ☝🏻 ');
-      }
-    }
-  }, [
-    alert,
-    handleStartCaptureClick,
-    handleStopCaptureClick,
-    isFrameOk,
-    isLoading,
-  ]);
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     if (isFrameOk) {
+  //       alert.success('Position OK! ✅');
+  //     } else {
+  //       alert.error('Check your pose! ☝🏻 ');
+  //     }
+  //   }
+  // }, [
+  //   alert,
+  //   handleStartCaptureClick,
+  //   handleStopCaptureClick,
+  //   isFrameOk,
+  //   isLoading,
+  // ]);
 
   const uploadFile = async (blob, filename) => {
     const headers = {
@@ -255,6 +272,31 @@ export function AutoRecord(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain className={'bg-black'}>
+        <Overlay
+          configs={configs}
+          isOpen={isOpen}
+          closeOverlay={closeOverlay}
+          className={'bg-black'}
+        >
+          <div
+            className={'flex flex-col items-center justify-center bg-black p-4'}
+          >
+            <h1 className={'text-4xl mb-4 text-amber-50 text-center'}>
+              Make sure to follow this guideline below before you record a
+              video!
+            </h1>
+            <img src={guide} className={'w-full'} />
+          </div>
+
+          {/*<button*/}
+          {/*  className="danger"*/}
+          {/*  onClick={() => {*/}
+          {/*    setOverlay(false);*/}
+          {/*  }}*/}
+          {/*>*/}
+          {/*  close modal*/}
+          {/*</button>*/}
+        </Overlay>
         <div
           className={'pl-8 pt-4 absolute z-10 pr-4 pb-4'}
           style={{ backgroundColor: 'rgba(0,47,105,0.50)' }}
