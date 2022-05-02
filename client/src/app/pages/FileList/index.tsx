@@ -79,7 +79,7 @@ export function FileList(props: Props) {
                         }
                         href={`https://140.115.51.243/api/download-original?filename=${item}.mp4`}
                       >
-                        🗄️ Original
+                        🗄️ Download
                       </a>
                       {/*<a*/}
                       {/*  className={*/}
