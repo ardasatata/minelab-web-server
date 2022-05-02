@@ -20,29 +20,29 @@ export function Nav() {
         <OrderedListOutlined className={'mr-2'} />
         Video List
       </Item>
+      {/*<Item*/}
+      {/*  href={process.env.PUBLIC_URL + `/`}*/}
+      {/*  title="Github Page"*/}
+      {/*  rel="noopener noreferrer"*/}
+      {/*>*/}
+      {/*  <ArrowUpOutlined className={'mr-2'} />*/}
+      {/*  Upload Video*/}
+      {/*</Item>*/}
+      {/*<Item*/}
+      {/*  href={process.env.PUBLIC_URL + `/checking`}*/}
+      {/*  title="Github Page"*/}
+      {/*  rel="noopener noreferrer"*/}
+      {/*>*/}
+      {/*  <SearchOutlined className={'mr-2'} />*/}
+      {/*  Checking Tool*/}
+      {/*</Item>*/}
       <Item
-        href={process.env.PUBLIC_URL + `/`}
-        title="Github Page"
-        rel="noopener noreferrer"
-      >
-        <ArrowUpOutlined className={'mr-2'} />
-        Upload Video
-      </Item>
-      <Item
-        href={process.env.PUBLIC_URL + `/checking`}
-        title="Github Page"
-        rel="noopener noreferrer"
-      >
-        <SearchOutlined className={'mr-2'} />
-        Checking Tool
-      </Item>
-      <Item
-        href={process.env.PUBLIC_URL + `/collection`}
-        title="Github Page"
+        href={process.env.PUBLIC_URL + `/auto-record`}
+        title="Auto Record"
         rel="noopener noreferrer"
       >
         <VideoCameraAddOutlined className={'mr-2'} />
-        Record Tool
+        Auto Record
       </Item>
     </Wrapper>
   );

@@ -48,26 +48,26 @@ export function App() {
           path={process.env.PUBLIC_URL + '/list'}
           component={() => <FileList />}
         />
-        <Route
-          exact
-          path={process.env.PUBLIC_URL + '/dev'}
-          component={HomePage}
-        />
+        {/*<Route*/}
+        {/*  exact*/}
+        {/*  path={process.env.PUBLIC_URL + '/dev'}*/}
+        {/*  component={HomePage}*/}
+        {/*/>*/}
         <Route
           exact
           path={process.env.PUBLIC_URL + '/playback'}
           component={() => <PlayVideo />}
         />
-        <Route
-          exact
-          path={process.env.PUBLIC_URL + '/checking'}
-          component={() => <CheckingTool />}
-        />
-        <Route
-          exact
-          path={process.env.PUBLIC_URL + '/collection'}
-          component={() => <Collection />}
-        />
+        {/*<Route*/}
+        {/*  exact*/}
+        {/*  path={process.env.PUBLIC_URL + '/checking'}*/}
+        {/*  component={() => <CheckingTool />}*/}
+        {/*/>*/}
+        {/*<Route*/}
+        {/*  exact*/}
+        {/*  path={process.env.PUBLIC_URL + '/collection'}*/}
+        {/*  component={() => <Collection />}*/}
+        {/*/>*/}
         <Route
           exact
           path={process.env.PUBLIC_URL + '/auto-record'}

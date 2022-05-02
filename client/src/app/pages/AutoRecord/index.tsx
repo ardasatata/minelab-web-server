@@ -250,14 +250,11 @@ export function AutoRecord(props: Props) {
   return (
     <>
       <Helmet>
-        <title>Home Page</title>
-        <meta
-          name="description"
-          content="A React Boilerplate application homepage"
-        />
+        <title>Auto Record</title>
+        <meta name="description" content="Auto record tool" />
       </Helmet>
       <NavBar />
-      <PageWrapperMain>
+      <PageWrapperMain className={'bg-black'}>
         <div
           className={'pl-8 pt-4 absolute z-10 pr-4 pb-4'}
           style={{ backgroundColor: 'rgba(0,47,105,0.50)' }}
@@ -317,7 +314,7 @@ export function AutoRecord(props: Props) {
         {isLoading || isRefreshLoading ? (
           <div
             className={
-              'flex flex-col text-white text-7xl m-auto items-center justify-center'
+              'flex flex-col text-white text-7xl m-auto items-center justify-center bg-black'
             }
           >
             <LoadingOutlined className={'mb-12'} />
