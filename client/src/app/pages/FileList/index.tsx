@@ -7,67 +7,18 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import { StyleConstants } from '../../../styles/StyleConstants';
 import { PageWrapper } from '../../components/PageWrapper';
-import { Logo } from '../../components/NavBar/Logo';
-import { Nav } from '../../components/NavBar/Nav';
 import { Helmet } from 'react-helmet-async';
-import { Masthead } from '../HomePage/Masthead';
-import { Features } from '../HomePage/Features';
-import VideoRecorder from 'react-video-recorder';
 
-import { FileUploader } from 'react-drag-drop-files';
 import { useEffect, useState } from 'react';
-import { ArrowUpOutlined, CloseOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { Link } from '../../components/Link';
 import { NavBar } from '../../components/NavBar';
+import { LoadingOutlined } from '@ant-design/icons';
 
 interface Props {}
 
-const fileTypes = ['MP4', 'MOV'];
-
 export function FileList(props: Props) {
   const [file, setFile] = useState<any>(null);
-  const handleChange = async file => {
-    setFile(file);
-  };
-
-  const clearFile = () => {
-    setFile(null);
-  };
-
-  const uploadFile = async () => {
-    let videoFile = file[0];
-
-    var videoUrl = URL.createObjectURL(videoFile);
-
-    console.log(videoUrl);
-
-    let blob = await fetch(videoUrl).then(r => r.blob());
-
-    console.log(blob);
-
-    // var reader = new FileReader();
-
-    // @ts-ignore
-    // console.log(reader.read(blobVideo))
-
-    const headers = {
-      'Content-Type': 'multipart/form-data',
-      'Access-Control-Allow-Origin': '*',
-    };
-
-    const formData = new FormData();
-    // @ts-ignore
-    formData.append('video', blob, file[0].name);
-
-    const result = await axios.post(
-      'https://140.115.51.243/api/send-video',
-      formData,
-      { headers },
-    );
-
-    console.log(result);
-  };
 
   const [isLoading, setIsloading] = useState(false);
 
@@ -99,29 +50,64 @@ export function FileList(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain>
-        <div className={'flex h-full w-full bg-black justify-center'}>
-          <div className="flex flex-col max-h-screen mt-8">
-            <div className="text-center text-5xl font-bold font-sans text-white">
-              File List
-            </div>
-            <div className="text-center text-md font-light font-sans text-red-500 mb-4">
-              *Some files might take some time to predict, Thanks for your
-              patience & understanding
-            </div>
-            <div className="flex flex-col bg-white w-full overflow-y-auto">
-              {datalist.map((item, index) => {
-                return (
-                  <Link to={process.env.PUBLIC_URL + `/playback?title=${item}`}>
-                    <div className="px-4 py-2 cursor-pointer bg-white odd:bg-blue-100 text-sm font-light hover:bg-blue-500 hover:text-white">
-                      {item}
+        {isLoading ? (
+          <div
+            className={
+              'flex flex-col text-white text-7xl m-auto items-center justify-center'
+            }
+          >
+            <LoadingOutlined className={'mb-12'} />
+          </div>
+        ) : (
+          <div className={'flex h-full w-full bg-black justify-center'}>
+            <div className="flex flex-col max-h-screen mt-8">
+              <div className="text-center text-5xl font-bold font-sans text-white">
+                File List
+              </div>
+              <div className="text-center text-md font-light font-sans text-red-500 mb-4">
+                *Some files might take some time to predict, Thanks for your
+                patience & understanding!
+              </div>
+              <div className="flex flex-col bg-white w-full overflow-y-auto">
+                {datalist.map((item, index) => {
+                  return (
+                    <div className="flex flex-row text-orange-500 bg-blue-100 odd:bg-blue-200 text-sm font-light hover:bg-blue-500 hover:text-white">
+                      <div className={'flex flex-1 px-4 py-1'}>{item}</div>
+                      <a
+                        className={
+                          'flex h-full items-center justify-center mr-2 font-black cursor-pointer'
+                        }
+                        href={`https://140.115.51.243/api/download-original?filename=${item}.mp4`}
+                      >
+                        🗄️ Original
+                      </a>
+                      {/*<a*/}
+                      {/*  className={*/}
+                      {/*    'flex h-full items-center justify-center mr-2 font-black cursor-pointer'*/}
+                      {/*  }*/}
+                      {/*  href={`https://140.115.51.243/api/download-predict?filename=${item}.mp4`}*/}
+                      {/*>*/}
+                      {/*  ✨ Analyzed*/}
+                      {/*</a>*/}
+                      <Link
+                        to={process.env.PUBLIC_URL + `/playback?title=${item}`}
+                        className={'text-blue-500'}
+                      >
+                        <div
+                          className={
+                            'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
+                          }
+                        >
+                          ▶️ Analyze
+                        </div>
+                      </Link>
                     </div>
-                  </Link>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-        {/*<div className={'h-full flex bg-white w-1/4'}>cok</div>*/}
+        )}
       </PageWrapperMain>
     </>
   );
