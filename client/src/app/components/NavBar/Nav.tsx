@@ -37,7 +37,7 @@ export function Nav() {
       {/*  Checking Tool*/}
       {/*</Item>*/}
       <Item
-        href={process.env.PUBLIC_URL + `/auto-record`}
+        href={process.env.PUBLIC_URL + `/`}
         title="Auto Record"
         rel="noopener noreferrer"
       >

@@ -38,11 +38,11 @@ export function App() {
       </Helmet>
 
       <Switch>
-        <Route
-          exact
-          path={process.env.PUBLIC_URL + '/'}
-          component={() => <RecordVideo />}
-        />
+        {/*<Route*/}
+        {/*  exact*/}
+        {/*  path={process.env.PUBLIC_URL + '/'}*/}
+        {/*  component={() => <RecordVideo />}*/}
+        {/*/>*/}
         <Route
           exact
           path={process.env.PUBLIC_URL + '/list'}
@@ -70,7 +70,7 @@ export function App() {
         {/*/>*/}
         <Route
           exact
-          path={process.env.PUBLIC_URL + '/auto-record'}
+          path={process.env.PUBLIC_URL + '/'}
           component={() => <AutoRecord />}
         />
         <Route component={NotFoundPage} />

@@ -282,8 +282,7 @@ export function AutoRecord(props: Props) {
             className={'flex flex-col items-center justify-center bg-black p-4'}
           >
             <h1 className={'text-4xl mb-4 text-amber-50 text-center'}>
-              Make sure to follow this guideline below before you record a
-              video!
+              Be sure to follow this pose, while you're recording!
             </h1>
             <img src={guide} className={'w-full'} />
           </div>
@@ -311,7 +310,7 @@ export function AutoRecord(props: Props) {
           ) : (
             <div className={'flex flex-col'}>
               <h1 className={'text-white text-3xl'}>
-                Please check below position :
+                Please check these positions :
               </h1>
               <h1 className={'text-white text-3xl'}>
                 {data.errors ? (
