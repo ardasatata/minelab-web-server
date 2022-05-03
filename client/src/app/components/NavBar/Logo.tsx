@@ -1,15 +1,16 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import ncuLogo from '../../../assets/ncuLogo.png';
+import ncuWhite from '../../../assets/ncu-white.png';
 import minelab from '../../../assets/minelab.png';
+import { ReactComponent as NTUAicon } from '../../../assets/ntua-white.svg';
 
 export function Logo() {
   return (
     <Wrapper>
-      <img src={ncuLogo} className={'h-8 mr-2'}/>
-      <img src={minelab} className={'h-8 mr-4'}/>
+      <img src={ncuWhite} className={'h-12 mt-1'} />
+      <NTUAicon className={'h-14'} style={{}} />
       <Title>Erhu Trainer | 二胡學習</Title>
-      <Description>Minelab 2022</Description>
+      {/*<Description>Minelab 2022</Description>*/}
     </Wrapper>
   );
 }
@@ -24,6 +25,7 @@ const Title = styled.div`
   color: ${p => p.theme.text};
   font-weight: bold;
   margin-right: 1rem;
+  margin-left: 1rem;
 `;
 
 const Description = styled.div`

@@ -8,7 +8,7 @@ import { PageWrapper } from '../PageWrapper';
 export function NavBar() {
   return (
     <Wrapper>
-      <PageWrapper>
+      <PageWrapper className={'bg-black'}>
         <Logo />
         <Nav />
       </PageWrapper>
