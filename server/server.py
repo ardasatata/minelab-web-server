@@ -1,6 +1,6 @@
 import os.path
 
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 import cv2
@@ -19,6 +19,8 @@ import subprocess
 import sys
 
 from util import readb64
+
+from natsort import os_sorted
 
 # import random
 
@@ -43,6 +45,9 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 workerObject = None
 PREDICTION_DIR = r"./predict/"
 UPLOAD_DIR = r"./upload/"
+
+UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/upload/"
+PREDICT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/predict/"
 
 
 class Worker(object):
@@ -120,16 +125,18 @@ class Worker(object):
 @cross_origin()
 def send_video():
     video = request.files.get('video')
-    print('received..',video.filename)
+    print('received..', video.filename)
 
     now = datetime.now()  # current date and time
 
-    date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
+    date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
+    # date_time = now.strftime("%d_%b_%Y_%A(%H:%M:%S)")
     print("date and time:", date_time)
 
     original_filename = video.filename[:-4]
 
-    video.filename = f"{original_filename}__({date_time}).mp4"
+    # video.filename = f"{original_filename}__({date_time}).mp4"
+    video.filename = f"{date_time}.mp4"
 
     # Saved Video Path
     # filename = UPLOAD_DIR + video.filename
@@ -137,7 +144,7 @@ def send_video():
 
     value = {
         "ok": True,
-        "fileName": date_time
+        "filename": filename
     }
 
     print("saving...", filename)
@@ -157,12 +164,46 @@ def send_video():
         print("Unexpected error:", e)
         value = {
             "ok": False,
-            "fileName": filename
+            "filename": filename
         }
         print("error uploading file")
         return value
 
     return value
+
+
+@app.route('/download-original', methods=['GET'])
+def download_original():
+    filename = request.args.get('filename')
+    file_path = UPLOAD_DIR_SEND_FILE + filename
+    print('downloading...', file_path)
+
+    if isfile(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        value = {
+            "ok": False,
+            "filename": filename,
+            "message": 'File not found!'
+        }
+        return value
+
+
+@app.route('/download-predict', methods=['GET'])
+def download_predict():
+    filename = request.args.get('filename')
+    file_path = PREDICT_DIR_SEND_FILE + filename
+    print('downloading...', file_path)
+
+    if isfile(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        value = {
+            "ok": False,
+            "filename": filename,
+            "message": 'File not found!'
+        }
+        return value
 
 
 @socketio.on('connect', namespace='/stream-checking')
@@ -210,7 +251,8 @@ def start_work(data):
 
     data = {
         "ok": isError,
-        "message": message
+        "message": message,
+        "errors": list_err
     }
 
     base64_img = cv2.imencode('.jpg', img)[1].tobytes()
@@ -223,7 +265,8 @@ def start_work(data):
 @app.route('/predict-list')
 def file_path():
     print('getting all predicted files name')
-    onlyfiles = [f[:-4] for f in listdir(PREDICTION_DIR) if isfile(join(PREDICTION_DIR, f)) and f[-4:] == ".npz"]
+    onlyfiles = [f[:-4] for f in os_sorted(listdir(PREDICTION_DIR)) if
+                 isfile(join(PREDICTION_DIR, f)) and f[-4:] == ".npz"]
 
     print(onlyfiles)
     value = {
@@ -294,5 +337,6 @@ def stop_work():
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt", keyfile="server/140_115_51_243.key")
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt",
+                 keyfile="server/140_115_51_243.key")
     # socketio.run(app, debug=True, host='0.0.0.0', port=5000)
