@@ -24,6 +24,8 @@ import { ReactComponent as TorsoIcon } from '../PlayVideo/assets/torso.svg';
 import Overlay from 'react-overlay-component';
 import guide from '../../../assets/guide.png';
 
+import getBlobDuration from 'get-blob-duration';
+
 const configs = {
   animate: true,
   // clickDismiss: false,
@@ -221,7 +223,7 @@ export function AutoRecord(props: Props) {
         }
       }
 
-      console.log(obj);
+      // console.log(obj);
     });
 
     return () => newSocket.close();
@@ -236,19 +238,34 @@ export function AutoRecord(props: Props) {
   };
 
   useEffect(() => {
-    if (recordedChunks.length > 0) {
-      setIsRefreshLoading(true);
-      const blob = new Blob(recordedChunks, {
-        type: 'video/webm',
-      });
-      console.log(blob);
-      if (!isRefreshLoading) {
-        uploadFile(blob, '').then(r => {
-          timeout(5000).then(() => reset());
+    const processBlob = async () => {
+      if (recordedChunks.length > 0) {
+        setIsRefreshLoading(true);
+        const blob = new Blob(recordedChunks, {
+          type: 'video/webm',
         });
+
+        const duration = await getBlobDuration(blob);
+        console.log(duration + ' seconds');
+        alert.info(`Recorded ${duration.toString()} seconds`);
+        setRecordedChunks([]);
+
+        // console.log(blob);
+        if (!isRefreshLoading) {
+          if (duration > 2.0) {
+            uploadFile(blob, '').then(r => {
+              timeout(5000).then(() => reset());
+            });
+          } else {
+            alert.error(`Video duration is too short ${duration.toString()}`);
+            setIsRefreshLoading(false);
+          }
+        }
       }
-    }
-  }, [recordedChunks, uploadFile, isRefreshLoading]);
+    };
+
+    processBlob().catch(console.error);
+  }, [recordedChunks, isRefreshLoading, uploadFile]);
 
   useEffect(() => {
     if (webcamFrame) {

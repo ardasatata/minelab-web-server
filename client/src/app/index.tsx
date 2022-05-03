@@ -12,14 +12,10 @@ import { Switch, Route, BrowserRouter } from 'react-router-dom';
 
 import { GlobalStyle } from '../styles/global-styles';
 
-import { HomePage } from './pages/HomePage/Loadable';
 import { NotFoundPage } from './pages/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
-import { RecordVideo } from './pages/RecordVideo';
 import { PlayVideo } from './pages/PlayVideo';
 import { FileList } from './pages/FileList';
-import { CheckingTool } from './pages/CheckingTool';
-import Collection from './pages/Collection';
 import { AutoRecord } from './pages/AutoRecord';
 
 export function App() {

@@ -8,8 +8,8 @@ export function Logo() {
   return (
     <Wrapper>
       <img src={ncuWhite} className={'h-12 mt-1'} />
-      <NTUAicon className={'h-14'} style={{}} />
-      <Title>Erhu Trainer | 二胡學習</Title>
+      <NTUAicon className={'h-14 whitespace-nowrap block'} style={{}} />
+      <Title style={{ whiteSpace: 'normal' }}>Erhu Trainer | 二胡學習</Title>
       {/*<Description>Minelab 2022</Description>*/}
     </Wrapper>
   );
