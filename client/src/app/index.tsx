@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { PlayVideo } from './pages/PlayVideo';
 import { FileList } from './pages/FileList';
 import { AutoRecord } from './pages/AutoRecord';
+import {RecordVideo} from "./pages/RecordVideo";
 
 export function App() {
   const { i18n } = useTranslation();
@@ -34,11 +35,11 @@ export function App() {
       </Helmet>
 
       <Switch>
-        {/*<Route*/}
-        {/*  exact*/}
-        {/*  path={process.env.PUBLIC_URL + '/'}*/}
-        {/*  component={() => <RecordVideo />}*/}
-        {/*/>*/}
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/upload'}
+          component={() => <RecordVideo />}
+        />
         <Route
           exact
           path={process.env.PUBLIC_URL + '/list'}

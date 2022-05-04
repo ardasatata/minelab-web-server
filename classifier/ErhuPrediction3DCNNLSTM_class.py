@@ -846,76 +846,6 @@ def getImages(folder):
             print('files:', files)
     return data
 
-def check_player_postition(video_path):
-    return False
-    # mp_holistic_checker = mp.solutions.holistic
-    # coordTop_checker = []
-    # topLocation = 0, 0
-    # smoothingLeng_checker = 10
-    # videoInput = cv2.VideoCapture(video_path)
-    # # segment_image = custom_segmentation()
-    # LABELS = ["body", "bow", "erhu"]
-    # erhu_detected = True
-    # frame_tolerance = 30
-    # frame_number = 0
-    # # segment_image.inferConfig(num_classes=3, class_names=LABELS)
-    # # segment_image.load_model(
-    # #     os.path.join(thisfolder, "model/SegmentationModel/4_5_dataset_13032022/mask_rcnn_model.081-0.129956.h5"))
-    # while videoInput.isOpened():
-    #     if frame_number > frame_tolerance:
-    #         break
-    #     frame_number+=1
-    #     success, frame = videoInput.read()
-    #     if not success:
-    #         break
-    #     image = frame.copy()
-    #     try:
-    #         with mp_holistic_checker.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3) as holistic:
-    #             image.flags.writeable = False
-    #             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    #             results = holistic.process(image)
-    #             image_height, image_width, _ = image.shape
-    #             image.flags.writeable = True
-    #             y_LK = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_KNEE].y * image_height)
-    #             y_RK = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_KNEE].y * image_height)
-    #             if (y_RK < image_height) and (y_LK < image_height):
-    #                 knee_detected = True
-    #             else:
-    #                 knee_detected = False
-    #         # seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
-    #         # segLeng = len(seg_mask['scores'])
-    #         # if segLeng >= 3:
-    #         #     for i in range(segLeng):
-    #         #         mask = frame.copy()
-    #         #         id = seg_mask['class_ids'][i]
-    #         #         label = LABELS[int(id) - 1]
-    #         #         if mask.shape[0] == seg_mask['masks'].shape[0] and mask.shape[1] == seg_mask['masks'].shape[1]:
-    #         #             mask[seg_mask['masks'][:, :, i] == False] = (0, 0, 0)
-    #         #             if label == 'erhu':
-    #         #                 img_erhu = mask.copy()
-    #         #                 grayIMG = cv2.cvtColor(img_erhu, cv2.COLOR_BGR2GRAY)
-    #         #                 tmp = np.argwhere(grayIMG > 0)
-    #         #                 topY = np.amin(tmp[:, 0])
-    #         #                 tmp = np.argwhere(grayIMG[topY] > 0)
-    #         #                 topX = np.average(tmp)
-    #         #                 topLocation = topX, topY
-    #         #                 while len(coordTop_checker) >= smoothingLeng_checker:
-    #         #                     coordTop_checker.pop(0)
-    #         #                 coordTop_checker.append(topLocation)
-    #         #                 topLocation = np.average(coordTop_checker, axis=0)
-    #         #                 erhu_detected = True
-    #         #                 break
-    #     except:
-    #         print("Something is wrong...")
-    #
-    # if erhu_detected == True:
-    #     if int(topLocation[1]) < 50 or knee_detected == False:
-    #         return False
-    #     else:
-    #         return True
-    # else:
-    #     return False
-
 def new_erhu_segment(frame):
     img = frame.copy()
     grayIMG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -977,24 +907,24 @@ def new_bow_segment(frame):
     return img, bow_line
 
 
-def main_predict(video_input):
+def main_predict(video_input, isFlip = True):
     start_now = datetime.now()
     start_time = start_now.strftime("%H:%M:%S")
     curr_date = str(start_now.day) + '-' + str(start_now.month) + '-' + str(start_now.year)
     curr_time = str(start_now.strftime('%H%M%S'))
 
     # model_left_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftHand/model-007.h5'))
-    # model_left_arm = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_leftArm/model-004.h5'))
-    # model_right_hand = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightHand/model-017.h5'))
-    # model_right_arm = load_model(os.path.join(thisfolder, 'model/dataset_ver5/final/models_rightArm/model-016.h5'))
-    model_left = load_model('/home/minelab/dev/erhu-project/classifier/model/PredictionModel/model_left/model-008.h5')
-    model_right = load_model('/home/minelab/dev/erhu-project/classifier/model/PredictionModel/model_right/model-014.h5')
-    model_left.summary()
-    model_right.summary()
+    model_left_arm = load_model(os.path.join(thisfolder, 'model/PredictionModel/model_left_arm/model-009.h5'))
+    model_right_hand = load_model(os.path.join(thisfolder, 'model/PredictionModel/model_right_hand/model-018.h5'))
+    model_right_arm = load_model(os.path.join(thisfolder, 'model/PredictionModel/model_right_arm/model-015.h5'))
+    # model_left = load_model('/home/minelab/dev/erhu-project/classifier/model/PredictionModel/model_left/model-008.h5')
+    # model_right = load_model('/home/minelab/dev/erhu-project/classifier/model/PredictionModel/model_right/model-014.h5')
+    # model_left.summary()
+    # model_right.summary()
     # model_left_hand.summary()
-    # model_left_arm.summary()
-    # model_right_hand.summary()
-    # model_right_arm.summary()
+    model_left_arm.summary()
+    model_right_hand.summary()
+    model_right_arm.summary()
     # print('TEST')
     # exit()
     result_folder = os.path.join(os.path.abspath(__file__ + "/../../"), "predict")
@@ -1100,11 +1030,10 @@ def main_predict(video_input):
             success, frame = videoInput.read()
             if not success:
                 break
-            # if first_frame == True:
-            #     if check_player_postition(frame) == False:
-            #        return False
-            #     first_frame = False
-            #     # exit()
+            # if isFlip == True:
+            # frame = cv2.flip(frame, 1)
+            # cv2.imshow('flip', cv2.flip(frame.copy(), 1))
+            # cv2.waitKey(10)
             try:
                 # droped_img = drop_backgroud(frame.copy())
                 seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
@@ -1141,6 +1070,8 @@ def main_predict(video_input):
                                 #     x_test_video_qinZhen.append(mask)
                             elif label == 'body':
                                 # counter_body += 1
+                                # cv2.imshow('flip', image)
+                                # cv2.waitKey(1000)
                                 image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
                                 halfBodyPart, leftArmPartOri, rightArmPartOri, leftHandPartOri, \
                                 rightHandPartOri, left_arm_point, right_arm_point, right_hand_point, head_coordinate, body_coordinate, \
@@ -1253,17 +1184,18 @@ def main_predict(video_input):
             # prediction_leftHand = model_left_hand.predict(test_x_leftHand)
             # prediction_rightArm = model_right_arm.predict(test_x_rightArm)
             # prediction_rightHand = model_right_hand.predict(test_x_rightHand)
-            prediction_leftArm = model_left.predict(test_x_leftArm)
+            prediction_leftArm = model_left_arm.predict(test_x_leftArm)
             # prediction_leftHand = model_left.predict(test_x_leftHand)
-            prediction_rightArm = model_right.predict(test_x_rightArm)
-            # prediction_rightHand = model_right.predict(test_x_rightHand)
+            prediction_rightArm = model_right_arm.predict(test_x_rightArm)
+            prediction_rightHand = model_right_hand.predict(test_x_rightHand)
 
             print(prediction_rightArm)
-            # print(prediction_rightHand)
+            print(prediction_rightHand)
             print(prediction_leftArm)
             # print(prediction_leftHand)
-            prediction_right_max = np.argmax(prediction_rightArm[0])
+            prediction_right_arm_max = np.argmax(prediction_rightArm[0])
             prediction_left_max = np.argmax(prediction_leftArm[0])
+            prediction_right_hand_max = np.argmax(prediction_rightHand[0])
             rightArm_E31 = 0
             rightArm_E32 = 0
             rightArm_E33 = 0
@@ -1273,16 +1205,17 @@ def main_predict(video_input):
             leftArm_E22 = 0
             leftArm_E23 = 0
 
-            if prediction_right_max == 0:
-                rightArm_E31 = round((prediction_rightArm[0][0]), 2)
-            elif prediction_right_max == 1:
-                rightArm_E32 = round((prediction_rightArm[0][1]), 2)
-            elif prediction_right_max == 2:
-                rightArm_E33 = round((prediction_rightArm[0][2]), 2)
-            elif prediction_right_max == 3:
-                rightArm_E34 = round((prediction_rightArm[0][3]), 2)
+            if prediction_right_hand_max == 0:
+                rightArm_E31 = round((prediction_rightHand[0][0]), 2)
+            elif prediction_right_hand_max == 1:
+                rightArm_E32 = round((prediction_rightHand[0][1]), 2)
+            elif prediction_right_hand_max == 2:
+                rightArm_E33 = round((prediction_rightHand[0][2]), 2)
+
+            if prediction_right_arm_max == 0:
+                rightArm_E34 = round((prediction_rightArm[0][0]), 2)
             else:
-                rightArm_E35 = round((prediction_rightArm[0][4]), 2)
+                rightArm_E35 = round((prediction_rightArm[0][1]), 2)
 
             if prediction_left_max == 0:
                 leftArm_E21 = round((prediction_leftArm[0][0]), 2)
