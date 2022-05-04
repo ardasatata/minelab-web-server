@@ -350,7 +350,7 @@ export function AutoRecord(props: Props) {
                       }
                     >
                       <BowIcon className={'w-12 h-12 mr-4'} />
-                      <div className={'whitespace-nowrap'}>{`上的二胡`}</div>
+                      <div className={'whitespace-nowrap'}>{`二胡琴頭`}</div>
                     </div>
                     <div
                       className={
