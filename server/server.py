@@ -22,6 +22,8 @@ from util import readb64
 
 from natsort import os_sorted
 
+import shutil
+
 # import random
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
@@ -52,6 +54,7 @@ PROCESSED_DIR = r"./processed/"
 UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/upload/"
 PREDICT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/predict/"
 PROCESSED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/processed/"
+DELETED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/deleted/"
 
 
 class Worker(object):
@@ -168,6 +171,43 @@ def send_video():
         print("error uploading file")
         return value
     return value
+
+
+@app.route('/delete', methods=['GET'])
+def delete_original():
+    filename = request.args.get('filename')
+    file_path = UPLOAD_DIR_SEND_FILE + filename
+    deleted_file_path = DELETED_DIR_SEND_FILE + filename
+    print('deleting...', file_path)
+
+    if isfile(file_path):
+        try:
+            shutil.move(file_path, deleted_file_path)
+        except PermissionError:
+            print('error delete_original')
+            shutil.os.system('sudo chown $USER "{}"'.format(file_path))
+            # try again
+            try:
+                shutil.move(file_path, deleted_file_path)
+            except:
+                print('Giving up on'.format(file_path))
+
+        value = {
+            "ok": True,
+            "filename": filename,
+            "message": 'File deleted!'
+        }
+        print('OK Deleted')
+        return value
+    else:
+        value = {
+            "ok": False,
+            "filename": filename,
+            "message": 'File not found!'
+        }
+        print('Error Deleted')
+        print('File not found!')
+        return value
 
 
 @app.route('/download-original', methods=['GET'])
