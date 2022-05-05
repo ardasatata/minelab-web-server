@@ -43,11 +43,15 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # our global worker
 workerObject = None
+
+# Directory List
 PREDICTION_DIR = r"./predict/"
 UPLOAD_DIR = r"./upload/"
+PROCESSED_DIR = r"./processed/"
 
 UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/upload/"
 PREDICT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/predict/"
+PROCESSED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/processed/"
 
 
 class Worker(object):
@@ -120,7 +124,6 @@ class Worker(object):
         self.switch = False
 
 
-# Getting arguments from a POST form
 @app.route("/send-video", methods=['POST'])
 @cross_origin()
 def send_video():
@@ -128,18 +131,15 @@ def send_video():
     print('received..', video.filename)
 
     now = datetime.now()  # current date and time
-
     date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
-    # date_time = now.strftime("%d_%b_%Y_%A(%H:%M:%S)")
-    print("date and time:", date_time)
 
-    original_filename = video.filename[:-4]
+    # Video Metadata
+    filename = f"{date_time}.webm"
+    processed_filename = f"{date_time}.mp4"
 
-    # video.filename = f"{original_filename}__({date_time}).mp4"
-    video.filename = f"{date_time}.mp4"
+    video.filename = filename
 
     # Saved Video Path
-    # filename = UPLOAD_DIR + video.filename
     filename = video.filename
 
     value = {
@@ -151,15 +151,14 @@ def send_video():
     video.save(UPLOAD_DIR + filename)
 
     try:
-        # # run checker sub-process
-        # print("chekcing...", filename)
-        # subprocess.run(['python', './classifier/checker.py', UPLOAD_DIR + filename])
+        # run classifier & blurring sub-process
+        print("blurring...", filename)
+        subprocess.Popen(
+            ['python', './server/FaceMosaicMediaPipe.py', UPLOAD_DIR + filename, PROCESSED_DIR + processed_filename])
 
-        # run classifier sub-process
         print("processing...", filename)
         subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename])
-        # subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename], stdout=subprocess.STDOUT,
-        #                  stderr=subprocess.STDOUT)
+
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)
         value = {
@@ -168,14 +167,13 @@ def send_video():
         }
         print("error uploading file")
         return value
-
     return value
 
 
 @app.route('/download-original', methods=['GET'])
 def download_original():
     filename = request.args.get('filename')
-    file_path = UPLOAD_DIR_SEND_FILE + filename
+    file_path = PROCESSED_DIR_SEND_FILE + filename
     print('downloading...', file_path)
 
     if isfile(file_path):
@@ -275,6 +273,29 @@ def file_path():
     return jsonify(value)
 
 
+@app.route('/file-list')
+def file_list():
+    # print('getting all predicted files name')
+    # onlyfiles = [f[:-4] for f in os_sorted(listdir(UPLOAD_DIR))]
+
+    list = []
+
+    for f in os_sorted(listdir(UPLOAD_DIR)):
+        list.append({
+            "filename": f,
+            "processed": f"{f[:-5]}.mp4",
+            "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.mp4")) else True,
+        })
+
+    # print(list)
+
+    value = {
+        "ok": True,
+        "filepath": list
+    }
+    return jsonify(value)
+
+
 @socketio.on('connect', namespace='/work')
 def connect():
     """
@@ -315,25 +336,6 @@ def stop_work():
     """
     worker.stop()
     emit("update", {"msg": "worker has been stoppped"})
-
-
-# @app.route("/send-video", methods=['POST'])
-# def send_video():
-#     video = request.files.get('video')
-#
-#     now = datetime.now()  # current date and time
-#
-#     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
-#     print("date and time:", date_time)
-#
-#     video.filename = date_time + ".mp4"
-#
-#     # Saved Video Path
-#     filename = PREDICTION_DIR + video.filename
-#
-#     print(filename)
-#
-#     video.save(filename)
 
 
 if __name__ == "__main__":

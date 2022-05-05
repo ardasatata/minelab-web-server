@@ -936,7 +936,7 @@ def main_predict(video_input, isFlip = True):
     # video_path      = 'video/5th_datasets_10 Apr 2022/0409 Separate each group/E23.mp4'
     video_path = video_input
     filename = video_path.split("/")[-1]
-    filename = filename[:-4]
+    filename = filename[:-5]
     # print(video_path)
     # path = os.path.join(os.path.abspath(__file__ + "/../../"), "upload", video_path)
 
@@ -949,7 +949,8 @@ def main_predict(video_input, isFlip = True):
     properties = getVideoProperties(videoInput)
     # videoSegmentation = {}
     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-    vid_fps = properties['FPS']
+    # vid_fps = properties['FPS']
+    vid_fps = 30.0
     vid_width = properties['Width']
     vid_height = properties['Height']
     videoOut_1 = cv2.VideoWriter(os.path.join(result_folder, filename + ".mp4"), fourcc,
