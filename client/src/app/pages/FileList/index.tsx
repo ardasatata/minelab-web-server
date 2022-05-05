@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  *
  * RecordVideo
@@ -13,7 +14,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from '../../components/Link';
 import { NavBar } from '../../components/NavBar';
-import { LoadingOutlined } from '@ant-design/icons';
+import { CheckOutlined, LoadingOutlined } from '@ant-design/icons';
+import DataTable from 'react-data-table-component';
+
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
 interface Props {}
 
@@ -24,20 +29,58 @@ export function FileList(props: Props) {
 
   const [datalist, setDatalist] = useState([]);
 
+  const getFileList = async () => {
+    setIsloading(true);
+
+    const data = await axios.get('https://140.115.51.243/api/file-list');
+
+    console.log(data.data.filepath);
+    setDatalist(data.data.filepath);
+
+    setIsloading(false);
+  };
+
+  const reset = async () => {
+    window.location.reload();
+  };
+
   useEffect(() => {
-    const getFileList = async () => {
-      setIsloading(true);
-
-      const data = await axios.get('https://140.115.51.243/api/predict-list');
-
-      console.log(data.data.filepath);
-      setDatalist(data.data.filepath);
-
-      console.log(data);
-      setIsloading(false);
-    };
     getFileList();
   }, []);
+
+  const requestDelete = async filename => {
+    setIsloading(true);
+
+    const data = await axios
+      .get(`https://140.115.51.243/api/delete?filename=${filename}`)
+      .then(() => reset());
+
+    console.log(data);
+
+    if (data.ok) {
+      alert.success('File Deleted Successfully!');
+    } else {
+      alert.error('Error deleting!, Please try again..');
+    }
+  };
+
+  const deleteFile = filename => {
+    confirmAlert({
+      title: 'Warning!',
+      message: `Are you sure to delete ${filename} ?`,
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => requestDelete(filename),
+          className: 'bg-red-500',
+        },
+        {
+          label: 'No',
+          onClick: () => null,
+        },
+      ],
+    });
+  };
 
   return (
     <>
@@ -49,7 +92,7 @@ export function FileList(props: Props) {
         />
       </Helmet>
       <NavBar />
-      <PageWrapperMain>
+      <PageWrapperMain className={'w-full'}>
         {isLoading ? (
           <div
             className={
@@ -60,50 +103,100 @@ export function FileList(props: Props) {
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black justify-center'}>
-            <div className="flex flex-col max-h-screen mt-8">
+            <div className="flex flex-col max-h-screen mt-8 w-full">
               <div className="text-center text-5xl font-bold font-sans text-white">
                 File List
               </div>
               <div className="text-center text-md font-light font-sans text-red-500 mb-4">
-                *Some files might take some time to predict, Thanks for your
-                patience & understanding!
+                *Some files might take some time to predict, Please refresh the
+                page after a few minutes!
               </div>
               <div className="flex flex-col bg-white w-full overflow-y-auto">
-                {datalist.map((item, index) => {
-                  return (
-                    <div className="flex flex-row text-orange-500 bg-blue-100 odd:bg-blue-200 text-sm font-light hover:bg-blue-500 hover:text-white">
-                      <div className={'flex flex-1 px-4 py-1'}>{item}</div>
-                      <a
-                        className={
-                          'flex h-full items-center justify-center mr-2 font-black cursor-pointer'
-                        }
-                        href={`https://140.115.51.243/api/download-original?filename=${item}.mp4`}
-                      >
-                        🗄️ Download
-                      </a>
-                      {/*<a*/}
-                      {/*  className={*/}
-                      {/*    'flex h-full items-center justify-center mr-2 font-black cursor-pointer'*/}
-                      {/*  }*/}
-                      {/*  href={`https://140.115.51.243/api/download-predict?filename=${item}.mp4`}*/}
-                      {/*>*/}
-                      {/*  ✨ Analyzed*/}
-                      {/*</a>*/}
-                      <Link
-                        to={process.env.PUBLIC_URL + `/playback?title=${item}`}
-                        className={'text-blue-500'}
-                      >
-                        <div
-                          className={
-                            'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
-                          }
-                        >
-                          ▶️ Analyze
-                        </div>
-                      </Link>
-                    </div>
-                  );
-                })}
+                <div className={'h-full mb-8 w-full px-8'}>
+                  <DataTable
+                    pagination={true}
+                    paginationPerPage={10}
+                    columns={[
+                      {
+                        name: 'File Name',
+                        selector: row => row.filename,
+                        style: {
+                          fontWeight: 'bold',
+                        },
+                        sortable: true,
+                        // maxWidth: '360px',
+                      },
+                      {
+                        name: 'Status',
+                        selector: row =>
+                          row.isProcessing ? (
+                            <LoadingOutlined />
+                          ) : (
+                            <CheckOutlined />
+                          ),
+                        maxWidth: '24px',
+                      },
+                      {
+                        name: 'Actions',
+                        right: true,
+                        selector: row => (
+                          <div className="flex flex-row text-sm font-light items-center">
+                            <a
+                              className={
+                                'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+                              }
+                              href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
+                            >
+                              {'🗄️ \u00A0 Download Original'}
+                            </a>
+                            {row.isProcessing ? (
+                              <></>
+                            ) : (
+                              <a
+                                className={
+                                  'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+                                }
+                                href={`https://140.115.51.243/api/download-predict?filename=${row.filename}.mp4`}
+                              >
+                                {'✨ \u00A0 Download Analyzed'}
+                              </a>
+                            )}
+                            {row.isProcessing ? (
+                              <></>
+                            ) : (
+                              <Link
+                                to={
+                                  process.env.PUBLIC_URL +
+                                  `/playback?title=${row.filename}`
+                                }
+                                className={'text-blue-500'}
+                              >
+                                <div
+                                  className={
+                                    'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
+                                  }
+                                >
+                                  {'▶ \u00A0️ Play'}
+                                </div>
+                              </Link>
+                            )}
+                            <a
+                              className={
+                                'flex h-full items-center justify-center mr-2 font-black cursor-pointer text-red-500 hover:text-blue-500'
+                              }
+                              onClick={() => deleteFile(row.original)}
+                            >
+                              {'🚫 \u00A0 Delete'}
+                            </a>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    data={datalist}
+                    customStyles={customStyles}
+                    dense={false}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -145,3 +238,88 @@ export const PageWrapperMain = styled.div`
   box-sizing: content-box;
   height: calc(100vh - ${StyleConstants.NAV_BAR_HEIGHT});
 `;
+
+const columns = [
+  {
+    name: 'File Name',
+    selector: row => row.filename,
+    style: {
+      fontWeight: 'bold',
+    },
+    sortable: true,
+    // maxWidth: '360px',
+  },
+  {
+    name: 'Status',
+    selector: row =>
+      row.isProcessing ? <LoadingOutlined className={''} /> : <CheckOutlined />,
+    maxWidth: '24px',
+  },
+  {
+    name: 'Actions',
+    right: true,
+    selector: row => (
+      <div className="flex flex-row text-sm font-light items-center">
+        <a
+          className={
+            'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+          }
+          href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
+        >
+          {'🗄️ \u00A0 Download Original'}
+        </a>
+        {row.isProcessing ? (
+          <></>
+        ) : (
+          <a
+            className={
+              'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+            }
+            href={`https://140.115.51.243/api/download-predict?filename=${row.filename}.mp4`}
+          >
+            {'✨ \u00A0 Download Analyzed'}
+          </a>
+        )}
+        {row.isProcessing ? (
+          <></>
+        ) : (
+          <Link
+            to={process.env.PUBLIC_URL + `/playback?title=${row.filename}`}
+            className={'text-blue-500'}
+          >
+            <div
+              className={
+                'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
+              }
+            >
+              {'▶ \u00A0️ Play'}
+            </div>
+          </Link>
+        )}
+        <a
+          className={
+            'flex h-full items-center justify-center mr-2 font-black cursor-pointer text-red-500 hover:text-blue-500'
+          }
+          onClick={() => null}
+        >
+          {'🚫 \u00A0 Delete'}
+        </a>
+      </div>
+    ),
+  },
+];
+
+const customStyles = {
+  rows: {
+    style: {
+      height: '24px', // override the row height
+    },
+  },
+  headCells: {
+    style: {
+      paddingLeft: '8px', // override the cell padding for head cells
+      paddingRight: '8px',
+      fontWeight: 'bold',
+    },
+  },
+};
