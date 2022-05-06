@@ -79,9 +79,9 @@ class Worker(object):
             file = file['arr_0']
             #
             # video = skvideo.io.vread(f"{PREDICTION_DIR}{filename}.mp4")
-            print(f"{PREDICTION_DIR}{filename}.mp4")
+            print(f"{PREDICTION_DIR}{filename}_blur.mp4")
 
-            vid = cv2.VideoCapture(f"{PREDICTION_DIR}{filename}.mp4")
+            vid = cv2.VideoCapture(f"{PREDICTION_DIR}{filename}_blur.mp4")
 
             video = []
             check = True
@@ -139,6 +139,7 @@ def send_video():
     # Video Metadata
     filename = f"{date_time}.webm"
     processed_filename = f"{date_time}.mp4"
+    processed_blurred = f"{date_time}_blur.mp4"
 
     video.filename = filename
 
@@ -160,7 +161,7 @@ def send_video():
             ['python', './server/FaceMosaicMediaPipe.py', UPLOAD_DIR + filename, PROCESSED_DIR + processed_filename])
 
         print("processing...", filename)
-        subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename])
+        subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
 
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)
