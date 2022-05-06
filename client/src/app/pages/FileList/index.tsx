@@ -104,14 +104,7 @@ export function FileList(props: Props) {
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black justify-center'}>
-            <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl">
-              <div className="text-center text-5xl font-bold font-sans text-white">
-                File List
-              </div>
-              <div className="text-center text-md font-light font-sans text-red-500 mb-4">
-                *Some files might take some time to predict, Please refresh the
-                page after a few minutes!
-              </div>
+            <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl mt-20">
               <DataTable
                 pagination={true}
                 paginationPerPage={10}

@@ -377,8 +377,12 @@ export function AutoRecord(props: Props) {
           >
             <LoadingOutlined className={'mb-12'} />
             {isRefreshLoading ? (
-              <div className={'text-7xl'}>
-                Please wait... ⌛, we're processing your video 🔨
+              <div className={'text-6xl max-w-4xl text-center'}>
+                <div>Please wait... ⌛, we're processing your video 🔨</div>
+                <h1 className={'text-4xl mb-12 text-center text-teal-300 mt-8'}>
+                  *We appreciate your contribution to allow us for using your
+                  video file for research purposes.
+                </h1>
               </div>
             ) : (
               <div className={'text-7xl'}>Please wait... ⌛</div>
