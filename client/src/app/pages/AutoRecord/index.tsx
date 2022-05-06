@@ -9,7 +9,7 @@ import { StyleConstants } from '../../../styles/StyleConstants';
 import { PageWrapper } from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
 import { NavBar } from '../../components/NavBar';
 import Webcam from 'react-webcam';
@@ -37,7 +37,8 @@ const configs = {
 interface Props {}
 
 const FPS = 1;
-// const COUNTER_LIMIT = 2;
+const COUNTER_LIMIT = 3;
+const IS_DEBUG = true;
 
 export function AutoRecord(props: Props) {
   const webcamRef = React.useRef(null);
@@ -67,15 +68,16 @@ export function AutoRecord(props: Props) {
 
   const closeOverlay = () => setOverlay(false);
 
-  // const [recordCounter, setRecordCounter] = useState<number>(0);
-  //
-  // const incrementCounter = () => {
-  //   setRecordCounter(recordCounter + 1);
-  // };
-  //
-  // const resetCounter = () => {
-  //   setRecordCounter(0);
-  // };
+  const [recordCounter, setRecordCounter] = useState<number>(0);
+
+  const incrementCounter = useCallback(
+    () => setRecordCounter(recordCounter + 1),
+    [recordCounter],
+  );
+
+  const resetCounter = () => {
+    setRecordCounter(0);
+  };
 
   const handleStartCaptureClick = React.useCallback(() => {
     setCapturing(true);
@@ -139,10 +141,28 @@ export function AutoRecord(props: Props) {
   }, [webcamRef, socket]);
 
   useEffect(() => {
-    setInterval(() => {
-      capture();
-    }, 1000 / FPS);
+    const id = setInterval(() => {
+      setRecordCounter(prev => prev + 1);
+    }, 1000);
+    return () => {
+      clearInterval(id);
+    };
   }, []);
+
+  useEffect(() => {
+    console.log(recordCounter);
+    // if (recordCounter === COUNTER_LIMIT) {
+    //   resetCounter();
+    // }
+
+    if (!isLoading && !isRefreshLoading) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        // console.log(imageSrc);
+      }
+      setWebcamFrame(imageSrc);
+    }
+  }, [isLoading, recordCounter, isRefreshLoading]);
 
   useEffect(() => {
     setOverlay(true);
@@ -212,22 +232,41 @@ export function AutoRecord(props: Props) {
 
       if (obj.data.ok) {
         setIsFrameOk(true);
-        // incrementCounter();
-        if (!capturing) {
-          handleStartCaptureClick();
-        }
+        // if (!capturing) {
+        //   handleStartCaptureClick();
+        // }
       } else {
         setIsFrameOk(false);
-        if (capturing) {
-          handleStopCaptureClick();
-        }
+        // if (capturing) {
+        //   handleStopCaptureClick();
+        // }
       }
 
-      // console.log(obj);
+      console.log(obj);
     });
 
     return () => newSocket.close();
   }, [capturing, handleStartCaptureClick, handleStopCaptureClick, setSocket]);
+
+  useEffect(() => {
+    console.log(isFrameOk);
+    console.log(capturing);
+    if (isFrameOk && !capturing && recordCounter === 2) {
+      handleStartCaptureClick();
+    } else if (!isFrameOk && capturing && recordCounter === 2) {
+      handleStopCaptureClick();
+    }
+  }, [
+    capturing,
+    handleStartCaptureClick,
+    handleStopCaptureClick,
+    isFrameOk,
+    recordCounter,
+  ]);
+
+  useEffect(() => {
+    resetCounter();
+  }, [isFrameOk]);
 
   function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -270,15 +309,8 @@ export function AutoRecord(props: Props) {
   useEffect(() => {
     if (webcamFrame) {
       socket.emit('webcam-stream', webcamFrame);
-      // console.log(webcamFrame);
-      // console.log(socket);
     }
   }, [socket, setSocket, webcamFrame]);
-
-  const toggleOriginal = () => {
-    setShowOriginal(!showOriginal);
-    alert.success("It's ok now!");
-  };
 
   // @ts-ignore
   return (
@@ -317,6 +349,16 @@ export function AutoRecord(props: Props) {
           className={'pl-8 pt-4 absolute z-10 pr-4 pb-4'}
           style={{ backgroundColor: 'rgba(0,47,105,0.50)' }}
         >
+          {IS_DEBUG ? (
+            <>
+              <h1 className={'text-7xl text-white'}>DEBUG</h1>
+              <h1 className={'text-7xl text-white'}>TIMER : {recordCounter}</h1>
+              <h1 className={'text-7xl text-white'}>
+                POSE STATUS : {isFrameOk.toString()}
+              </h1>
+            </>
+          ) : null}
+
           {capturing ? (
             <div className={'flex flex-row'}>
               <div
@@ -390,53 +432,55 @@ export function AutoRecord(props: Props) {
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black'}>
-            {/*<div*/}
-            {/*  className={*/}
-            {/*    'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'*/}
-            {/*  }*/}
-            {/*  style={{*/}
-            {/*    maxWidth: 480,*/}
-            {/*  }}*/}
-            {/*>*/}
-            {/*  /!*<div className={'flex flex-col'}>*!/*/}
-            {/*  /!*  {capturing ? (*!/*/}
-            {/*  /!*    <button onClick={handleStopCaptureClick}>Stop Capture</button>*!/*/}
-            {/*  /!*  ) : (*!/*/}
-            {/*  /!*    <button onClick={handleStartCaptureClick}>*!/*/}
-            {/*  /!*      Start Capture*!/*/}
-            {/*  /!*    </button>*!/*/}
-            {/*  /!*  )}*!/*/}
-            {/*  /!*  /!*{recordedChunks.length > 0 && (*!/*!/*/}
-            {/*  /!*  /!*  <button onClick={handleDownload}>Download</button>*!/*!/*/}
-            {/*  /!*  /!*)}*!/*!/*/}
-            {/*  /!*</div>*!/*/}
+            {IS_DEBUG ? (
+              <div
+                className={
+                  'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'
+                }
+                style={{
+                  maxWidth: 480,
+                }}
+              >
+                {/*<div className={'flex flex-col'}>*/}
+                {/*  {capturing ? (*/}
+                {/*    <button onClick={handleStopCaptureClick}>Stop Capture</button>*/}
+                {/*  ) : (*/}
+                {/*    <button onClick={handleStartCaptureClick}>*/}
+                {/*      Start Capture*/}
+                {/*    </button>*/}
+                {/*  )}*/}
+                {/*  /!*{recordedChunks.length > 0 && (*!/*/}
+                {/*  /!*  <button onClick={handleDownload}>Download</button>*!/*/}
+                {/*  /!*)}*!/*/}
+                {/*</div>*/}
 
-            {/*  <h1*/}
-            {/*    className={*/}
-            {/*      data.ok*/}
-            {/*        ? 'text-3xl mb-2 text-green-200'*/}
-            {/*        : 'text-3xl mb-2 text-red-500'*/}
-            {/*    }*/}
-            {/*  >*/}
-            {/*    {data.message}*/}
-            {/*  </h1>*/}
-            {/*  {data ? (*/}
-            {/*    <img*/}
-            {/*      src={img}*/}
-            {/*      alt={'main-stream'}*/}
-            {/*      className={*/}
-            {/*        data.ok*/}
-            {/*          ? 'object-contain border-4 border-green-500'*/}
-            {/*          : 'object-contain border-4 border-red-500'*/}
-            {/*      }*/}
-            {/*    />*/}
-            {/*  ) : (*/}
-            {/*    <></>*/}
-            {/*  )}*/}
-            {/*  <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>*/}
-            {/*    Pose Checker 🔍*/}
-            {/*  </p>*/}
-            {/*</div>*/}
+                <h1
+                  className={
+                    data.ok
+                      ? 'text-3xl mb-2 text-green-200'
+                      : 'text-3xl mb-2 text-red-500'
+                  }
+                >
+                  {data.message}
+                </h1>
+                {data ? (
+                  <img
+                    src={img}
+                    alt={'main-stream'}
+                    className={
+                      data.ok
+                        ? 'object-contain border-4 border-green-500'
+                        : 'object-contain border-4 border-red-500'
+                    }
+                  />
+                ) : (
+                  <></>
+                )}
+                <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>
+                  Pose Checker 🔍 (DEBUG)
+                </p>
+              </div>
+            ) : null}
 
             <div
               className={
