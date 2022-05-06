@@ -104,7 +104,7 @@ export function FileList(props: Props) {
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black justify-center'}>
-            <div className="flex flex-col max-h-screen mt-8 w-full">
+            <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl">
               <div className="text-center text-5xl font-bold font-sans text-white">
                 File List
               </div>
@@ -112,94 +112,93 @@ export function FileList(props: Props) {
                 *Some files might take some time to predict, Please refresh the
                 page after a few minutes!
               </div>
-              <div className="flex flex-col bg-white w-full overflow-y-auto">
-                <div className={'h-full mb-8 w-full px-8'}>
-                  <DataTable
-                    pagination={true}
-                    paginationPerPage={10}
-                    columns={[
-                      {
-                        name: 'File Name',
-                        selector: row => row.filename,
-                        style: {
-                          fontWeight: 'bold',
-                        },
-                        sortable: true,
-                        minWidth: '120px',
-                        // maxWidth: '360px',
-                      },
-                      {
-                        width: '160px',
-                        name: 'Analysis Completed',
-                        selector: row =>
-                          row.isProcessing ? (
-                            <LoadingOutlined />
-                          ) : (
-                            <CheckOutlined />
-                          ),
-                      },
-                      {
-                        width: '560px',
-                        name: 'Actions',
-                        selector: row => (
-                          <div className="flex flex-row text-sm font-light items-center">
-                            <a
+              <DataTable
+                pagination={true}
+                paginationPerPage={10}
+                columns={[
+                  {
+                    name: 'File Name',
+                    selector: row => row.filename,
+                    style: {
+                      fontWeight: 'bold',
+                    },
+                    sortable: true,
+                    maxWidth: '24em',
+                  },
+                  {
+                    right: true,
+                    name: 'Analysis Completed',
+                    cell: row => (
+                      <div>
+                        {row.isProcessing ? (
+                          <LoadingOutlined />
+                        ) : (
+                          <CheckOutlined />
+                        )}
+                      </div>
+                    ),
+                    width: '12em',
+                  },
+                  {
+                    right: true,
+                    name: 'Download or Play Analyzed Video When Completed',
+                    minWidth: '32em',
+                    cell: row => (
+                      <div className="flex flex-row text-sm font-light items-center">
+                        <a
+                          className={
+                            'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+                          }
+                          href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
+                        >
+                          {'🗄️ \u00A0 Download Original'}
+                        </a>
+                        {row.isProcessing ? (
+                          <></>
+                        ) : (
+                          <a
+                            className={
+                              'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+                            }
+                            href={`https://140.115.51.243/api/download-predict?filename=${row.filename}.mp4`}
+                          >
+                            {'✨ \u00A0 Download Analyzed'}
+                          </a>
+                        )}
+                        {row.isProcessing ? (
+                          <></>
+                        ) : (
+                          <Link
+                            to={
+                              process.env.PUBLIC_URL +
+                              `/playback?title=${row.filename}`
+                            }
+                            className={'text-blue-500'}
+                          >
+                            <div
                               className={
-                                'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
+                                'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
                               }
-                              href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
                             >
-                              {'🗄️ \u00A0 Download Original'}
-                            </a>
-                            {row.isProcessing ? (
-                              <></>
-                            ) : (
-                              <a
-                                className={
-                                  'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
-                                }
-                                href={`https://140.115.51.243/api/download-predict?filename=${row.filename}.mp4`}
-                              >
-                                {'✨ \u00A0 Download Analyzed'}
-                              </a>
-                            )}
-                            {row.isProcessing ? (
-                              <></>
-                            ) : (
-                              <Link
-                                to={
-                                  process.env.PUBLIC_URL +
-                                  `/playback?title=${row.filename}`
-                                }
-                                className={'text-blue-500'}
-                              >
-                                <div
-                                  className={
-                                    'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
-                                  }
-                                >
-                                  {'▶ \u00A0️ Play'}
-                                </div>
-                              </Link>
-                            )}
-                            <a
-                              className={
-                                'flex h-full items-center justify-center mr-2 font-black cursor-pointer text-red-500 hover:text-blue-500'
-                              }
-                              onClick={() => deleteFile(row.original)}
-                            >
-                              {'🚫 \u00A0 Delete'}
-                            </a>
-                          </div>
-                        ),
-                      },
-                    ]}
-                    data={datalist}
-                    customStyles={customStyles}
-                    dense={false}
-                  />
-                </div>
-              </div>
+                              {'▶ \u00A0️ Play'}
+                            </div>
+                          </Link>
+                        )}
+                        <a
+                          className={
+                            'flex h-full items-center justify-center mr-2 font-black cursor-pointer text-red-500 hover:text-blue-500'
+                          }
+                          onClick={() => deleteFile(row.original)}
+                        >
+                          {'🚫 \u00A0 Delete'}
+                        </a>
+                      </div>
+                    ),
+                  },
+                ]}
+                data={datalist}
+                customStyles={customStyles}
+              />
             </div>
           </div>
         )}
@@ -241,87 +240,22 @@ export const PageWrapperMain = styled.div`
   height: calc(100vh - ${StyleConstants.NAV_BAR_HEIGHT});
 `;
 
-const columns = [
-  {
-    name: 'File Name',
-    selector: row => row.filename,
-    style: {
-      fontWeight: 'bold',
-    },
-    sortable: true,
-    // maxWidth: '360px',
-  },
-  {
-    name: 'Status',
-    selector: row =>
-      row.isProcessing ? <LoadingOutlined className={''} /> : <CheckOutlined />,
-    maxWidth: '24px',
-  },
-  {
-    name: 'Actions',
-    right: true,
-    selector: row => (
-      <div className="flex flex-row text-sm font-light items-center">
-        <a
-          className={
-            'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
-          }
-          href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
-        >
-          {'🗄️ \u00A0 Download Original'}
-        </a>
-        {row.isProcessing ? (
-          <></>
-        ) : (
-          <a
-            className={
-              'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
-            }
-            href={`https://140.115.51.243/api/download-predict?filename=${row.filename}.mp4`}
-          >
-            {'✨ \u00A0 Download Analyzed'}
-          </a>
-        )}
-        {row.isProcessing ? (
-          <></>
-        ) : (
-          <Link
-            to={process.env.PUBLIC_URL + `/playback?title=${row.filename}`}
-            className={'text-blue-500'}
-          >
-            <div
-              className={
-                'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
-              }
-            >
-              {'▶ \u00A0️ Play'}
-            </div>
-          </Link>
-        )}
-        <a
-          className={
-            'flex h-full items-center justify-center mr-2 font-black cursor-pointer text-red-500 hover:text-blue-500'
-          }
-          onClick={() => null}
-        >
-          {'🚫 \u00A0 Delete'}
-        </a>
-      </div>
-    ),
-  },
-];
-
 const customStyles = {
   rows: {
     style: {
-      height: '24px', // override the row height
+      minHeight: '32px', // override the row height
     },
   },
   headCells: {
     style: {
       paddingLeft: '8px', // override the cell padding for head cells
       paddingRight: '8px',
-      fontWeight: 'bold',
+    },
+  },
+  cells: {
+    style: {
+      paddingLeft: '8px', // override the cell padding for data cells
+      paddingRight: '8px',
     },
   },
 };
