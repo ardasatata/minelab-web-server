@@ -6,7 +6,6 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { StyleConstants } from '../../../styles/StyleConstants';
-import { PageWrapper } from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -38,7 +37,7 @@ interface Props {}
 
 const FPS = 1;
 const COUNTER_LIMIT = 3;
-const IS_DEBUG = true;
+const IS_DEBUG = false;
 
 export function AutoRecord(props: Props) {
   const webcamRef = React.useRef(null);
@@ -151,10 +150,6 @@ export function AutoRecord(props: Props) {
 
   useEffect(() => {
     console.log(recordCounter);
-    // if (recordCounter === COUNTER_LIMIT) {
-    //   resetCounter();
-    // }
-
     if (!isLoading && !isRefreshLoading) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
@@ -171,22 +166,6 @@ export function AutoRecord(props: Props) {
       closeOverlay();
     }, 3000);
   }, []);
-
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     if (isFrameOk) {
-  //       alert.success('Position OK! ✅');
-  //     } else {
-  //       alert.error('Check your pose! ☝🏻 ');
-  //     }
-  //   }
-  // }, [
-  //   alert,
-  //   handleStartCaptureClick,
-  //   handleStopCaptureClick,
-  //   isFrameOk,
-  //   isLoading,
-  // ]);
 
   const uploadFile = async (blob, filename) => {
     const headers = {
@@ -256,6 +235,10 @@ export function AutoRecord(props: Props) {
     } else if (!isFrameOk && capturing && recordCounter === 2) {
       handleStopCaptureClick();
     }
+
+    if (recordCounter === COUNTER_LIMIT && !capturing) {
+      resetCounter();
+    }
   }, [
     capturing,
     handleStartCaptureClick,
@@ -267,6 +250,16 @@ export function AutoRecord(props: Props) {
   useEffect(() => {
     resetCounter();
   }, [isFrameOk]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isFrameOk) {
+        alert.success('Position OK! ✅');
+      } else {
+        alert.error('Check your pose! ☝🏻 ');
+      }
+    }
+  }, [isFrameOk, isLoading]);
 
   function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -345,9 +338,11 @@ export function AutoRecord(props: Props) {
           {/*  close modal*/}
           {/*</button>*/}
         </Overlay>
-        <div
-          className={'pl-8 pt-4 absolute z-10 pr-4 pb-4'}
-          style={{ backgroundColor: 'rgba(0,47,105,0.50)' }}
+        <InfoBox
+          className={'pl-4 pt-4 absolute z-10 pr-4 pb-4'}
+          style={{
+            backgroundColor: 'rgba(0,47,105,0.50)',
+          }}
         >
           {IS_DEBUG ? (
             <>
@@ -364,7 +359,7 @@ export function AutoRecord(props: Props) {
               <div
                 className={'bg-red-500 h-8 w-8 rounded-full animate-pulse mr-4'}
               />
-              <h1 className={'text-white text-3xl'}>Recording...</h1>
+              <h1 className={'text-white text-4xl'}>{`Recording...`}</h1>
             </div>
           ) : (
             <div className={'flex flex-col'}>
@@ -409,7 +404,7 @@ export function AutoRecord(props: Props) {
               </h1>
             </div>
           )}
-        </div>
+        </InfoBox>
 
         {isLoading || isRefreshLoading ? (
           <div
@@ -441,18 +436,20 @@ export function AutoRecord(props: Props) {
                   maxWidth: 480,
                 }}
               >
-                {/*<div className={'flex flex-col'}>*/}
-                {/*  {capturing ? (*/}
-                {/*    <button onClick={handleStopCaptureClick}>Stop Capture</button>*/}
-                {/*  ) : (*/}
-                {/*    <button onClick={handleStartCaptureClick}>*/}
-                {/*      Start Capture*/}
-                {/*    </button>*/}
-                {/*  )}*/}
-                {/*  /!*{recordedChunks.length > 0 && (*!/*/}
-                {/*  /!*  <button onClick={handleDownload}>Download</button>*!/*/}
-                {/*  /!*)}*!/*/}
-                {/*</div>*/}
+                <div className={'flex flex-col'}>
+                  {capturing ? (
+                    <button onClick={handleStopCaptureClick}>
+                      Stop Capture
+                    </button>
+                  ) : (
+                    <button onClick={handleStartCaptureClick}>
+                      Start Capture
+                    </button>
+                  )}
+                  {recordedChunks.length > 0 && (
+                    <button onClick={handleDownload}>Download</button>
+                  )}
+                </div>
 
                 <h1
                   className={
@@ -516,16 +513,7 @@ export function AutoRecord(props: Props) {
   );
 }
 
-const Wrapper = styled.header`
-  box-shadow: 0 1px 0 0 ${p => p.theme.borderLight};
-  height: ${StyleConstants.NAV_BAR_HEIGHT};
-  display: flex;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: ${p => p.theme.background};
-  z-index: 2;
-
+const InfoBox = styled.div`
   @supports (backdrop-filter: blur(10px)) {
     backdrop-filter: blur(10px);
     background-color: ${p =>
@@ -533,12 +521,6 @@ const Wrapper = styled.header`
         /rgba?(\(\s*\d+\s*,\s*\d+\s*,\s*\d+)(?:\s*,.+?)?\)/,
         'rgba$1,0.75)',
       )};
-  }
-
-  ${PageWrapper} {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
   }
 `;
 

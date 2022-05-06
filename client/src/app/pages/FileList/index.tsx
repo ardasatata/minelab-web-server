@@ -106,8 +106,9 @@ export function FileList(props: Props) {
           <div className={'flex h-full w-full bg-black justify-center'}>
             <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl mt-20">
               <DataTable
+                paginationRowsPerPageOptions={[10, 25, 50, 100]}
                 pagination={true}
-                paginationPerPage={10}
+                paginationPerPage={50}
                 columns={[
                   {
                     name: 'File Name',
@@ -119,7 +120,7 @@ export function FileList(props: Props) {
                     maxWidth: '24em',
                   },
                   {
-                    right: true,
+                    center: true,
                     name: 'Analysis Completed',
                     cell: row => (
                       <div>
