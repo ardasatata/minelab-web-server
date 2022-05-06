@@ -322,9 +322,10 @@ def file_list():
 
     for f in os_sorted(listdir(UPLOAD_DIR)):
         list.append({
-            "filename": f,
+            "filename": f[:-5],
+            "original": f,
             "processed": f"{f[:-5]}.mp4",
-            "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.mp4")) else True,
+            "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.npz")) else True,
         })
 
     # print(list)
