@@ -23,8 +23,6 @@ import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 interface Props {}
 
 export function FileList(props: Props) {
-  const [file, setFile] = useState<any>(null);
-
   const [isLoading, setIsloading] = useState(false);
 
   const [datalist, setDatalist] = useState([]);
@@ -46,6 +44,9 @@ export function FileList(props: Props) {
 
   useEffect(() => {
     getFileList();
+    setInterval(() => {
+      getFileList();
+    }, 60000);
   }, []);
 
   const requestDelete = async filename => {
@@ -124,21 +125,22 @@ export function FileList(props: Props) {
                           fontWeight: 'bold',
                         },
                         sortable: true,
+                        minWidth: '120px',
                         // maxWidth: '360px',
                       },
                       {
-                        name: 'Status',
+                        width: '160px',
+                        name: 'Analysis Completed',
                         selector: row =>
                           row.isProcessing ? (
                             <LoadingOutlined />
                           ) : (
                             <CheckOutlined />
                           ),
-                        maxWidth: '24px',
                       },
                       {
+                        width: '560px',
                         name: 'Actions',
-                        right: true,
                         selector: row => (
                           <div className="flex flex-row text-sm font-light items-center">
                             <a

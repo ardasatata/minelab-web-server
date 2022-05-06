@@ -299,7 +299,7 @@ export function AutoRecord(props: Props) {
             className={'flex flex-col items-center justify-center bg-black p-4'}
           >
             <h1 className={'text-4xl mb-4 text-amber-50 text-center'}>
-              Be sure to follow this pose, while you're recording!
+              注意錄影時，必須包括下列項目
             </h1>
             <img src={guide} className={'w-full'} />
           </div>
@@ -327,7 +327,7 @@ export function AutoRecord(props: Props) {
           ) : (
             <div className={'flex flex-col'}>
               <h1 className={'text-white text-3xl'}>
-                Please check these positions :
+                {'注意錄影時，必須包括下列項目:'}
               </h1>
               <h1 className={'text-white text-3xl'}>
                 {data.errors ? (
@@ -386,53 +386,53 @@ export function AutoRecord(props: Props) {
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black'}>
-            <div
-              className={
-                'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'
-              }
-              style={{
-                maxWidth: 480,
-              }}
-            >
-              {/*<div className={'flex flex-col'}>*/}
-              {/*  {capturing ? (*/}
-              {/*    <button onClick={handleStopCaptureClick}>Stop Capture</button>*/}
-              {/*  ) : (*/}
-              {/*    <button onClick={handleStartCaptureClick}>*/}
-              {/*      Start Capture*/}
-              {/*    </button>*/}
-              {/*  )}*/}
-              {/*  /!*{recordedChunks.length > 0 && (*!/*/}
-              {/*  /!*  <button onClick={handleDownload}>Download</button>*!/*/}
-              {/*  /!*)}*!/*/}
-              {/*</div>*/}
+            {/*<div*/}
+            {/*  className={*/}
+            {/*    'flex flex-col items-center z-10 mx-auto absolute right-0 bottom-0 pb-4 pr-8'*/}
+            {/*  }*/}
+            {/*  style={{*/}
+            {/*    maxWidth: 480,*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  /!*<div className={'flex flex-col'}>*!/*/}
+            {/*  /!*  {capturing ? (*!/*/}
+            {/*  /!*    <button onClick={handleStopCaptureClick}>Stop Capture</button>*!/*/}
+            {/*  /!*  ) : (*!/*/}
+            {/*  /!*    <button onClick={handleStartCaptureClick}>*!/*/}
+            {/*  /!*      Start Capture*!/*/}
+            {/*  /!*    </button>*!/*/}
+            {/*  /!*  )}*!/*/}
+            {/*  /!*  /!*{recordedChunks.length > 0 && (*!/*!/*/}
+            {/*  /!*  /!*  <button onClick={handleDownload}>Download</button>*!/*!/*/}
+            {/*  /!*  /!*)}*!/*!/*/}
+            {/*  /!*</div>*!/*/}
 
-              <h1
-                className={
-                  data.ok
-                    ? 'text-3xl mb-2 text-green-200'
-                    : 'text-3xl mb-2 text-red-500'
-                }
-              >
-                {data.message}
-              </h1>
-              {data ? (
-                <img
-                  src={img}
-                  alt={'main-stream'}
-                  className={
-                    data.ok
-                      ? 'object-contain border-4 border-green-500'
-                      : 'object-contain border-4 border-red-500'
-                  }
-                />
-              ) : (
-                <></>
-              )}
-              <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>
-                Pose Checker 🔍
-              </p>
-            </div>
+            {/*  <h1*/}
+            {/*    className={*/}
+            {/*      data.ok*/}
+            {/*        ? 'text-3xl mb-2 text-green-200'*/}
+            {/*        : 'text-3xl mb-2 text-red-500'*/}
+            {/*    }*/}
+            {/*  >*/}
+            {/*    {data.message}*/}
+            {/*  </h1>*/}
+            {/*  {data ? (*/}
+            {/*    <img*/}
+            {/*      src={img}*/}
+            {/*      alt={'main-stream'}*/}
+            {/*      className={*/}
+            {/*        data.ok*/}
+            {/*          ? 'object-contain border-4 border-green-500'*/}
+            {/*          : 'object-contain border-4 border-red-500'*/}
+            {/*      }*/}
+            {/*    />*/}
+            {/*  ) : (*/}
+            {/*    <></>*/}
+            {/*  )}*/}
+            {/*  <p className={'mt-2 text-white font-black bg-gray-700 px-1'}>*/}
+            {/*    Pose Checker 🔍*/}
+            {/*  </p>*/}
+            {/*</div>*/}
 
             <div
               className={
