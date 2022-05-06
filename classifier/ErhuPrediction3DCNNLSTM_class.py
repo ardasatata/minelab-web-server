@@ -1625,3 +1625,5 @@ def main_predict(video_input, isFlip = True):
     end_time = end_now.strftime("%H:%M:%S")
     print("Start Time =", start_time)
     print("End Time =", end_time)
+
+    return os.path.join(result_folder, filename + ".mp4")

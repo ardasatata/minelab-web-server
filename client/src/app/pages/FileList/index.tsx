@@ -154,7 +154,7 @@ export function FileList(props: Props) {
                             className={
                               'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
                             }
-                            href={`https://140.115.51.243/api/download-predict?filename=${row.filename}.mp4`}
+                            href={`https://140.115.51.243/api/download-predict?filename=${row.filename}_blur.mp4`}
                           >
                             {'✨ \u00A0 Download Analyzed'}
                           </a>
