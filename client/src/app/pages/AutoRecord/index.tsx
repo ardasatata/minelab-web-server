@@ -228,24 +228,29 @@ export function AutoRecord(props: Props) {
   }, [capturing, handleStartCaptureClick, handleStopCaptureClick, setSocket]);
 
   useEffect(() => {
-    console.log(isFrameOk);
-    console.log(capturing);
-    if (isFrameOk && !capturing && recordCounter === 2) {
-      handleStartCaptureClick();
-    } else if (!isFrameOk && capturing && recordCounter === 2) {
-      handleStopCaptureClick();
-    }
-
     if (recordCounter === COUNTER_LIMIT && !capturing) {
       resetCounter();
     }
-  }, [
-    capturing,
-    handleStartCaptureClick,
-    handleStopCaptureClick,
-    isFrameOk,
-    recordCounter,
-  ]);
+    console.log(isFrameOk);
+    console.log(capturing);
+    if (
+      isFrameOk &&
+      !capturing &&
+      recordCounter === 2 &&
+      !isLoading &&
+      !isRefreshLoading
+    ) {
+      handleStartCaptureClick();
+    } else if (
+      !isFrameOk &&
+      capturing &&
+      recordCounter === 2 &&
+      !isLoading &&
+      !isRefreshLoading
+    ) {
+      handleStopCaptureClick();
+    }
+  }, [capturing, isFrameOk, recordCounter]);
 
   useEffect(() => {
     resetCounter();
