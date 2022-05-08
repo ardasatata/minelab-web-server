@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from '../../components/Link';
 import { NavBar } from '../../components/NavBar';
-import { CheckOutlined, LoadingOutlined } from '@ant-design/icons';
+import {CheckOutlined, LoadingOutlined} from '@ant-design/icons';
 import DataTable from 'react-data-table-component';
 
 import { confirmAlert } from 'react-confirm-alert'; // Import
@@ -106,9 +106,9 @@ export function FileList(props: Props) {
           <div className={'flex h-full w-full bg-black justify-center'}>
             <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl mt-20">
               <DataTable
-                paginationRowsPerPageOptions={[10]}
+                paginationRowsPerPageOptions={[10,25]}
                 pagination={true}
-                paginationPerPage={10}
+                paginationPerPage={25}
                 columns={[
                   {
                     name: 'File Name',
@@ -117,7 +117,7 @@ export function FileList(props: Props) {
                       fontWeight: 'bold',
                     },
                     sortable: true,
-                    maxWidth: '24em',
+                    maxWidth: '20em',
                   },
                   {
                     center: true,
@@ -126,58 +126,91 @@ export function FileList(props: Props) {
                       <div>
                         {row.isProcessing ? (
                           <LoadingOutlined />
-                        ) : (
+                        ) :
+                          row.isPredictError ?
+                          <div>
+                            Error
+                          </div>
+                         : (
                           <CheckOutlined />
-                        )}
+                          )
+                        }
                       </div>
                     ),
                     width: '12em',
                   },
+                  // {
+                  //   maxWidth: '8em',
+                  //   center: true,
+                  //   name: 'Predict Status',
+                  //   cell: row => (
+                  //     <div>
+                  //       {row.isPredictError ?
+                  //        row.isProcessing ? (
+                  //           <LoadingOutlined />
+                  //         ) : (
+                  //           <div>
+                  //             Error
+                  //           </div>
+                  //         )
+                  //        : (
+                  //         <CheckOutlined />
+                  //       )}
+                  //     </div>
+                  //   ),
+                  // },
                   {
                     right: true,
                     name: 'Download or Play Analyzed Video When Completed',
                     minWidth: '32em',
                     cell: row => (
                       <div className="flex flex-row text-sm font-light items-center">
-                        <a
+                        {row.isProcessing ? (
+                            <></>
+                          ) : (<a
                           className={
                             'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
                           }
                           href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
                         >
                           {'🗄️ \u00A0 Download Original'}
-                        </a>
-                        {row.isProcessing ? (
-                          <></>
-                        ) : (
-                          <a
-                            className={
-                              'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
-                            }
-                            href={`https://140.115.51.243/api/download-predict?filename=${row.filename}_blur.mp4`}
-                          >
-                            {'✨ \u00A0 Download Analyzed'}
-                          </a>
-                        )}
-                        {row.isProcessing ? (
-                          <></>
-                        ) : (
-                          <Link
-                            to={
-                              process.env.PUBLIC_URL +
-                              `/playback?title=${row.filename}`
-                            }
-                            className={'text-blue-500'}
-                          >
-                            <div
+                        </a>)
+                        }
+                        { row.isPredictError === true ? <></> :
+                          <>
+                          {row.isProcessing ? (
+                            <></>
+                          ) : (
+                            <a
                               className={
-                                'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
+                                'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
                               }
+                              href={`https://140.115.51.243/api/download-predict?filename=${row.filename}_blur.mp4`}
                             >
-                              {'▶ \u00A0️ Play'}
-                            </div>
-                          </Link>
-                        )}
+                              {'✨ \u00A0 Download Analyzed'}
+                            </a>
+                          )}
+                          {row.isProcessing ? (
+                            <></>
+                          ) : (
+                            <Link
+                              to={
+                                process.env.PUBLIC_URL +
+                                `/playback?title=${row.filename}`
+                              }
+                              className={'text-blue-500'}
+                            >
+                              <div
+                                className={
+                                  'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
+                                }
+                              >
+                                {'▶ \u00A0️ Play'}
+                              </div>
+                            </Link>
+                          )}
+                        </>
+                        }
                         <a
                           className={
                             'flex h-full items-center justify-center mr-2 font-black cursor-pointer text-red-500 hover:text-blue-500'

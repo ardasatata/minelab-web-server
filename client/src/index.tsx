@@ -50,10 +50,14 @@ const MOUNT_NODE = document.getElementById('root') as HTMLElement;
 const options = {
   // you can also just use 'bottom center'
   position: positions.BOTTOM_LEFT,
-  timeout: 10000,
-  offset: '32px',
+  timeout: 6000,
+  offset: '20px',
   // you can also just use 'scale'
   transition: transitions.SCALE,
+  containerStyle: {
+    zIndex: 100,
+    padding: '12px'
+  }
 };
 
 ReactDOM.render(

@@ -1024,11 +1024,26 @@ def main_predict(video_input, isFlip = True):
     # right_arm_point = []
     # right_hand_point = []
     first_frame = True
+
+    length = int(videoInput.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f'vid length : {length}')
+
+    start_frame_number = 30
+    videoInput.set(cv2.CAP_PROP_POS_FRAMES, start_frame_number)
+
+    frame_count = 1
+    end_frame = length - 45
+
     while videoInput.isOpened():
         # if (frame_number > frame_start) :
         if limit_counter < limit_sample:
             # if (limit_counter_body < limit_sample) or (limit_counter_erhu < limit_sample) or (limit_counter_bow < limit_sample):
             success, frame = videoInput.read()
+            frame_count += 1
+
+            if frame_count > end_frame:
+                break
+
             if not success:
                 break
             # if isFlip == True:

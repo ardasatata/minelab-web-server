@@ -28,7 +28,7 @@ import guide from '../../../assets/guide.png';
 
 interface Props {}
 
-const fileTypes = ['MP4', 'MOV'];
+const fileTypes = ['MP4', 'MOV', 'webm'];
 
 export function RecordVideo(props: Props) {
   const [file, setFile] = useState<any>(null);

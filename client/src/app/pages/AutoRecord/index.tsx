@@ -68,6 +68,7 @@ export function AutoRecord(props: Props) {
   const closeOverlay = () => setOverlay(false);
 
   const [recordCounter, setRecordCounter] = useState<number>(0);
+  const [videoDuration, setVideoDuration] = useState<number>(1);
 
   const incrementCounter = useCallback(
     () => setRecordCounter(recordCounter + 1),
@@ -142,6 +143,7 @@ export function AutoRecord(props: Props) {
   useEffect(() => {
     const id = setInterval(() => {
       setRecordCounter(prev => prev + 1);
+      setVideoDuration(prev => prev + 1)
     }, 1000);
     return () => {
       clearInterval(id);
@@ -150,6 +152,7 @@ export function AutoRecord(props: Props) {
 
   useEffect(() => {
     console.log(recordCounter);
+    console.log(videoDuration);
     if (!isLoading && !isRefreshLoading) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
@@ -186,7 +189,9 @@ export function AutoRecord(props: Props) {
     console.log(result);
 
     if (result.data.ok) {
-      alert.success(`File Uploaded Successfully as ${result.data.filename}`);
+      alert.success(`File Uploaded Successfully!`);
+      alert.info(`${result.data.filename}`);
+      // alert.success(`*We appreciate your contribution to allow us for using your video file for research purposes.`);
     } else {
       alert.error('Error Occurred');
     }
@@ -257,6 +262,12 @@ export function AutoRecord(props: Props) {
   }, [isFrameOk]);
 
   useEffect(() => {
+    if (!capturing){
+      setVideoDuration(1)
+    }
+  }, [capturing, recordCounter]);
+
+  useEffect(() => {
     if (!isLoading) {
       if (isFrameOk) {
         alert.success('Position OK! ✅');
@@ -277,7 +288,7 @@ export function AutoRecord(props: Props) {
   useEffect(() => {
     const processBlob = async () => {
       if (recordedChunks.length > 0) {
-        setIsRefreshLoading(true);
+        setIsloading(true);
         const blob = new Blob(recordedChunks, {
           type: 'video/webm',
         });
@@ -289,20 +300,22 @@ export function AutoRecord(props: Props) {
 
         // console.log(blob);
         if (!isRefreshLoading) {
-          if (duration > 2.0) {
+          if (duration > 4.0) {
+            setIsloading(false);
+            setIsRefreshLoading(true)
             uploadFile(blob, '').then(r => {
-              timeout(5000).then(() => reset());
+              timeout(6000).then(() => reset());
             });
           } else {
-            alert.error(`Video duration is too short ${duration.toString()}`);
-            setIsRefreshLoading(false);
+            alert.error(`Video duration is less than 4 seconds`);
+            setIsloading(false);
           }
         }
       }
     };
 
     processBlob().catch(console.error);
-  }, [recordedChunks, isRefreshLoading, uploadFile]);
+  }, [recordedChunks, isRefreshLoading]);
 
   useEffect(() => {
     if (webcamFrame) {
@@ -353,6 +366,7 @@ export function AutoRecord(props: Props) {
             <>
               <h1 className={'text-7xl text-white'}>DEBUG</h1>
               <h1 className={'text-7xl text-white'}>TIMER : {recordCounter}</h1>
+              <h1 className={'text-7xl text-white'}>RECORD : {videoDuration}</h1>
               <h1 className={'text-7xl text-white'}>
                 POSE STATUS : {isFrameOk.toString()}
               </h1>
@@ -360,16 +374,56 @@ export function AutoRecord(props: Props) {
           ) : null}
 
           {capturing ? (
-            <div className={'flex flex-row'}>
-              <div
-                className={'bg-red-500 h-8 w-8 rounded-full animate-pulse mr-4'}
-              />
-              <h1 className={'text-white text-4xl'}>{`Recording...`}</h1>
+            <div className={'flex flex-col'}>
+              <div className={'flex flex-row'}>
+                <div className={'bg-red-500 h-8 w-8 rounded-full animate-pulse mr-4'}/>
+                <h1 className={'text-white text-4xl'}>{`Recording...`}</h1>
+              </div>
+
+              <h1 className={'text-white text-3xl py-2'}>{`${videoDuration} seconds`}</h1>
+
+              <h1 className={'text-white text-3xl'}>
+                {data.errors ? (
+                  <div className={'flex flex-col pt-2 text-xl text-bold'}>
+                    <div
+                      className={
+                        data.errors[0]
+                          ? 'flex items-center mb-2 text-green-300'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <KneeIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>{`兩膝`}</div>
+                    </div>
+                    <div
+                      className={
+                        data.errors[1]
+                          ? 'flex items-center mb-2 text-green-300'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>{`二胡琴頭`}</div>
+                    </div>
+                    <div
+                      className={
+                        data.errors[2]
+                          ? 'flex items-center mb-2 text-green-300'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <TorsoIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>{`身體`}</div>
+                    </div>
+                  </div>
+                ) : null}
+              </h1>
             </div>
           ) : (
             <div className={'flex flex-col'}>
               <h1 className={'text-white text-3xl'}>
-                {'注意錄影時，必須包括下列項目:'}
+                {isRefreshLoading ? '' : '注意錄影時，必須包括下列項目:'}
+                {/*{'注意錄影時，必須包括下列項目:'}*/}
               </h1>
               <h1 className={'text-white text-3xl'}>
                 {data.errors ? (
@@ -419,11 +473,11 @@ export function AutoRecord(props: Props) {
           >
             <LoadingOutlined className={'mb-12'} />
             {isRefreshLoading ? (
-              <div className={'text-6xl max-w-4xl text-center'}>
-                <div>Please wait... ⌛, we're processing your video 🔨</div>
-                <h1 className={'text-4xl mb-12 text-center text-teal-300 mt-8'}>
-                  *We appreciate your contribution to allow us for using your
-                  video file for research purposes.
+              <div className={'text-6xl max-w-3xl text-center'}>
+                <div>Please wait... ⌛</div>
+                <h1 className={'text-4xl mb-12 text-center text-red-500 mt-8'}>
+                  Your video files will be used for research purpose only.
+                  These files will not be distributed for other purposes.
                 </h1>
               </div>
             ) : (

@@ -8,6 +8,7 @@ inputVideo = sys.argv[1]
 outPredictName = sys.argv[2]
 
 # main_predict('/home/minelab/dev/erhu-project/upload/04_19_2022_02_38_16_04_15_2022_10_04_25_01.mp4')
+
 result = main_predict(inputVideo)
 
 mp_face_detection = mp.solutions.face_detection

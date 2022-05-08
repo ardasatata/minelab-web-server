@@ -636,8 +636,13 @@ export function PlayVideo(props: Props) {
                     }}
                   />
                 ) : (
-                  <div className={'text-white text-9xl m-auto'} onClick={play}>
+                  <div className={'text-white text-9xl m-auto items-center justify-center flex flex-col'} onClick={play}>
                     <LoadingOutlined />
+                    <div className={'text-6xl max-w-3xl text-center'}>
+                      <h1 className={'text-5xl mb-12 text-center text-red-500 mt-12'}>
+                        Press PLAY to start the video.
+                      </h1>
+                    </div>
                   </div>
                 )}
               </div>

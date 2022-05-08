@@ -24,6 +24,8 @@ from natsort import os_sorted
 
 import shutil
 
+import locale
+
 # import random
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
@@ -32,6 +34,8 @@ from classifier.timeout import timeout
 from classifier.checking_tool import check_player_img_postition
 
 # from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
+
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 eventlet.monkey_patch()
 
@@ -137,22 +141,28 @@ def send_video():
     date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
 
     # Video Metadata
+    filename_temp = f"{date_time}_temp.webm"
     filename = f"{date_time}.webm"
     processed_filename = f"{date_time}.mp4"
     processed_blurred = f"{date_time}_blur.mp4"
 
-    video.filename = filename
+    video.filename = filename_temp
 
-    # Saved Video Path
-    filename = video.filename
+    # # Saved Video Path
+    # filename = video.filename
 
     value = {
         "ok": True,
         "filename": filename
     }
 
-    print("saving...", filename)
-    video.save(UPLOAD_DIR + filename)
+    print("saving...", filename_temp)
+    video.save(UPLOAD_DIR + filename_temp)
+
+    subprocess.run(
+        ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
+
+    subprocess.run(["rm", "-rf", UPLOAD_DIR + filename_temp])
 
     try:
         # run classifier & blurring sub-process
@@ -161,7 +171,8 @@ def send_video():
             ['python', './server/FaceMosaicMediaPipe.py', UPLOAD_DIR + filename, PROCESSED_DIR + processed_filename])
 
         print("processing...", filename)
-        subprocess.Popen(['python', './classifier/classifier.py', UPLOAD_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
+        subprocess.Popen(
+            ['python', './classifier/classifier.py', UPLOAD_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
 
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)
@@ -327,6 +338,7 @@ def file_list():
             "original": f,
             "processed": f"{f[:-5]}.mp4",
             "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.npz")) else True,
+            "isPredictError": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}_blur.mp4")) else True,
         })
 
     # print(list)
