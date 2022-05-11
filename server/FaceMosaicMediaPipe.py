@@ -15,7 +15,7 @@ length = int(videoInput.get(cv2.CAP_PROP_FRAME_COUNT))
 print(f'vid length : {length}')
 
 start_frame_number = 30
-videoInput.set(cv2.CAP_PROP_POS_FRAMES, start_frame_number)
+# videoInput.set(cv2.CAP_PROP_POS_FRAMES, start_frame_number)
 
 frame_count = 1
 end_frame = length - 45
@@ -40,6 +40,9 @@ while videoInput.isOpened():
     image.flags.writeable = False
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = face_detection.process(image)
+
+    if frame_count < start_frame_number:
+        continue
 
     if results.detections:
         for detection in results.detections:

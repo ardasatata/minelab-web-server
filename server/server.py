@@ -34,6 +34,7 @@ from classifier.timeout import timeout
 from classifier.checking_tool import check_player_img_postition
 
 # from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
+from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
@@ -54,11 +55,13 @@ workerObject = None
 PREDICTION_DIR = r"./predict/"
 UPLOAD_DIR = r"./upload/"
 PROCESSED_DIR = r"./processed/"
+SLICED_DIR = r"./sliced/"
 
 UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/upload/"
 PREDICT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/predict/"
 PROCESSED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/processed/"
 DELETED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/deleted/"
+SLICED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sliced/"
 
 
 class Worker(object):
@@ -131,6 +134,23 @@ class Worker(object):
         self.switch = False
 
 
+def get_length(filename):
+    result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
+                             "format=duration", "-of",
+                             "default=noprint_wrappers=1:nokey=1", filename],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+    return float(result.stdout)
+
+def with_opencv(filename):
+    import cv2
+    video = cv2.VideoCapture(filename)
+
+    duration = video.get(cv2.CAP_PROP_POS_MSEC)
+    frame_count = video.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    return duration, frame_count
+
 @app.route("/send-video", methods=['POST'])
 @cross_origin()
 def send_video():
@@ -162,17 +182,27 @@ def send_video():
     subprocess.run(
         ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
 
+    video_length = get_length(UPLOAD_DIR + filename)
+
+    print('vid_length :', video_length)
+    print('vid_length sliced :', video_length - 2.0)
+    print('vid_length :', with_opencv(UPLOAD_DIR + filename))
+
     subprocess.run(["rm", "-rf", UPLOAD_DIR + filename_temp])
+
+    ffmpeg_extract_subclip(UPLOAD_DIR + filename, 0, video_length - 2.0, targetname=SLICED_DIR + filename)
+    print('vid_length sliced:', with_opencv(SLICED_DIR + filename))
+    # subprocess.run(["cp", UPLOAD_DIR + filename, SLICED_DIR + filename])
 
     try:
         # run classifier & blurring sub-process
         print("blurring...", filename)
         subprocess.Popen(
-            ['python', './server/FaceMosaicMediaPipe.py', UPLOAD_DIR + filename, PROCESSED_DIR + processed_filename])
+            ['python', './server/FaceMosaicMediaPipe.py', SLICED_DIR + filename, PROCESSED_DIR + processed_filename])
 
         print("processing...", filename)
         subprocess.Popen(
-            ['python', './classifier/classifier.py', UPLOAD_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
+            ['python', './classifier/classifier.py', SLICED_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
 
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)

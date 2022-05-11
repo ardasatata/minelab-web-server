@@ -36,6 +36,8 @@ export function RecordVideo(props: Props) {
   const [isUploaded, setIsUploaded] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
 
+  const [isLoading, setIsloading] = useState<boolean>(false);
+
   const handleChange = async file => {
     setFile(file);
     setIsUploaded(false);
@@ -100,29 +102,6 @@ export function RecordVideo(props: Props) {
       <NavBar />
       <PageWrapperMain>
         <div className={'flex h-full w-full bg-black'}>
-          {/*<VideoRecorder*/}
-          {/*  isReplayingVideo={false}*/}
-          {/*  showReplayControls={true}*/}
-          {/*  isOnInitially={true}*/}
-          {/*  // countdownTime={RECORDER_TIME_CONFIG.countdownTime}*/}
-          {/*  // timeLimit={RECORDER_TIME_CONFIG.timeLimit}*/}
-          {/*  mimeType="video/webm;codecs=vp8,opus"*/}
-          {/*  // onRecordingComplete={async (videoBlob) => {*/}
-          {/*  //   // Do something with the video...*/}
-          {/*  //   // setPrediction(['Uploading your video'])*/}
-          {/*  //   await submitVideo(videoBlob)*/}
-          {/*  //   sum(5, 6)*/}
-          {/*  //   console.log('videoBlob', videoBlob)*/}
-          {/*  // }}*/}
-          {/*  // onStartRecording={() => {*/}
-          {/*  //   setPrediction(['Recording video...'])*/}
-          {/*  // }}*/}
-          {/*  // onTurnOnCamera={*/}
-          {/*  //   () => {*/}
-          {/*  //     setPrediction(['Press Record First!'])*/}
-          {/*  //   }*/}
-          {/*  // }*/}
-          {/*/>*/}
           <div
             className={
               'flex flex-col items-center justify-center text-white w-full'
