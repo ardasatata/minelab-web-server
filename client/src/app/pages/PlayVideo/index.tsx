@@ -420,9 +420,20 @@ export function PlayVideo(props: Props) {
     }
   };
 
-  const rightHandMessage = (input: string) => {
+  const rightArmMessage = (input: string) => {
     switch (input) {
       case 'RightArm_Normal':
+        return '右臂正常';
+      case 'E34':
+        return '右手腕持弓太向內翻';
+      case 'E35':
+        return '右手腕持弓太向外翻';
+    }
+  };
+
+   const rightHandMessage = (input: string) => {
+    switch (input) {
+      case 'RightHand_Normal':
         return '右手正常';
       case 'E31':
         return '拇指握弓位置錯誤';
@@ -430,10 +441,6 @@ export function PlayVideo(props: Props) {
         return '食指握弓桿位置錯誤';
       case 'E33':
         return '中指或無名指觸弓位置錯誤';
-      case 'E34':
-        return '右手腕持弓太向內翻';
-      case 'E35':
-        return '右手腕持弓太向外翻';
     }
   };
 
@@ -573,6 +580,7 @@ export function PlayVideo(props: Props) {
                         {`肩 : ${shoulderMessage(data[2][0])}`}
                       </div>
                     </div>
+
                     <div
                       className={
                         data[3][4] === 'Normal'
@@ -585,6 +593,7 @@ export function PlayVideo(props: Props) {
                         {`右手 : ${rightHandMessage(data[3][0])}`}
                       </div>
                     </div>
+
                     <div
                       className={
                         data[4][4] === 'Normal'
@@ -592,12 +601,12 @@ export function PlayVideo(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
-                      <HandIcon className={'w-12 mr-4'} />
+                      <ShoulderIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手 : ${leftHandMessage(data[4][0])}`}
+                        {`右臂 : ${rightArmMessage(data[4][0])}`}
                       </div>
                     </div>
+
                     <div
                       className={
                         data[5][4] === 'Normal'
@@ -605,10 +614,10 @@ export function PlayVideo(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
-                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {/*{`Bow : ${data[5][0]}`}*/}
-                        {`運弓 : ${bowMessage(data[5][0])}`}
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`左手 : ${leftHandMessage(data[5][0])}`}
                       </div>
                     </div>
                     <div
@@ -618,10 +627,23 @@ export function PlayVideo(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Bow : ${data[5][0]}`}*/}
+                        {`運弓 : ${bowMessage(data[6][0])}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[7][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
                       <KneeIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Knee(s) : ${kneesMessage(data[6][0])}`}*/}
-                        {`兩膝 : ${kneesMessage(data[6][0])}`}
+                        {`兩膝 : ${kneesMessage(data[7][0])}`}
                       </div>
                     </div>
                   </div>

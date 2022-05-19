@@ -19,7 +19,7 @@ import { useState } from 'react';
 import {
   ArrowUpOutlined,
   ClearOutlined,
-  CloseOutlined,
+  CloseOutlined, LoadingOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
@@ -49,6 +49,7 @@ export function RecordVideo(props: Props) {
   };
 
   const uploadFile = async () => {
+    setIsloading(true);
     let videoFile = file[0];
 
     var videoUrl = URL.createObjectURL(videoFile);
@@ -84,9 +85,11 @@ export function RecordVideo(props: Props) {
     if (result.data.ok) {
       setIsUploaded(true);
       setFile(null);
+      setIsloading(false);
     } else {
       setIsError(true);
       setIsUploaded(false);
+      setIsloading(false);
     }
   };
 
@@ -101,73 +104,85 @@ export function RecordVideo(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain>
-        <div className={'flex h-full w-full bg-black'}>
-          <div
-            className={
-              'flex flex-col items-center justify-center text-white w-full'
-            }
-          >
-            {isUploaded ? (
-              <>
-                <h1 className={'text-4xl mb-2'}>Your file is uploaded!</h1>
-                <h1 className={'text-2xl mb-12 text-center text-teal-300'}>
-                  We appreciate your contribution to allow us for using your
-                  video file for research purposes.
-                </h1>
-              </>
-            ) : (
-              <div className={'flex flex-col items-center'}>
-                <h1 className={'text-4xl mb-4 text-amber-50'}>
-                  Make sure to follow this guideline below before you record a
-                  video!
-                </h1>
-                <img src={guide} className={'max-w-4xl'} />
-              </div>
-            )}
+        { isLoading ?
+            <div className={'flex flex-col text-white text-7xl m-auto items-center justify-center'}>
+              <LoadingOutlined />
+                <div className={'text-6xl max-w-3xl text-center'}>
+                  <h1 className={'text-5xl mb-12 text-center text-red-500 mt-12'}>
+                    Please wait...
+                  </h1>
+                </div>
+            </div>
+           :
+          <div className={'flex h-full w-full bg-black'}>
+            <div
+              className={
+                'flex flex-col items-center justify-center text-white w-full'
+              }
+            >
+              {isUploaded ? (
+                <>
+                  <h1 className={'text-4xl mb-2'}>Your file is uploaded!</h1>
+                  <h1 className={'text-2xl mb-12 text-center text-teal-300'}>
+                    We appreciate your contribution to allow us for using your
+                    video file for research purposes.
+                  </h1>
+                </>
+              ) : (
+                <div className={'flex flex-col items-center'}>
+                  <h1 className={'text-4xl mb-4 text-amber-50'}>
+                    Make sure to follow this guideline below before you record a
+                    video!
+                  </h1>
+                  <img src={guide} className={'max-w-4xl'} />
+                </div>
+              )}
 
-            {file !== null ? (
-              <h1 className={'text-5xl mb-12'}>
-                Your file is ready to upload!
-              </h1>
-            ) : (
-              <h1 className={'text-2xl mb-4 text-amber-50'}>
-                Please Drag a video file below!
-              </h1>
-            )}
-            {file !== null ? (
-              <div className={'flex flex-row'}>
-                <div
-                  className={
-                    'px-4 text-white text-4xl py-4 transition ease-in-out bg-teal-500 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
-                  }
-                  onClick={uploadFile}
-                >
-                  <ArrowUpOutlined className={'mr-2'} />
-                  {'UPLOAD'}
+              {file !== null ? (
+                <h1 className={'text-5xl mb-12'}>
+                  Your file is ready to upload!
+                </h1>
+              ) : (
+                <h1 className={'text-2xl mb-4 text-amber-50'}>
+                  Please Drag a video file below!
+                </h1>
+              )}
+              {file !== null ? (
+                <div className={'flex flex-row'}>
+                  <div
+                    className={
+                      'px-4 text-white text-4xl py-4 transition ease-in-out bg-teal-500 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
+                    }
+                    onClick={uploadFile}
+                  >
+                    <ArrowUpOutlined className={'mr-2'} />
+                    {'UPLOAD'}
+                  </div>
+                  <div
+                    className={
+                      'ml-4 px-4 text-white text-4xl py-4 transition ease-in-out bg-red-400 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
+                    }
+                    onClick={clearFile}
+                  >
+                    <CloseOutlined className={'mr-2'} />
+                    {'CLEAR'}
+                  </div>
                 </div>
-                <div
-                  className={
-                    'ml-4 px-4 text-white text-4xl py-4 transition ease-in-out bg-red-400 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
-                  }
-                  onClick={clearFile}
-                >
-                  <CloseOutlined className={'mr-2'} />
-                  {'CLEAR'}
-                </div>
-              </div>
-            ) : (
-              <FileUploader
-                multiple={true}
-                handleChange={handleChange}
-                name="file"
-                types={fileTypes}
-              />
-            )}
-            <p className={'mt-6 text-amber-200'}>
-              {file ? `File name: ${file[0].name}` : 'no files uploaded yet'}
-            </p>
+              ) : (
+                <FileUploader
+                  multiple={true}
+                  handleChange={handleChange}
+                  name="file"
+                  types={fileTypes}
+                />
+              )}
+              <p className={'mt-6 text-amber-200'}>
+                {file ? `File name: ${file[0].name}` : 'no files uploaded yet'}
+              </p>
+            </div>
           </div>
-        </div>
+        }
+
         {/*<div className={'h-full flex bg-white w-1/4'}>cok</div>*/}
       </PageWrapperMain>
     </>

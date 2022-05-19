@@ -7,8 +7,8 @@ import { ReactComponent as NTUAicon } from '../../../assets/ntua-white.svg';
 export function Logo() {
   return (
     <Wrapper>
-      <img src={ncuWhite} className={'h-12 mt-1'} />
-      <NTUAicon className={'h-14 whitespace-nowrap block'} style={{}} />
+      <img src={ncuWhite} className={'h-10 mt-1'} />
+      <NTUAicon className={'h-12 whitespace-nowrap block'} style={{}} />
       <Title style={{ whiteSpace: 'normal' }}>Erhu Trainer | 二胡學習</Title>
       {/*<Description>Minelab 2022</Description>*/}
     </Wrapper>

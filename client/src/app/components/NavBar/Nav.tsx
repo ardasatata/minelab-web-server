@@ -5,7 +5,6 @@ import { ReactComponent as GithubIcon } from './assets/github-icon.svg';
 import {
   ArrowUpOutlined,
   OrderedListOutlined,
-  SearchOutlined,
   VideoCameraAddOutlined,
 } from '@ant-design/icons';
 
@@ -28,14 +27,14 @@ export function Nav() {
       {/*  <ArrowUpOutlined className={'mr-2'} />*/}
       {/*  Upload Video*/}
       {/*</Item>*/}
-      {/*<Item*/}
-      {/*  href={process.env.PUBLIC_URL + `/checking`}*/}
-      {/*  title="Github Page"*/}
-      {/*  rel="noopener noreferrer"*/}
-      {/*>*/}
-      {/*  <SearchOutlined className={'mr-2'} />*/}
-      {/*  Checking Tool*/}
-      {/*</Item>*/}
+      <Item
+        href={process.env.PUBLIC_URL + `/upload`}
+        title="Upload"
+        rel="noopener noreferrer"
+      >
+        <ArrowUpOutlined className={'mr-2'} />
+        Upload Video
+      </Item>
       <Item
         href={process.env.PUBLIC_URL + `/`}
         title="Auto Record"

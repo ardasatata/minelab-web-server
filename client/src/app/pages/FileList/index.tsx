@@ -46,7 +46,7 @@ export function FileList(props: Props) {
     getFileList();
     setInterval(() => {
       getFileList();
-    }, 60000);
+    }, 120000);
   }, []);
 
   const requestDelete = async filename => {
