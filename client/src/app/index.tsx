@@ -17,7 +17,9 @@ import { useTranslation } from 'react-i18next';
 import { PlayVideo } from './pages/PlayVideo';
 import { FileList } from './pages/FileList';
 import { AutoRecord } from './pages/AutoRecord';
-import {RecordVideo} from "./pages/RecordVideo";
+import { RecordVideo } from './pages/RecordVideo';
+import { UploadVideo as UploadSignLanguage } from './pages/SignLanguage/upload-video';
+import { RecordVideo as RecordSignLanguage } from './pages/SignLanguage/record-video';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -35,6 +37,17 @@ export function App() {
       </Helmet>
 
       <Switch>
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/sign-language/upload'}
+          component={() => <UploadSignLanguage />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/sign-language/record'}
+          component={() => <RecordSignLanguage />}
+        />
+
         <Route
           exact
           path={process.env.PUBLIC_URL + '/upload'}
