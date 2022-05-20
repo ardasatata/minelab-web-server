@@ -19,6 +19,11 @@ import { sleep } from '../../../utils/sleep';
 import LoadingOverlay from 'react-loading-overlay';
 import { useAlert } from 'react-alert';
 import VideoRecorder from 'react-video-recorder';
+import Webcam from 'react-webcam';
+
+import { Form, Switch, Input, Button } from 'antd';
+
+import 'antd/dist/antd.css';
 
 interface Props {}
 
@@ -28,6 +33,8 @@ const RECORDER_TIME_CONFIG = {
 };
 
 export function RecordVideo(props: Props) {
+  const webcamRef = React.useRef(null);
+
   const [prediction, setPrediction] = useState(['Press Record First!']);
 
   const [isLoading, setIsloading] = useState(false);
@@ -83,6 +90,7 @@ export function RecordVideo(props: Props) {
   };
 
   const uploadFile = async (blob, filename) => {
+    setIsloading(true);
     const headers = {
       'Content-Type': 'multipart/form-data',
       'Access-Control-Allow-Origin': '*',
@@ -93,7 +101,7 @@ export function RecordVideo(props: Props) {
     formData.append('video', blob, `${filename}.mp4`);
 
     const result = await axios.post(
-      'https://140.115.51.243/api/send-video',
+      'https://140.115.51.243/api/sign-language/send-video',
       formData,
       { headers },
     );
@@ -108,14 +116,89 @@ export function RecordVideo(props: Props) {
       alert.success('File Uploaded Successfully!');
       alert.success(`Saved as ${result.data.filename}`);
       sleep(3000);
+      setIsloading(false);
+      window.location.reload();
     } else {
       setFilename(null);
       setVideoBlob(null);
       alert.error('Error Occurred');
       sleep(3000);
-      // await reset();
+      setIsloading(false);
     }
   };
+
+  const mediaRecorderRef = React.useRef(null);
+  const [capturing, setCapturing] = React.useState(false);
+  const [recordedChunks, setRecordedChunks] = React.useState([]);
+
+  const [enableDuration, setEnableDuration] = React.useState(false);
+
+  const handleStartCaptureClick = React.useCallback(() => {
+    setCapturing(true);
+    // @ts-ignore
+    mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
+      mimeType: 'video/webm',
+    });
+    // @ts-ignore
+    mediaRecorderRef.current.addEventListener(
+      'dataavailable',
+      handleDataAvailable,
+    );
+    // @ts-ignore
+    mediaRecorderRef.current.start();
+
+    alert.info('Recording Start ▶️');
+  }, [webcamRef, setCapturing, mediaRecorderRef]);
+
+  const handleDataAvailable = React.useCallback(
+    ({ data }) => {
+      if (data.size > 0) {
+        setRecordedChunks(prev => prev.concat(data));
+      }
+    },
+    [setRecordedChunks],
+  );
+
+  const handleStopCaptureClick = React.useCallback(async () => {
+    // @ts-ignore
+    mediaRecorderRef.current.stop();
+    setCapturing(false);
+    alert.info('Recording Stop 🛑');
+    if (recordedChunks.length) {
+      const blob = await new Blob(recordedChunks, {
+        type: 'video/webm',
+      });
+      setVideoBlob(blob);
+    }
+  }, [mediaRecorderRef, webcamRef, setCapturing, recordedChunks]);
+
+  const handleDownload = React.useCallback(() => {
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: 'video/webm',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      // @ts-ignore
+      a.style = 'display: none';
+      a.href = url;
+      a.download = 'react-webcam-stream-capture.webm';
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setRecordedChunks([]);
+    }
+  }, [recordedChunks]);
+
+  const handleUpload = React.useCallback(async () => {
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: 'video/webm',
+      });
+      // setVideoBlob(blob);
+      await uploadFile(blob, filename);
+    }
+  }, [recordedChunks]);
 
   return (
     <>
@@ -137,7 +220,19 @@ export function RecordVideo(props: Props) {
             >
               <div className="flex flex-row justify-center items-center h-screen">
                 <div className="flex w-2/3 items-center justify-center ">
-                  {renderVideoRecorder()}
+                  <div className={'flex flex-col items-center'}>
+                    {/*@ts-ignore*/}
+                    <Webcam
+                      // @ts-ignore
+                      audio={false}
+                      // @ts-ignore
+                      ref={webcamRef}
+                      mirrored={true}
+                      hidden={false}
+                      height={1920}
+                      width={1080}
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-col w-1/3">
                   <div className="max-w-md py-4 px-8 bg-white shadow-lg rounded-lg my-20 pb-8">
@@ -145,56 +240,60 @@ export function RecordVideo(props: Props) {
                       <h3 className="text-gray-800 text-3xl font-semibold mb-2">
                         Settings
                       </h3>
-                      {/*/!*<p className="mt-2 text-gray-600 mb-8 text-red-500">*!/*/}
-                      {/*/!*  Make sure you already select the sentence number and*!/*/}
-                      {/*/!*  subject number before record the video!*!/*/}
-                      {/*/!*</p>*!/*/}
-                      {/*<h3 className="text-gray-800 text-xl font-semibold mb-2">*/}
-                      {/*  File Name*/}
-                      {/*</h3>*/}
-                      {/*<div className="mt-1 relative rounded-md shadow-sm mb-4">*/}
-                      {/*  <input*/}
-                      {/*    type="text"*/}
-                      {/*    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-2 pr-12 sm:text-lg border-gray-300 rounded-md"*/}
-                      {/*    placeholder="please enter the file name..."*/}
-                      {/*    value={filename}*/}
-                      {/*    onChange={event => {*/}
-                      {/*      setFilename(event.target.value);*/}
-                      {/*    }}*/}
-                      {/*  />*/}
-                      {/*  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">*/}
-                      {/*    <span*/}
-                      {/*      className="text-gray-500 sm:text-lg"*/}
-                      {/*      id="price-currency"*/}
-                      {/*    >*/}
-                      {/*      .mp4*/}
-                      {/*    </span>*/}
-                      {/*  </div>*/}
-                      {/*</div>*/}
 
-                      <h3 className="text-gray-800 text-xl font-semibold mb-2">
-                        Duration
-                      </h3>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <input
-                          type="text"
-                          className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-2 pr-12 sm:text-lg border-gray-300 rounded-md"
-                          placeholder="please enter duration "
-                          value={duration}
-                          onChange={event => {
-                            // @ts-ignore
-                            setDuration(event.target.value);
-                          }}
-                        />
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <span
-                            className="text-gray-500 sm:text-lg"
-                            id="price-currency"
-                          >
-                            seconds
-                          </span>
-                        </div>
-                      </div>
+                      <Form
+                        labelCol={{
+                          span: 8,
+                        }}
+                        layout="horizontal"
+                        size={'large'}
+                      >
+                        <Form.Item label="Enable Duration">
+                          <Switch
+                            defaultChecked={false}
+                            onChange={checked => {
+                              setEnableDuration(checked);
+                            }}
+                          />
+                        </Form.Item>
+                        {enableDuration ? (
+                          <Form.Item label="Duration">
+                            <Input
+                              value={duration}
+                              onChange={event => {
+                                // @ts-ignore
+                                setDuration(event.target.value);
+                              }}
+                            />
+                          </Form.Item>
+                        ) : null}
+
+                        {capturing ? (
+                          <Form.Item label="Record">
+                            <Button
+                              onClick={handleStopCaptureClick}
+                              type={'primary'}
+                              danger={true}
+                            >
+                              Stop
+                            </Button>
+                          </Form.Item>
+                        ) : (
+                          <Form.Item label="Record">
+                            <Button
+                              onClick={handleStartCaptureClick}
+                              type={'primary'}
+                            >
+                              Start
+                            </Button>
+                          </Form.Item>
+                        )}
+                        {recordedChunks.length > 0 && (
+                          <Form.Item label="Upload">
+                            <Button onClick={handleUpload}>Upload</Button>
+                          </Form.Item>
+                        )}
+                      </Form>
                     </div>
                     <div className="flex items-center justify-between mt-8">
                       {videoBlob ? (
@@ -206,13 +305,6 @@ export function RecordVideo(props: Props) {
                           Upload Video
                         </button>
                       ) : null}
-                      <button
-                        onClick={reset}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                        type="button"
-                      >
-                        Refresh Page
-                      </button>
                     </div>
                   </div>
                 </div>

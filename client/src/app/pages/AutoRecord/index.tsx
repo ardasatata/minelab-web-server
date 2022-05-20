@@ -143,7 +143,7 @@ export function AutoRecord(props: Props) {
   useEffect(() => {
     const id = setInterval(() => {
       setRecordCounter(prev => prev + 1);
-      setVideoDuration(prev => prev + 1)
+      setVideoDuration(prev => prev + 1);
     }, 1000);
     return () => {
       clearInterval(id);
@@ -262,8 +262,8 @@ export function AutoRecord(props: Props) {
   }, [isFrameOk]);
 
   useEffect(() => {
-    if (!capturing){
-      setVideoDuration(1)
+    if (!capturing) {
+      setVideoDuration(1);
     }
   }, [capturing, recordCounter]);
 
@@ -302,7 +302,7 @@ export function AutoRecord(props: Props) {
         if (!isRefreshLoading) {
           if (duration > 4.0) {
             setIsloading(false);
-            setIsRefreshLoading(true)
+            setIsRefreshLoading(true);
             uploadFile(blob, '').then(r => {
               timeout(6000).then(() => reset());
             });
@@ -366,7 +366,9 @@ export function AutoRecord(props: Props) {
             <>
               <h1 className={'text-7xl text-white'}>DEBUG</h1>
               <h1 className={'text-7xl text-white'}>TIMER : {recordCounter}</h1>
-              <h1 className={'text-7xl text-white'}>RECORD : {videoDuration}</h1>
+              <h1 className={'text-7xl text-white'}>
+                RECORD : {videoDuration}
+              </h1>
               <h1 className={'text-7xl text-white'}>
                 POSE STATUS : {isFrameOk.toString()}
               </h1>
@@ -376,11 +378,17 @@ export function AutoRecord(props: Props) {
           {capturing ? (
             <div className={'flex flex-col'}>
               <div className={'flex flex-row'}>
-                <div className={'bg-red-500 h-8 w-8 rounded-full animate-pulse mr-4'}/>
+                <div
+                  className={
+                    'bg-red-500 h-8 w-8 rounded-full animate-pulse mr-4'
+                  }
+                />
                 <h1 className={'text-white text-4xl'}>{`Recording...`}</h1>
               </div>
 
-              <h1 className={'text-white text-3xl py-2'}>{`${videoDuration} seconds`}</h1>
+              <h1
+                className={'text-white text-3xl py-2'}
+              >{`${videoDuration} seconds`}</h1>
 
               <h1 className={'text-white text-3xl'}>
                 {data.errors ? (
@@ -476,8 +484,8 @@ export function AutoRecord(props: Props) {
               <div className={'text-6xl max-w-3xl text-center'}>
                 <div>Please wait... ⌛</div>
                 <h1 className={'text-4xl mb-12 text-center text-red-500 mt-8'}>
-                  Your video files will be used for research purpose only.
-                  These files will not be distributed for other purposes.
+                  Your video files will be used for research purpose only. These
+                  files will not be distributed for other purposes.
                 </h1>
               </div>
             ) : (
