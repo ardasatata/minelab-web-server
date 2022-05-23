@@ -305,6 +305,15 @@ export function PlayVideo(props: Props) {
     location.reload();
   };
 
+  useEffect(() => {
+    if (socket) {
+      console.log('socket ready', socket);
+      setTimeout(() => {
+        play();
+      }, 1000);
+    }
+  }, [socket]);
+
   const increment = obj => {
     let headValue = parseInt(obj.data[0][3]);
     let bodyValue = parseInt(obj.data[1][3]);
@@ -431,7 +440,7 @@ export function PlayVideo(props: Props) {
     }
   };
 
-   const rightHandMessage = (input: string) => {
+  const rightHandMessage = (input: string) => {
     switch (input) {
       case 'RightHand_Normal':
         return '右手正常';
@@ -501,20 +510,20 @@ export function PlayVideo(props: Props) {
                 className={
                   'flex-1 text-white text-4xl py-4 transition ease-in-out bg-green-500 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
                 }
-                onClick={play}
-              >
-                <PlayCircleOutlined className={'mr-2'} />
-                {'PLAY'}
-              </div>
-              <div
-                className={
-                  'flex-1 text-white text-4xl py-4 transition ease-in-out bg-red-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer'
-                }
                 onClick={stop}
               >
-                <StopOutlined className={'mr-2'} />
-                {'STOP'}
+                <PlayCircleOutlined className={'mr-2'} />
+                {'Re-PLAY'}
               </div>
+              {/*<div*/}
+              {/*  className={*/}
+              {/*    'flex-1 text-white text-4xl py-4 transition ease-in-out bg-red-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer'*/}
+              {/*  }*/}
+              {/*  onClick={stop}*/}
+              {/*>*/}
+              {/*  <StopOutlined className={'mr-2'} />*/}
+              {/*  {'STOP'}*/}
+              {/*</div>*/}
               <div
                 className={
                   'text-white text-4xl py-4 transition ease-in-out bg-blue-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer px-8'
@@ -522,7 +531,7 @@ export function PlayVideo(props: Props) {
                 onClick={toggleMenu}
               >
                 <MenuOutlined className={'mr-2'} />
-                {'MENU'}
+                {'ANALYZE'}
               </div>
             </div>
             {socket ? (
@@ -655,14 +664,24 @@ export function PlayVideo(props: Props) {
                     className={'object-contain'}
                     style={{
                       aspectRatio: '16/9',
+                      minWidth: 840,
                     }}
                   />
                 ) : (
-                  <div className={'text-white text-9xl m-auto items-center justify-center flex flex-col'} onClick={play}>
+                  <div
+                    className={
+                      'text-white text-9xl m-auto items-center justify-center flex flex-col'
+                    }
+                    onClick={play}
+                  >
                     <LoadingOutlined />
                     <div className={'text-6xl max-w-3xl text-center'}>
-                      <h1 className={'text-5xl mb-12 text-center text-red-500 mt-12'}>
-                        Press PLAY to start the video.
+                      <h1
+                        className={
+                          'text-5xl mb-12 text-center text-red-500 mt-12'
+                        }
+                      >
+                        Please Wait...
                       </h1>
                     </div>
                   </div>

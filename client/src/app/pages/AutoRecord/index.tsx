@@ -20,18 +20,11 @@ import { ReactComponent as KneeIcon } from '../PlayVideo/assets/knee.svg';
 import { ReactComponent as BowIcon } from '../PlayVideo/assets/bow.svg';
 import { ReactComponent as TorsoIcon } from '../PlayVideo/assets/torso.svg';
 
-import Overlay from 'react-overlay-component';
 import guide from '../../../assets/guide.png';
 
 import getBlobDuration from 'get-blob-duration';
 
-const configs = {
-  animate: true,
-  // clickDismiss: false,
-  // escapeDismiss: false,
-  // focusOutline: false,
-  // contentClass: 'bg-black',
-};
+import { Modal, Button } from 'antd';
 
 interface Props {}
 
@@ -167,7 +160,7 @@ export function AutoRecord(props: Props) {
     setTimeout(() => {
       setIsloading(false);
       closeOverlay();
-    }, 3000);
+    }, 4000);
   }, []);
 
   const uploadFile = async (blob, filename) => {
@@ -332,30 +325,32 @@ export function AutoRecord(props: Props) {
       </Helmet>
       <NavBar />
       <PageWrapperMain className={'bg-black'}>
-        <Overlay
-          configs={configs}
-          isOpen={isOpen}
-          closeOverlay={closeOverlay}
-          className={'bg-black'}
+        <Modal
+          title="Attention!"
+          centered
+          visible={isOpen}
+          width={720}
+          footer={[
+            <Button
+              key="submit"
+              type="primary"
+              onClick={() => setOverlay(false)}
+            >
+              Understood
+            </Button>,
+          ]}
         >
           <div
             className={'flex flex-col items-center justify-center bg-black p-4'}
           >
-            <h1 className={'text-4xl mb-4 text-amber-50 text-center'}>
-              注意錄影時，必須包括下列項目
+            <h1 className={'text-3xl mb-4 text-amber-50 text-center'}>
+              錄影時，必須包括兩膝，二胡琴頭，身體。
+              <br />
+              坐好後會自動錄影。離開座位錄影結束。
             </h1>
             <img src={guide} className={'w-full'} />
           </div>
-
-          {/*<button*/}
-          {/*  className="danger"*/}
-          {/*  onClick={() => {*/}
-          {/*    setOverlay(false);*/}
-          {/*  }}*/}
-          {/*>*/}
-          {/*  close modal*/}
-          {/*</button>*/}
-        </Overlay>
+        </Modal>
         <InfoBox
           className={'pl-4 pt-4 absolute z-10 pr-4 pb-4'}
           style={{
