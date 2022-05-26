@@ -4,7 +4,7 @@
  *
  */
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components/macro';
 import { StyleConstants } from '../../../styles/StyleConstants';
 import { PageWrapper } from '../../components/PageWrapper';
@@ -42,6 +42,8 @@ import { NavBar } from '../../components/NavBar';
 import { useQuery } from '../../../hooks/useQuery';
 
 import { Player } from 'video-react';
+import ReactPlayer from 'react-player';
+import { getJSON } from 'utils/getJson';
 
 ChartJS.register(
   CategoryScale,
@@ -299,6 +301,8 @@ export function TestPlayer(props: Props) {
 
   const play = () => {
     // socket.emit('play', query.get('title'));
+    console.log(refVideo.current);
+    // refVideo.current.play()
   };
 
   const stop = () => {
@@ -490,6 +494,39 @@ export function TestPlayer(props: Props) {
     }
   };
 
+  const refVideo = useRef(null);
+
+  // refVideo.current.subscribeToStateChange(state => console.log(state));
+
+  const handleStateChange = (state, prevState) => {
+    // copy player state to this component's state
+    console.log(state);
+  };
+
+  // useEffect(() => {
+  //   // console.log(refVideo.current.getState().player.currentTime);
+  //   return refVideo.current.subscribeToStateChange(state => console.log(state));
+  // },[]);
+
+  const [jsonData, setJsonData] = useState(null);
+
+  useEffect(() => {
+    getJSON(
+      'https://140.115.51.243/api/predict/26_05_2022_Thursday(14:34:17).json',
+      function (err, data) {
+        if (err !== null) {
+          alert('Something went wrong: ' + err);
+        } else {
+          // alert(data);
+          console.log(data[0][0][0][0]);
+          console.log(data.length);
+          console.log(data[frame][0][0][0]);
+          setJsonData(data);
+        }
+      },
+    );
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -507,120 +544,129 @@ export function TestPlayer(props: Props) {
               'flex flex-col w-full h-full justify-center items-center'
             }
           >
-            <div className={'flex flex-row w-full'}>
-              <div
-                className={
-                  'flex-1 text-white text-4xl py-4 transition ease-in-out bg-green-500 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'
-                }
-                onClick={stop}
-              >
-                <PlayCircleOutlined className={'mr-2'} />
-                {'Re-PLAY'}
-              </div>
-              {/*<div*/}
-              {/*  className={*/}
-              {/*    'flex-1 text-white text-4xl py-4 transition ease-in-out bg-red-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer'*/}
-              {/*  }*/}
-              {/*  onClick={stop}*/}
-              {/*>*/}
-              {/*  <StopOutlined className={'mr-2'} />*/}
-              {/*  {'STOP'}*/}
-              {/*</div>*/}
-              <div
-                className={
-                  'text-white text-4xl py-4 transition ease-in-out bg-blue-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer px-8'
-                }
-                onClick={toggleMenu}
-              >
-                <MenuOutlined className={'mr-2'} />
-                {'ANALYZE'}
-              </div>
-            </div>
+            {/*<div className={'flex flex-row w-full'}>*/}
+            {/*  <div*/}
+            {/*    className={*/}
+            {/*      'flex-1 text-white text-4xl py-4 transition ease-in-out bg-green-500 hover:bg-indigo-700 duration-300 items-center justify-center flex cursor-pointer'*/}
+            {/*    }*/}
+            {/*    onClick={play}*/}
+            {/*  >*/}
+            {/*    <PlayCircleOutlined className={'mr-2'} />*/}
+            {/*    {'Re-PLAY'}*/}
+            {/*  </div>*/}
+            {/*  /!*<div*!/*/}
+            {/*  /!*  className={*!/*/}
+            {/*  /!*    'flex-1 text-white text-4xl py-4 transition ease-in-out bg-red-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer'*!/*/}
+            {/*  /!*  }*!/*/}
+            {/*  /!*  onClick={stop}*!/*/}
+            {/*  /!*>*!/*/}
+            {/*  /!*  <StopOutlined className={'mr-2'} />*!/*/}
+            {/*  /!*  {'STOP'}*!/*/}
+            {/*  /!*</div>*!/*/}
+            {/*  <div*/}
+            {/*    className={*/}
+            {/*      'text-white text-4xl py-4 transition ease-in-out bg-blue-500 hover:bg-pink-700 duration-300 items-center justify-center flex cursor-pointer px-8'*/}
+            {/*    }*/}
+            {/*    onClick={toggleMenu}*/}
+            {/*  >*/}
+            {/*    <MenuOutlined className={'mr-2'} />*/}
+            {/*    {'ANALYZE'}*/}
+            {/*  </div>*/}
+            {/*</div>*/}
             {socket ? (
               <div className="flex flex-1 justify-center max-w-7xl">
                 <div
                   className={
-                    'text-white text-3xl absolute mt-4 ml-4 transition ease-in-out bg-black p-2'
+                    'text-white text-3xl absolute mt-4 ml-4 transition ease-in-out bg-black p-2 z-50'
                   }
                 >
                   {`Frame Number : ${frame}`}
                 </div>
-                {data ? (
+
+                {jsonData ? (
                   <div
                     className={
-                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0 mb-2'
+                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0 mb-2 z-10'
                     }
                     style={{
                       minWidth: 300,
                       backgroundColor: 'rgba(0,47,105,0.35)',
                     }}
                   >
+                    {/*HEAD*/}
                     <div
                       className={
-                        data[0][4] === 'Normal'
+                        jsonData[frame][0][0][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
                       <HeadIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`頭 : ${headMessage(data[0][0])}`}
+                        {`頭 : ${headMessage(jsonData[frame][0][0][0])}`}
                       </div>
                     </div>
+
+                    {/*TORSO*/}
                     <div
                       className={
-                        data[1][4] === 'Normal'
+                        jsonData[frame][0][1][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
                       <TorsoIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`身體 : ${bodyMessage(data[1][0])}`}
+                        {`身體 : ${bodyMessage(jsonData[frame][0][1][0])}`}
                       </div>
                     </div>
+
+                    {/*SHOULDER*/}
                     <div
                       className={
-                        data[2][4] === 'Normal'
+                        jsonData[frame][0][2][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
                       <ShoulderIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`肩 : ${shoulderMessage(data[2][0])}`}
+                        {`肩 : ${shoulderMessage(jsonData[frame][0][2][0])}`}
                       </div>
                     </div>
 
+                    {/*RIGHT HAND*/}
                     <div
                       className={
-                        data[3][4] === 'Normal'
+                        jsonData[frame][0][3][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`右手 : ${rightHandMessage(data[3][0])}`}
+                        {`右手 : ${rightHandMessage(jsonData[frame][0][3][0])}`}
                       </div>
                     </div>
 
+                    {/*RIGHT ARM*/}
                     <div
                       className={
-                        data[4][4] === 'Normal'
+                        jsonData[frame][0][4][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
                       <ShoulderIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`右臂 : ${rightArmMessage(data[4][0])}`}
+                        {`右臂 : ${rightArmMessage(jsonData[frame][0][4][0])}`}
                       </div>
                     </div>
 
+                    {/*LEFT HAND*/}
                     <div
                       className={
-                        data[5][4] === 'Normal'
+                        jsonData[frame][0][5][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
@@ -628,12 +674,14 @@ export function TestPlayer(props: Props) {
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手 : ${leftHandMessage(data[5][0])}`}
+                        {`左手 : ${leftHandMessage(jsonData[frame][0][5][0])}`}
                       </div>
                     </div>
+
+                    {/*BOW MESSAGE*/}
                     <div
                       className={
-                        data[6][4] === 'Normal'
+                        jsonData[frame][0][6][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
@@ -641,12 +689,14 @@ export function TestPlayer(props: Props) {
                       <BowIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Bow : ${data[5][0]}`}*/}
-                        {`運弓 : ${bowMessage(data[6][0])}`}
+                        {`運弓 : ${bowMessage(jsonData[frame][0][6][0])}`}
                       </div>
                     </div>
+
+                    {/*KNEES*/}
                     <div
                       className={
-                        data[7][4] === 'Normal'
+                        jsonData[frame][0][7][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
@@ -654,21 +704,35 @@ export function TestPlayer(props: Props) {
                       <KneeIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Knee(s) : ${kneesMessage(data[6][0])}`}*/}
-                        {`兩膝 : ${kneesMessage(data[7][0])}`}
+                        {`兩膝 : ${kneesMessage(jsonData[frame][0][7][0])}`}
                       </div>
                     </div>
                   </div>
                 ) : null}
 
-
-                <div className={"flex h-full w-full"} style={{width:1280, height:720}}>
-                  <Player
-                    playsInline
-                    // poster="/assets/poster.png"
-                    src="https://140.115.51.243:5000/predict/26_05_2022_Thursday(14:34:17).mp4"
+                <div
+                  className={'bg-black'}
+                  style={{
+                    position: 'relative',
+                    paddingLeft: 12,
+                    minWidth: 960,
+                  }}
+                >
+                  <ReactPlayer
+                    className="absolute top-0 left-0"
+                    url="https://140.115.51.243:5001/predict/test_2.mp4"
+                    controls={true}
+                    onProgress={state => {
+                      // console.log(Math.round(state.playedSeconds * 30));
+                      setFrame(Math.round(state.playedSeconds * 30));
+                    }}
+                    onPlay={() => console.log('play')}
+                    progressInterval={1}
+                    width="100%"
+                    height="100%"
+                    playbackRate={0.5}
                   />
                 </div>
-
 
                 {/*{data ? (*/}
                 {/*  <img*/}
