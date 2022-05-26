@@ -128,21 +128,17 @@ export function UploadVideo(props: Props) {
                   </h1>
                 </>
               ) : (
-                <div className={'flex flex-col items-center'}>
-                  <h1 className={'text-4xl mb-4 text-amber-50'}>
-                    Make sure to follow this guideline below before you upload a
-                    video!
-                  </h1>
-                  <img src={guide} className={'max-w-4xl mb-8'} />
+                <div className={'flex flex-col items-center mb-12'}>
+                  <img src={guide} className={'max-w-4xl mb-4'} />
                 </div>
               )}
 
               {file !== null ? (
-                <h1 className={'text-5xl mb-12'}>
+                <h1 className={'text-5xl mb-12 mt-12'}>
                   Your file is ready to upload!
                 </h1>
               ) : (
-                <h1 className={'text-2xl mb-4 text-amber-50'}>
+                <h1 className={'text-2xl mb-4 text-amber-50 mt-12'}>
                   Please Drag a video file below!
                 </h1>
               )}

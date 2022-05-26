@@ -22,7 +22,7 @@ end_frame = length - 45
 
 videoOut = None
 
-fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 FPS = 30.0
 
 preview = False

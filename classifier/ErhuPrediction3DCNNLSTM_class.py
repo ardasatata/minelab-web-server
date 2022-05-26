@@ -1405,7 +1405,7 @@ def main_predict(video_input, isFlip = True):
     segment_image.load_model( os.path.join(thisfolder, "model/SegmentationModel/MixAllDataset/mask_rcnn_model.097-0.444332.h5"))
     properties = getVideoProperties(videoInput)
     # videoSegmentation = {}
-    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     vid_fps = properties['FPS']
     # vid_fps = 30.0
     vid_width = properties['Width']

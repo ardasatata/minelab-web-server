@@ -4,8 +4,11 @@ from ErhuPrediction3DCNNLSTM_class import main_predict
 import cv2
 import mediapipe as mp
 
+import subprocess
+
 inputVideo = sys.argv[1]
 outPredictName = sys.argv[2]
+streamFileName = sys.argv[3]
 
 # main_predict('/home/minelab/dev/erhu-project/upload/04_19_2022_02_38_16_04_15_2022_10_04_25_01.mp4')
 result = main_predict(inputVideo)
@@ -18,7 +21,7 @@ face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detectio
 
 videoOut = None
 
-fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 FPS = 30.0
 
 preview = False
@@ -82,3 +85,9 @@ while videoInput.isOpened():
 
 videoInput.release()
 print("blurring prediction done...", out_filename)
+
+subprocess.run(
+    ["ffmpeg", "-an", "-i", result, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline', '-level',
+     '3', streamFileName])
+
+print("stream file done...", streamFileName)

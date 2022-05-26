@@ -130,20 +130,16 @@ export function RecordVideo(props: Props) {
                 </>
               ) : (
                 <div className={'flex flex-col items-center'}>
-                  <h1 className={'text-4xl mb-4 text-amber-50'}>
-                    Make sure to follow this guideline below before you record a
-                    video!
-                  </h1>
                   <img src={guide} className={'max-w-4xl'} />
                 </div>
               )}
 
               {file !== null ? (
-                <h1 className={'text-5xl mb-12'}>
+                <h1 className={'text-5xl mb-12 mt-8'}>
                   Your file is ready to upload!
                 </h1>
               ) : (
-                <h1 className={'text-2xl mb-4 text-amber-50'}>
+                <h1 className={'text-2xl mb-4 text-amber-50 mt-8'}>
                   Please Drag a video file below!
                 </h1>
               )}

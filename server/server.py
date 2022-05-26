@@ -165,6 +165,7 @@ def send_video():
     filename = f"{date_time}.webm"
     processed_filename = f"{date_time}.mp4"
     processed_blurred = f"{date_time}_blur.mp4"
+    stream_file = f"{date_time}_stream.mp4"
 
     video.filename = filename_temp
 
@@ -202,7 +203,7 @@ def send_video():
 
         print("processing...", filename)
         subprocess.Popen(
-            ['python', './classifier/classifier.py', SLICED_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
+            ['python', './classifier/classifier.py', SLICED_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred, PREDICT_DIR_SEND_FILE + stream_file])
 
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)
@@ -379,9 +380,9 @@ def file_list():
     }
     return jsonify(value)
 
-@app.route('/predict/<path:path>')
+@app.route('/predict/<path:path>', methods=["GET"])
 def send_report(path):
-    return send_file(PREDICT_DIR_SEND_FILE + path, conditional=False)
+    return send_from_directory(PREDICT_DIR_SEND_FILE, path, conditional=True)
 
 
 @socketio.on('connect', namespace='/work')
