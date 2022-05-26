@@ -15,6 +15,8 @@ import FontFaceObserver from 'fontfaceobserver';
 
 import './index.css';
 
+import './video-react.css'; // import css
+
 // Use consistent styling
 import 'sanitize.css/sanitize.css';
 
@@ -56,8 +58,8 @@ const options = {
   transition: transitions.SCALE,
   containerStyle: {
     zIndex: 100,
-    padding: '12px'
-  }
+    padding: '12px',
+  },
 };
 
 ReactDOM.render(

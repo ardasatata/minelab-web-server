@@ -235,9 +235,9 @@ export function RecordVideo(props: Props) {
                   </div>
                 </div>
                 <div className="flex flex-col w-1/3">
-                  <div className="max-w-md py-4 px-8 bg-white shadow-lg rounded-lg my-20 pb-8">
+                  <div className="max-w-md py-4 px-8 bg-white shadow-lg rounded-lg my-20 pb-8 ml-12">
                     <div>
-                      <h3 className="text-gray-800 text-3xl font-semibold mb-2">
+                      <h3 className="text-gray-800 text-3xl font-semibold mb-8">
                         Settings
                       </h3>
 
@@ -248,14 +248,14 @@ export function RecordVideo(props: Props) {
                         layout="horizontal"
                         size={'large'}
                       >
-                        <Form.Item label="Enable Duration">
-                          <Switch
-                            defaultChecked={false}
-                            onChange={checked => {
-                              setEnableDuration(checked);
-                            }}
-                          />
-                        </Form.Item>
+                        {/*<Form.Item label="Enable Duration">*/}
+                        {/*  <Switch*/}
+                        {/*    defaultChecked={false}*/}
+                        {/*    onChange={checked => {*/}
+                        {/*      setEnableDuration(checked);*/}
+                        {/*    }}*/}
+                        {/*  />*/}
+                        {/*</Form.Item>*/}
                         {enableDuration ? (
                           <Form.Item label="Duration">
                             <Input
