@@ -20,6 +20,7 @@ import { AutoRecord } from './pages/AutoRecord';
 import { RecordVideo } from './pages/RecordVideo';
 import { UploadVideo as UploadSignLanguage } from './pages/SignLanguage/upload-video';
 import { RecordVideo as RecordSignLanguage } from './pages/SignLanguage/record-video';
+import { TestPlayer } from './pages/PlayVideo/test-player';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -68,6 +69,12 @@ export function App() {
           path={process.env.PUBLIC_URL + '/playback'}
           component={() => <PlayVideo />}
         />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/playback-test'}
+          component={() => <TestPlayer />}
+        />
+
         {/*<Route*/}
         {/*  exact*/}
         {/*  path={process.env.PUBLIC_URL + '/checking'}*/}
