@@ -300,9 +300,7 @@ export function TestPlayer(props: Props) {
   }, [setSocket]);
 
   const play = () => {
-    // socket.emit('play', query.get('title'));
-    console.log(refVideo.current);
-    // refVideo.current.play()
+    setPlaying(true);
   };
 
   const stop = () => {
@@ -312,13 +310,10 @@ export function TestPlayer(props: Props) {
   };
 
   useEffect(() => {
-    if (socket) {
-      console.log('socket ready', socket);
-      setTimeout(() => {
-        play();
-      }, 1000);
-    }
-  }, [socket]);
+    setTimeout(() => {
+      play();
+    }, 1000);
+  }, []);
 
   const increment = obj => {
     let headValue = parseInt(obj.data[0][3]);
@@ -510,9 +505,11 @@ export function TestPlayer(props: Props) {
 
   const [jsonData, setJsonData] = useState(null);
 
+  const [playing, setPlaying] = useState(false);
+
   useEffect(() => {
     getJSON(
-      'https://140.115.51.243/api/predict/26_05_2022_Thursday(14:34:17).json',
+      `https://140.115.51.243/api/predict/${query.get('title')}.json`,
       function (err, data) {
         if (err !== null) {
           alert('Something went wrong: ' + err);
@@ -583,10 +580,42 @@ export function TestPlayer(props: Props) {
                   {`Frame Number : ${frame}`}
                 </div>
 
+                <div
+                  className={'bg-black'}
+                  style={{
+                    position: 'relative',
+                    paddingLeft: 12,
+                    minWidth: 960,
+                  }}
+                >
+                  <ReactPlayer
+                    className="absolute top-0 left-0"
+                    url={`https://140.115.51.243:5001/predict/${query.get(
+                      'title',
+                    )}_stream.mp4`}
+                    controls={true}
+                    onProgress={state => {
+                      const frameNum = Math.round(state.playedSeconds * 30);
+                      // console.log(jsonData.length);
+                      // console.log(frameNum);
+                      if (frameNum < jsonData.length) {
+                        setFrame(Math.round(state.playedSeconds * 30));
+                      }
+                    }}
+                    onPlay={() => console.log('play')}
+                    progressInterval={1}
+                    width="100%"
+                    height="100%"
+                    playbackRate={0.5}
+                    playing={playing}
+                    muted={true}
+                  />
+                </div>
+
                 {jsonData ? (
                   <div
                     className={
-                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0 mb-2 z-10'
+                      'flex flex-col text-white text-lg absolute mt-4 ml-4 transition ease-in-out p-2 bottom-0 left-0 mb-2 z-10 mb-24'
                     }
                     style={{
                       minWidth: 300,
@@ -709,60 +738,6 @@ export function TestPlayer(props: Props) {
                     </div>
                   </div>
                 ) : null}
-
-                <div
-                  className={'bg-black'}
-                  style={{
-                    position: 'relative',
-                    paddingLeft: 12,
-                    minWidth: 960,
-                  }}
-                >
-                  <ReactPlayer
-                    className="absolute top-0 left-0"
-                    url="https://140.115.51.243:5001/predict/test_2.mp4"
-                    controls={true}
-                    onProgress={state => {
-                      // console.log(Math.round(state.playedSeconds * 30));
-                      setFrame(Math.round(state.playedSeconds * 30));
-                    }}
-                    onPlay={() => console.log('play')}
-                    progressInterval={1}
-                    width="100%"
-                    height="100%"
-                    playbackRate={0.5}
-                  />
-                </div>
-
-                {/*{data ? (*/}
-                {/*  <img*/}
-                {/*    src={img}*/}
-                {/*    alt={'main-stream'}*/}
-                {/*    className={'object-contain'}*/}
-                {/*    style={{*/}
-                {/*      aspectRatio: '16/9',*/}
-                {/*      minWidth: 840,*/}
-                {/*    }}*/}
-                {/*  />*/}
-                {/*) : (*/}
-                {/*  <div*/}
-                {/*    className={*/}
-                {/*      'text-white text-9xl m-auto items-center justify-center flex flex-col'*/}
-                {/*    }*/}
-                {/*    onClick={play}*/}
-                {/*  >*/}
-                {/*    <LoadingOutlined />*/}
-                {/*    <div className={'text-6xl max-w-3xl text-center'}>*/}
-                {/*      <h1*/}
-                {/*        className={*/}
-                {/*          'text-5xl mb-12 text-center text-red-500 mt-12'*/}
-                {/*        }*/}
-                {/*      >*/}
-                {/*        Please Wait...*/}
-                {/*      </h1>*/}
-                {/*    </div>*/}
-                {/*  </div>*/}
-                {/*)}*/}
               </div>
             ) : (
               <div>Not Connected</div>
