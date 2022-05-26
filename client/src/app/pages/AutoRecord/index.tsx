@@ -20,7 +20,7 @@ import { ReactComponent as KneeIcon } from '../PlayVideo/assets/knee.svg';
 import { ReactComponent as BowIcon } from '../PlayVideo/assets/bow.svg';
 import { ReactComponent as TorsoIcon } from '../PlayVideo/assets/torso.svg';
 
-import guide from '../../../assets/guide.png';
+import guide from '../../../assets/guide.gif';
 
 import getBlobDuration from 'get-blob-duration';
 
@@ -348,7 +348,7 @@ export function AutoRecord(props: Props) {
               <br />
               坐好後會自動錄影。離開座位錄影結束。
             </h1>
-            <img src={guide} className={'w-full'} />
+            <img src={guide} style={{maxWidth: 480}} />
           </div>
         </Modal>
         <InfoBox

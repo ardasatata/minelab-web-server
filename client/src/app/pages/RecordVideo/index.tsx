@@ -24,7 +24,7 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import { NavBar } from '../../components/NavBar';
-import guide from '../../../assets/guide.png';
+import guide from '../../../assets/guide.gif';
 
 interface Props {}
 

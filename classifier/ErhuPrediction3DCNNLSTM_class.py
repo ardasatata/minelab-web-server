@@ -3,7 +3,7 @@
 # Current Progress :
 # - Combined extract segmentation with prediction
 # - Using newest 5th dataset from professor (10 April 2022)
-
+import codecs
 import os
 import sys
 import shutil
@@ -69,6 +69,8 @@ configini = os.path.join(thisfolder, 'config.ini')
 configure.read(configini)
 
 K_var = configure.getint('traditional', 'k')
+K_LArm_high_var = configure.getint('traditional', 'h')
+K_LArm_low_var = configure.getint('traditional', 'l')
 X_var = configure.getint('traditional', 'x')
 Y_var = configure.getint('traditional', 'y')
 N_var = configure.getint('traditional', 'n')
@@ -381,27 +383,30 @@ def get_var_multiplier(w, h):
 
 
 def cropped_by_pixel(img, p1X, p1Y, p2X, p2Y):
-    image = img.copy()
-    image_masker = np.zeros(image.shape[:2], np.uint8)
-    image_rectangle_mask = cv2.rectangle(image_masker, (p1X, p1Y), (p2X, p2Y), 255, -1)
-    image_bitwised = cv2.bitwise_and(image, image, mask=image_rectangle_mask)
-    gray = cv2.cvtColor(image_bitwised[:, :], cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)[1]
-    thresh = cv2.erode(thresh, None, iterations=2)
-    thresh = cv2.dilate(thresh, None, iterations=2)
-    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-    c = max(cnts, key=cv2.contourArea)
-    extLeftPoint = tuple(c[c[:, :, 0].argmin()][0])
-    extRightPoint = tuple(c[c[:, :, 0].argmax()][0])
-    extTopPoint = tuple(c[c[:, :, 1].argmin()][0])
-    extBotPoint = tuple(c[c[:, :, 1].argmax()][0])
-    rightTopPoint = (extRightPoint[0], extTopPoint[1])
-    leftTopPoint = (extLeftPoint[0], extTopPoint[1])
-    leftBottomPoint = (extLeftPoint[0], extBotPoint[1])
-    rightBottomPoint = (extRightPoint[0], extBotPoint[1])
-    image_cropped = image[leftTopPoint[1]:rightBottomPoint[1], leftTopPoint[0]:rightBottomPoint[0]]
+    try:
+        image = img.copy()
+        image_masker = np.zeros(image.shape[:2], np.uint8)
+        image_rectangle_mask = cv2.rectangle(image_masker, (p1X, p1Y), (p2X, p2Y), 255, -1)
+        image_bitwised = cv2.bitwise_and(image, image, mask=image_rectangle_mask)
+        gray = cv2.cvtColor(image_bitwised[:, :], cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
+        thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)[1]
+        thresh = cv2.erode(thresh, None, iterations=2)
+        thresh = cv2.dilate(thresh, None, iterations=2)
+        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = imutils.grab_contours(cnts)
+        c = max(cnts, key=cv2.contourArea)
+        extLeftPoint = tuple(c[c[:, :, 0].argmin()][0])
+        extRightPoint = tuple(c[c[:, :, 0].argmax()][0])
+        extTopPoint = tuple(c[c[:, :, 1].argmin()][0])
+        extBotPoint = tuple(c[c[:, :, 1].argmax()][0])
+        rightTopPoint = (extRightPoint[0], extTopPoint[1])
+        leftTopPoint = (extLeftPoint[0], extTopPoint[1])
+        leftBottomPoint = (extLeftPoint[0], extBotPoint[1])
+        rightBottomPoint = (extRightPoint[0], extBotPoint[1])
+        image_cropped = image[leftTopPoint[1]:rightBottomPoint[1], leftTopPoint[0]:rightBottomPoint[0]]
+    except:
+        image_cropped = img.copy()
     return image_cropped
 
 def get_cdf_hist(image_input):
@@ -1125,6 +1130,236 @@ def new_bow_segment(frame):
     return img, bow_line
 
 
+def body_landmark_segment(frame):
+    image = frame.copy()
+    img_ori = frame.copy()
+    try:
+        with mp_holistic.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3) as holistic:
+            image.flags.writeable = False
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            results = holistic.process(image)
+            image_height, image_width, _ = image.shape
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+            # mp_drawing.draw_landmarks(
+            #     img_ori,
+            #     results.left_hand_landmarks,
+            #     mp_holistic.HAND_CONNECTIONS,
+            #     landmark_drawing_spec=mp_drawing_styles.get_default_hand_landmarks_style())
+            # Get Wrist Right Hand
+            x_WRRH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_WRIST].x * image_width)
+            y_WRRH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_WRIST].y * image_height)
+            rh_wrist = [x_WRRH, y_WRRH]
+
+            # Get Wrist Left Hand
+            x_WRLH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_WRIST].x * image_width)
+            y_WRLH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_WRIST].y * image_height)
+            lh_wrist = [x_WRLH, y_WRLH]
+
+            # Get Index Finger Right Hand
+            x_IDXFGRRH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_INDEX].x * image_width)
+            y_IDXFGRRH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_INDEX].y * image_height)
+            rh_index_finger = [x_IDXFGRRH, y_IDXFGRRH]
+
+
+            try:
+                # Get Middle Finger Left Hand Hand Landmark
+                x_MIDFGRLH = round(results.left_hand_landmarks.landmark[mp_holistic.HandLandmark.MIDDLE_FINGER_MCP].x * image_width)
+                y_MIDFGRLH = round(results.left_hand_landmarks.landmark[mp_holistic.HandLandmark.MIDDLE_FINGER_MCP].y * image_height)
+                lh_middle_finger = [x_MIDFGRLH, y_MIDFGRLH]
+                # cv2.circle(img_ori, lh_middle_finger, 5 (255, 0, 0), -1)
+            except:
+                # Get Index Finger Left Hand Pose Landmark
+                x_IDXFGRLH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_INDEX].x * image_width)
+                y_IDXFGRLH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_INDEX].y * image_height)
+                lh_index_finger = [x_IDXFGRLH, y_IDXFGRLH]
+                x_PKYFGRLH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_PINKY].x * image_width)
+                y_PKYFGRLH = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_PINKY].y * image_height)
+                lh_pinky_finger = [x_PKYFGRLH, y_PKYFGRLH]
+                # Get Left Middle Finger Wrist Line
+                lh_middle_finger = [lh_index_finger[0] - (abs(lh_index_finger[1] - lh_pinky_finger[1])), (abs(lh_index_finger[1] - lh_pinky_finger[1]) // 4) + lh_index_finger[1]]
+                # cv2.circle(img_ori, lh_middle_finger, 5, (0, 0, 255), -1)
+
+            # Get Shoulder Right Hand
+            x_R_shoulder = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_SHOULDER].x * image_width)
+            y_R_shoulder = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_SHOULDER].y * image_height)
+            rh_shoulder = [x_R_shoulder, y_R_shoulder]
+
+            # Get Shoulder Left Hand
+            x_L_shoulder = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_SHOULDER].x * image_width)
+            y_L_shoulder = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_SHOULDER].y * image_height)
+            lh_shoulder = [x_L_shoulder, y_L_shoulder]
+
+            # Get Elbow Right Hand
+            x_R_elbow = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW].x * image_width)
+            y_R_elbow = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW].y * image_height)
+            rh_elbow = [x_R_elbow, y_R_elbow]
+
+            # Get Elbow Left Hand
+            x_L_elbow = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_ELBOW].x * image_width)
+            y_L_elbow = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_ELBOW].y * image_height)
+            lh_elbow = [x_L_elbow, y_L_elbow]
+
+            # Get Right Knees
+            x_R_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_KNEE].x * image_width)
+            y_R_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_KNEE].y * image_height)
+            rh_knees = [x_R_knees, y_R_knees]
+
+            # Get Left Ear
+            x_L_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].x * image_width)
+            y_L_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].y * image_height)
+            lh_ear = [x_L_ear, y_L_ear]
+
+            # Get Right Ear
+            x_R_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_EAR].x * image_width)
+            y_R_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_EAR].y * image_height)
+            rh_ear = [x_R_ear, y_R_ear]
+
+            # Get Hip point
+            x_R_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_HIP].x * image_width)
+            y_R_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_HIP].y * image_height)
+            x_L_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_HIP].x * image_width)
+            y_L_hip = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_HIP].y * image_height)
+            rh_hip = [x_R_hip, y_R_hip]
+            lh_hip = [x_L_hip, y_L_hip]
+
+            # Get Head Box
+            x_L_eye = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EYE].x * image_width) + (abs(x_R_shoulder - x_L_shoulder) // 4)
+            y_L_eye = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EYE].y * image_height) - (abs(x_R_shoulder - x_L_shoulder) // 4)
+            x_R_eye = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_EYE].x * image_width) - (abs(x_R_shoulder - x_L_shoulder) // 4)
+            y_R_eye = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_EYE].y * image_height) + (abs(x_R_shoulder - x_L_shoulder) // 4)
+            head_rectangle_coordinate = [(x_L_eye, y_L_eye), (x_R_eye, y_R_eye)]
+
+            # Get Middle Body
+            if x_R_shoulder > x_L_shoulder:
+                middle_shoulder_point = ((abs(x_R_shoulder - x_L_shoulder) // 2) + x_L_shoulder, y_L_shoulder)
+            else:
+                middle_shoulder_point = ((abs(x_L_shoulder - x_R_shoulder) // 2) + x_R_shoulder, y_R_shoulder)
+            if x_R_hip > x_L_hip:
+                middle_hip_point = (abs((x_R_hip - x_L_hip) // 2) + x_L_hip, y_L_hip)
+            else:
+                middle_hip_point = (abs((x_L_hip - x_R_hip) // 2) + x_R_hip, y_R_hip)
+
+
+
+            # Get Finger Wrist Slope Left Hand Middle Finger
+            lh_finger_wrist_degree = get_angle(lh_middle_finger, lh_wrist)
+
+            # Get Wrist Elbow Slope Left Hand Elbow
+            lh_wrist_elbow_degree = get_angle(lh_wrist, lh_elbow)
+
+            lh_slope_value = abs(lh_wrist_elbow_degree - lh_finger_wrist_degree)
+
+            print('lh_slop_middle_finger_wrist:', lh_finger_wrist_degree)
+            print('lh_slop_wrist_elbow:', lh_wrist_elbow_degree)
+            # cv2.line(img_ori, lh_middle_finger, lh_wrist, (0, 255, 0), 3)
+            # cv2.line(img_ori, lh_wrist, lh_elbow, (0, 255, 0), 3)
+
+
+            # Get Left Shoulder Elbow Line
+            degree_lh_shoulder_elbow = get_angle(lh_shoulder, lh_elbow)
+            # cv2.line(img_ori, lh_shoulder, lh_elbow, (0, 0, 255), 3)
+
+            # Get Body Box
+            body_rectangle_coordinate = [(x_L_shoulder, y_L_shoulder), (x_R_hip, y_R_hip)]
+
+            # Get Knees Shoulder Distance
+            knee_shoulder_distance = x_R_shoulder - x_R_knees
+
+            # Get Face Degree
+            degrees_ear_face = get_angle((rh_ear[0], rh_ear[1]), (lh_ear[0], lh_ear[1]))
+            # cv2.line(img_ori,(rh_ear[0], rh_ear[1]), (lh_ear[0], lh_ear[1]), (0, 0, 255), 3)
+
+            # Get Body Degree
+            degrees_body = get_angle(middle_shoulder_point, middle_hip_point)
+            # cv2.line(img_ori, middle_shoulder_point, middle_hip_point, (0, 0, 255), 3)
+
+            # Get Shoulders Degree
+            degrees_shoulder = get_angle((x_R_shoulder, y_R_shoulder), (x_L_shoulder, y_L_shoulder))
+            # cv2.line(img_ori, (x_R_shoulder, y_R_shoulder), (x_L_shoulder, y_L_shoulder), (0, 0, 255), 3)
+
+            # Get Length Shoulder
+            length_shoulder = abs( x_R_shoulder - x_L_shoulder)
+            length_shoulder_3times = length_shoulder * 3
+            length_shoulder_2times = length_shoulder * 2
+            length_half_shoulder = length_shoulder // 2
+            length_thirdhalf_shoulder = length_shoulder // 3
+
+            RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor = body_segment(img_ori, rh_elbow, rh_shoulder, rh_wrist,
+                                                                  rh_index_finger, lh_shoulder, lh_wrist, lh_elbow, length_shoulder,
+                                                                  length_shoulder_2times, length_shoulder_3times,
+                                                                  length_half_shoulder, length_thirdhalf_shoulder)
+
+    except:
+        print('MediaPipe Failed')
+        knee_shoulder_distance = 0
+        degree_lh_shoulder_elbow = 45
+        degrees_ear_face = 90
+        degrees_body = 90
+        degrees_shoulder = 0
+        rh_hip, lh_hip = [0, 0], [0, 0]
+        lh_slope_value = 0.05
+        head_rectangle_coordinate, body_rectangle_coordinate = [(0, 0), (0, 0)], [(0, 0), (0, 0)]
+        RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped = image, image, image, image
+        RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor = [(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)]
+    return img_ori, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
+           head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face, \
+           degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip
+
+
+def body_segment(frame, rh_elbow, rh_shoulder, rh_wrist, rh_index_finger, lh_shoulder, lh_wrist, lh_elbow, length_shoulder,
+                length_shoulder_2times, length_shoulder_3times, length_half_shoulder, length_thirdhalf_shoulder):
+    img = frame.copy()
+    x_WRRH = rh_wrist[0]
+    y_WRRH = rh_wrist[1]
+    top_left_RH_box = (x_WRRH - (length_thirdhalf_shoulder+length_thirdhalf_shoulder//4), y_WRRH - (length_thirdhalf_shoulder//2))
+    bottom_right_RH_box = (x_WRRH + (length_thirdhalf_shoulder//4), y_WRRH + (length_half_shoulder//2))
+    RH_box = [top_left_RH_box, bottom_right_RH_box]
+
+    x_WRLH = lh_wrist[0]
+    y_WRLH = lh_wrist[1]
+    top_left_LH_box = (x_WRLH - length_half_shoulder, y_WRLH - (length_thirdhalf_shoulder))
+    bottom_right_LH_box = (x_WRLH + (length_thirdhalf_shoulder // 2), y_WRLH + (length_thirdhalf_shoulder // 2))
+    LH_box = [top_left_LH_box, bottom_right_LH_box]
+
+    x_RArm = rh_shoulder[0]
+    y_RArm = rh_shoulder[1]
+    top_left_RArm_box = (x_RArm - length_shoulder_2times, y_RArm - length_thirdhalf_shoulder)
+    bottom_right_RArm_box = (x_RArm + length_half_shoulder, y_RArm + length_shoulder + length_half_shoulder)
+    RArm_box = [top_left_RArm_box, bottom_right_RArm_box]
+
+    x_LArm = lh_shoulder[0]
+    y_LArm = lh_shoulder[1]
+    top_left_LArm_box = (x_LArm - length_half_shoulder, y_LArm - length_thirdhalf_shoulder)
+    bottom_left_LArm_box = (x_LArm + length_shoulder + length_half_shoulder, y_LArm + length_shoulder)
+    LArm_box = [top_left_LArm_box, bottom_left_LArm_box]
+
+    RH_Cropped = cropped_by_pixel(img, RH_box[0][0], RH_box[0][1], RH_box[1][0], RH_box[1][1])
+    RArm_Cropped = cropped_by_pixel(img, RArm_box[0][0], RArm_box[0][1], RArm_box[1][0], RArm_box[1][1])
+    LArm_Cropped = cropped_by_pixel(img, LArm_box[0][0], LArm_box[0][1], LArm_box[1][0], LArm_box[1][1])
+    LH_Cropped = cropped_by_pixel(img, LH_box[0][0], LH_box[0][1], LH_box[1][0], LH_box[1][1])
+
+    if rh_wrist[0] < rh_shoulder[0]:
+        RArm_Cropped_Coor = [(rh_wrist[0], rh_shoulder[1]), (RArm_box[1][0], RArm_box[1][1])]
+    else:
+        RArm_Cropped_Coor = [(rh_elbow[0], rh_shoulder[1]), (RArm_box[1][0], RArm_box[1][1])]
+
+    if lh_elbow[0] > lh_shoulder[0]:
+        if lh_elbow[1] > lh_wrist[1]:
+            LArm_Cropped_Coor = [(LArm_box[0][0], LArm_box[0][1]), (lh_elbow[0], lh_elbow[1])]
+        else:
+            LArm_Cropped_Coor = [(LArm_box[0][0], LArm_box[0][1]), (lh_elbow[0], lh_wrist[1])]
+    else:
+        LArm_Cropped_Coor = [(LArm_box[0][0], LArm_box[0][1]), (lh_shoulder[0], lh_elbow[1])]
+
+    RH_Cropped_Coor = [(RH_box[0][0], RH_box[0][1]), (RH_box[1][0], RH_box[1][1])]
+    LH_Cropped_Coor = [(LH_box[0][0], LH_box[0][1]), (LH_box[1][0], LH_box[1][1])]
+    # RArm_Cropped_Coor = [(RArm_box[0][0], RArm_box[0][1]), (RArm_box[1][0], RArm_box[1][1])]
+    # LArm_Cropped_Coor = [(LArm_box[0][0], LArm_box[0][1]), (LArm_box[1][0], LArm_box[1][1])]
+    return RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor
+
+
 def main_predict(video_input, isFlip = True):
     print('video_input', video_input)
     start_now = datetime.now()
@@ -1141,9 +1376,9 @@ def main_predict(video_input, isFlip = True):
     # # model_left.summary()
     # # model_right.summary()
     # # model_left_hand.summary()
-    model_left_arm = load_model(os.path.join(thisfolder, 'model/PredictionModel/model_ver7/16052022/leftArm/model-014.h5'))
-    model_right_hand = load_model(os.path.join(thisfolder, 'model/PredictionModel/model_ver7/16052022/rightHand/model-012.h5'))
-    model_right_arm = load_model(os.path.join(thisfolder, 'model/PredictionModel/model_ver7/16052022/rightArm/model-021.h5'))
+    model_left_arm = load_model(os.path.join(thisfolder, 'model/PredictionModel/0409_0503_5th_7th_dataset_w_stride/models_dataset_leftArm/model-006.h5'))
+    model_right_hand = load_model(os.path.join(thisfolder, 'model/PredictionModel/0409_0503_5th_7th_dataset_w_stride/models_dataset_rightHand/model-008.h5'))
+    model_right_arm = load_model(os.path.join(thisfolder, 'model/PredictionModel/0409_0503_5th_7th_dataset_w_stride/models_dataset_rightArm/model-013.h5'))
     model_left_arm.summary()
     model_right_hand.summary()
     model_right_arm.summary()
@@ -1230,6 +1465,7 @@ def main_predict(video_input, isFlip = True):
     x_test_right_hand_point = []
     x_test_right_arm_point = []
     x_test_left_arm_point = []
+    x_test_left_hand_point = []
     x_test_all_body_point = []
     x_test_erhu_line_point = []
     x_test_bow_line_point = []
@@ -1266,29 +1502,44 @@ def main_predict(video_input, isFlip = True):
             break
         # cv2.imshow('test', frame)
         # cv2.waitKey(0)
-        image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
-        halfBodyPart, leftArmPartOri, rightArmPartOri, leftHandPartOri, \
-        rightHandPartOri, left_arm_point, right_arm_point, right_hand_point, head_coordinate, body_coordinate, \
-        knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right = new_body_segment(
+        # image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
+        # halfBodyPart, leftArmPartOri, rightArmPartOri, leftHandPartOri, \
+        # rightHandPartOri, left_arm_point, right_arm_point, right_hand_point, head_coordinate, body_coordinate, \
+        # knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right = new_body_segment(
+        #     frame.copy())
+
+        image, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
+        head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, \
+        degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip = body_landmark_segment(
             frame.copy())
 
+        # cv2.imshow('RightHand', RH_Cropped)
+        # cv2.imshow('RightArm', RArm_Cropped)
+        # cv2.imshow('LeftArm', LArm_Cropped)
+        # cv2.imshow('LeftHand', LH_Cropped)
+        # cv2.imshow('Img Ori', image)
+        # cv2.waitKey(1)
+
         if len(x_test_video_leftHand_resized) < limit_sample:
-            img_resized_leftHand = cv2.resize(leftHandPart, (img_height, img_width))
+            img_resized_leftHand = cv2.resize(LH_Cropped, (img_height, img_width))
             x_test_video_leftHand_resized.append(img_resized_leftHand)
+            x_test_left_hand_point.append(LH_Cropped_Coor)
         if len(x_test_video_rightHand_resized) < limit_sample:
-            img_resized_rightHand = cv2.resize(rightHandPart, (img_height, img_width))
+            img_resized_rightHand = cv2.resize(RH_Cropped, (img_height, img_width))
             x_test_video_rightHand_resized.append(img_resized_rightHand)
-            x_test_right_hand_point.append(right_hand_point)
+            x_test_right_hand_point.append(RH_Cropped_Coor)
         if len(x_test_video_leftArm_resized) < limit_sample:
-            img_resized_leftArm = cv2.resize(leftArmPart, (img_height, img_width))
+            img_resized_leftArm = cv2.resize(LArm_Cropped, (img_height, img_width))
             x_test_video_leftArm_resized.append(img_resized_leftArm)
-            x_test_left_arm_point.append(left_arm_point)
+            x_test_left_arm_point.append(LArm_Cropped_Coor)
         if len(x_test_video_rightArm_resized) < limit_sample:
-            img_resized_rightArm = cv2.resize(rightArmPart, (img_height, img_width))
+            img_resized_rightArm = cv2.resize(RArm_Cropped, (img_height, img_width))
             x_test_video_rightArm_resized.append(img_resized_rightArm)
-            x_test_right_arm_point.append(right_arm_point)
+            x_test_right_arm_point.append(RArm_Cropped_Coor)
         if len(x_test_all_body_point) < limit_sample:
-            x_test_all_body_point.append([head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right])
+            x_test_all_body_point.append(
+                [head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face,
+                 degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value])
         if len(x_test_erhu_line_point) < limit_sample:
             erhu_line = [(350, 100), (350, 400)]
             x_test_erhu_line_point.append(erhu_line)
@@ -1409,16 +1660,20 @@ def main_predict(video_input, isFlip = True):
             limit_counter_bow = 0
             limit_counter_body = 0
             limit_counter_erhu = 0
+            counter_leftHand = len(x_test_video_leftHand_resized)
             counter_leftArm = len(x_test_video_leftArm_resized)
             counter_rightHand = len(x_test_video_rightHand_resized)
             counter_rightArm = len(x_test_video_rightArm_resized)
             counter_bow_line = len(x_test_bow_line_point)
             counter_erhu_line = len(x_test_erhu_line_point)
-            print(counter_leftArm, counter_rightHand, counter_rightArm, )
+            print(counter_leftArm, counter_rightHand, counter_rightArm, counter_leftHand)
             # Set for list that less than limit sample and append with default value
             canvas_padding = np.zeros(x_test_video_leftArm_resized[0].shape, np.uint8)
             default_bow_line_coor = [(-1, -1), (-1, -1)]
             default_erhu_line_coor = [(-1, -1), (-1, -1)]
+            if counter_leftHand < limit_sample:
+                for i in range(limit_sample - counter_leftHand):
+                    x_test_video_leftHand_resized.append(canvas_padding)
             if counter_leftArm < limit_sample:
                 for i in range(limit_sample - counter_leftArm):
                     x_test_video_leftArm_resized.append(canvas_padding)
@@ -1458,17 +1713,17 @@ def main_predict(video_input, isFlip = True):
             # test_x_bow          = np.array(x_test_bow)
             # print('bow shape:', test_x_bow.shape)
             # test_x_bow          = test_x_bow / 255.0
+            # print(len(x_test_rightArm))
+            # test_x_leftArm = np.array(x_test_leftArm)
+            # # print('leftArm shape:', test_x_leftArm.shape)
+            # test_x_leftArm = test_x_leftArm / 255.0
 
-            test_x_leftArm = np.array(x_test_leftArm)
-            # print('leftArm shape:', test_x_leftArm.shape)
-            test_x_leftArm = test_x_leftArm / 255.0
-
-            test_x_leftHand = np.array(x_test_leftHand)
-            # print('leftHand shape:', test_x_leftHand.shape)
-            test_x_leftHand = test_x_leftHand / 255.0
-
+            # test_x_leftHand = np.array(x_test_leftHand)
+            # # print('leftHand shape:', test_x_leftHand.shape)
+            # test_x_leftHand = test_x_leftHand / 255.0
+            print(len(x_test_rightArm))
             test_x_rightArm = np.array(x_test_rightArm)
-            # print('rightArm shape:', test_x_rightArm.shape)
+            print('rightArm shape:', test_x_rightArm.shape)
             test_x_rightArm = test_x_rightArm / 255.0
 
             test_x_rightHand = np.array(x_test_rightHand)
@@ -1487,17 +1742,17 @@ def main_predict(video_input, isFlip = True):
             # prediction_leftHand = model_left_hand.predict(test_x_leftHand)
             # prediction_rightArm = model_right_arm.predict(test_x_rightArm)
             # prediction_rightHand = model_right_hand.predict(test_x_rightHand)
-            prediction_leftArm = model_left_arm.predict(test_x_leftArm)
+            # prediction_leftArm = model_left_arm.predict(test_x_leftArm)
             # prediction_leftHand = model_left.predict(test_x_leftHand)
             prediction_rightArm = model_right_arm.predict(test_x_rightArm)
             prediction_rightHand = model_right_hand.predict(test_x_rightHand)
 
             print(prediction_rightArm)
             print(prediction_rightHand)
-            print(prediction_leftArm)
+            # print(prediction_leftArm)
             # print(prediction_leftHand)
             prediction_right_arm_max = np.argmax(prediction_rightArm[0])
-            prediction_left_max = np.argmax(prediction_leftArm[0])
+            # prediction_left_max = np.argmax(prediction_leftArm[0])
             prediction_right_hand_max = np.argmax(prediction_rightHand[0])
             rightArm_E31 = 0
             rightArm_E32 = 0
@@ -1527,14 +1782,14 @@ def main_predict(video_input, isFlip = True):
             elif prediction_right_hand_max == 2:
                 rightArm_NArm = round((prediction_rightArm[0][2]), 2)
 
-            if prediction_left_max == 0:
-                leftArm_E21 = round((prediction_leftArm[0][0]), 2)
-            elif prediction_left_max == 1:
-                leftArm_E22 = round((prediction_leftArm[0][1]), 2)
-            elif prediction_left_max == 2:
-                leftArm_E23 = round((prediction_leftArm[0][2]), 2)
-            elif prediction_left_max == 3:
-                leftArm_N = round((prediction_leftArm[0][3]), 2)
+            # if prediction_left_max == 0:
+            #     leftArm_E21 = round((prediction_leftArm[0][0]), 2)
+            # elif prediction_left_max == 1:
+            #     leftArm_E22 = round((prediction_leftArm[0][1]), 2)
+            # elif prediction_left_max == 2:
+            #     leftArm_E23 = round((prediction_leftArm[0][2]), 2)
+            # elif prediction_left_max == 3:
+            #     leftArm_N = round((prediction_leftArm[0][3]), 2)
 
             # rightArm_E31 = round(prediction_rightHand[0][3],2)
             # rightArm_E32 = round(prediction_rightHand[0][4],2)
@@ -1584,6 +1839,9 @@ def main_predict(video_input, isFlip = True):
             err_right_shoulder = 0
             err_left_shoulder = 0
             err_knees_shoulder = 0
+            err_left_arm_high = 0
+            err_left_arm_low = 0
+            err_left_hand_slope = 0
             is_face_err = False
             is_body_err = False
             is_left_shoulder_err = False
@@ -1593,6 +1851,9 @@ def main_predict(video_input, isFlip = True):
             is_erhu_left = False
             is_erhu_right = False
             is_not_orthogonal = False
+            is_left_arm_too_high = False
+            is_left_arm_too_low = False
+            is_left_hand_slope = False
             for (all_body_point, bow_line, erhu_line) in zip(x_test_all_body_point, x_test_bow_line_point, x_test_erhu_line_point):
                 head_coordinate = all_body_point[0]
                 body_coordinate = all_body_point[1]
@@ -1602,6 +1863,8 @@ def main_predict(video_input, isFlip = True):
                 degree_shoulder = all_body_point[5]
                 hip_left_point = all_body_point[6]
                 hip_right_point = all_body_point[7]
+                degree_lh_shoulder_elbow = all_body_point[8]
+                lh_slope_value = all_body_point[9]
 
                 if degree_ear_face >= K_var or degree_ear_face < (0 - K_var):
                     err_face += 1
@@ -1613,6 +1876,13 @@ def main_predict(video_input, isFlip = True):
                     err_left_shoulder += 1
                 if abs(knees_shoulder_distance) > K_var:
                     err_knees_shoulder += 1
+                if degree_lh_shoulder_elbow < K_LArm_high_var:
+                    err_left_arm_high += 1
+                elif degree_lh_shoulder_elbow > K_LArm_low_var:
+                    err_left_arm_low += 1
+                if lh_slope_value > K_var:
+                    err_left_hand_slope += 1
+
 
                 L1_angle = get_angle(erhu_line[0], erhu_line[1])
                 L2_angle = get_angle(bow_line[0], bow_line[1])
@@ -1644,9 +1914,15 @@ def main_predict(video_input, isFlip = True):
                 is_right_shoulder_err = True
             if err_knees_shoulder > limit_sample // 2:
                 is_knees_shoulder = True
+            if err_left_arm_high > limit_sample // 2:
+                is_left_arm_too_high = True
+            if err_left_arm_low > limit_sample // 2:
+                is_left_arm_too_low = True
+            if err_left_hand_slope > limit_sample // 2:
+                is_left_hand_slope = True
 
-            for img_original, ori_right_hand_point, ori_right_arm_point, ori_left_arm_point, all_body_point, bow_line, erhu_line in \
-                    zip(x_test_video_original, x_test_right_hand_point, x_test_right_arm_point, x_test_left_arm_point,
+            for img_original, ori_right_hand_point, ori_right_arm_point, ori_left_arm_point, ori_left_hand_point, all_body_point, bow_line, erhu_line in \
+                    zip(x_test_video_original, x_test_right_hand_point, x_test_right_arm_point, x_test_left_arm_point, x_test_left_hand_point,
                         x_test_all_body_point, x_test_bow_line_point, x_test_erhu_line_point):
                 idx_write_frame += 1
                 warning_mess = []
@@ -1665,6 +1941,8 @@ def main_predict(video_input, isFlip = True):
                 degree_shoulder = all_body_point[5]
                 hip_left_point = all_body_point[6]
                 hip_right_point = all_body_point[7]
+                degree_lh_shoulder_elbow = all_body_point[8]
+                lh_slope_value = all_body_point[9]
 
                 # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
                 # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
@@ -1772,23 +2050,20 @@ def main_predict(video_input, isFlip = True):
                 # E21 Error Left Arm ================================================================================= 4
                 # draw_res_bow.text((10, 230), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
                 ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
-                if leftArm_E21 >= P_var:
+                ori_left_hand_rectangle_shape = [ori_left_hand_point[0], ori_left_hand_point[1]]
+                # if leftArm_E21 >= P_var:
+                if is_left_arm_too_high == True :
                     # print('Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E21", str(leftArm_E21), 'Left Hand Arm Position', str(leftArm_E21),
+                    warning_mess.append(["E21", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow),
                                          'E21-Left elbow too Hight'])
                     draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                elif leftArm_E22 >= P_var:
+                # elif leftArm_E22 >= P_var:
+                elif is_left_arm_too_low == True:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(
-                        ["E22", str(leftArm_E22), 'Left Hand Arm Position', str(leftArm_E22), 'E22-Left elbow too Low'])
-                    draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                elif leftArm_E23 >= P_var:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E23", str(leftArm_E23), 'Left Hand Arm Position', str(leftArm_E23),
-                                         'E23-Left elbow and wrist in a line'])
+                        ["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
                     draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
                 elif leftArm_N >= P_var:
                     # print('Else Left Arm')
@@ -1798,6 +2073,17 @@ def main_predict(video_input, isFlip = True):
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
+                # if leftArm_E23 >= P_var:
+                if is_left_hand_slope == True:
+                    # print('Else Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
+                                         'E23-Left elbow and wrist in a line'])
+                    draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
+                else:
+                    # print('Else Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
 
                 # E41 Error Bow Erhu ================================================================================= 5
                 # bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
@@ -1928,6 +2214,7 @@ def main_predict(video_input, isFlip = True):
             x_test_right_hand_point = []
             x_test_right_arm_point = []
             x_test_left_arm_point = []
+            x_test_left_hand_point = []
             x_test_all_body_point = []
             x_test_erhu_line_point = []
             x_test_bow_line_point = []
@@ -1935,9 +2222,16 @@ def main_predict(video_input, isFlip = True):
             # break
         # else:
         #     frame_number += 1
-    print(output_array)
+    # print(output_array)
     # np.savez_compressed(os.path.join(result_folder, filename + "_" + curr_time), output_array)
     np.savez_compressed(os.path.join(result_folder, filename), output_array)
+
+    # Save JSON ==========
+    np_array_to_list = output_array
+    json_file = os.path.join(result_folder, filename + '.json')
+    json.dump(np_array_to_list, codecs.open(json_file, 'w', encoding='utf-8'), sort_keys=True, indent=4)
+    # ====================
+
     videoInput.release()
     tensorflow.keras.backend.clear_session()
     videoOut_1.release()
@@ -1958,4 +2252,4 @@ def main_predict(video_input, isFlip = True):
 
     return os.path.join(result_folder, filename + ".mp4")
 
-# main_predict('/home/minelab/dev/erhu-project/upload/16_05_2022_Monday(19:10:42).webm')
+# main_predict('/home/minelab/dev/erhu-project/upload/24_05_2022_Tuesday(23:38:25).webm')

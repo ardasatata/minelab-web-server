@@ -403,7 +403,7 @@ export function PlayVideo(props: Props) {
   const headMessage = (input: string) => {
     switch (input) {
       case 'Head_Normal':
-        return '頭正常';
+        return '正常';
       case 'E11':
         return '頭要擺正';
     }
@@ -412,16 +412,16 @@ export function PlayVideo(props: Props) {
   const bodyMessage = (input: string) => {
     switch (input) {
       case 'Body_Normal':
-        return '坐姿正常';
+        return '正常';
       case 'E14':
-        return '坐姿要正';
+        return '要坐正';
     }
   };
 
   const shoulderMessage = (input: string) => {
     switch (input) {
       case 'Shoulder_Normal':
-        return '肩正常';
+        return '正常';
       case 'E13':
         return '右肩太高';
       case 'E12':
@@ -432,7 +432,7 @@ export function PlayVideo(props: Props) {
   const rightArmMessage = (input: string) => {
     switch (input) {
       case 'RightArm_Normal':
-        return '右臂正常';
+        return '正常';
       case 'E34':
         return '右手腕持弓太向內翻';
       case 'E35':
@@ -443,24 +443,31 @@ export function PlayVideo(props: Props) {
   const rightHandMessage = (input: string) => {
     switch (input) {
       case 'RightHand_Normal':
-        return '右手正常';
+        return '正常';
       case 'E31':
-        return '拇指握弓位置錯誤';
+        return '拇指握弓錯誤';
       case 'E32':
-        return '食指握弓桿位置錯誤';
+        return '食指觸弓桿錯誤';
       case 'E33':
-        return '中指或無名指觸弓位置錯誤';
+        return '中指無名指觸弓毛錯誤';
     }
   };
 
-  const leftHandMessage = (input: string) => {
+  const leftArmMessage = (input: string) => {
     switch (input) {
       case 'LeftArm_Normal':
-        return '左手正常';
+        return '正常';
       case 'E21':
         return '左手肘過高';
       case 'E22':
         return '左手肘太低';
+    }
+  };
+
+  const leftHandWristMessage = (input: string) => {
+    switch (input) {
+      case 'LeftHand_Normal':
+        return '正常';
       case 'E23':
         return '手腕手肘放輕鬆連成一直線';
     }
@@ -469,22 +476,22 @@ export function PlayVideo(props: Props) {
   const bowMessage = (input: string) => {
     switch (input) {
       case 'Bow_normal':
-        return '運弓正常';
+        return '正常';
       case 'E41':
-        return '琴桿左傾斜';
+        return '左傾斜';
       case 'E42':
-        return '琴桿右傾斜';
+        return '右傾斜';
       case 'E43':
-        return '運弓軌跡必須保持一直線';
+        return '軌跡必須一直線';
     }
   };
 
   const kneesMessage = (input: string) => {
     switch (input) {
       case 'Knees_Normal':
-        return '兩膝正常';
+        return '正常';
       case 'E15':
-        return '兩膝與肩同寬';
+        return '要與肩同寬';
     }
   };
 
@@ -626,7 +633,7 @@ export function PlayVideo(props: Props) {
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手 : ${leftHandMessage(data[5][0])}`}
+                        {`左手 : ${leftArmMessage(data[5][0])}`}
                       </div>
                     </div>
                     <div
@@ -636,10 +643,10 @@ export function PlayVideo(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
-                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {/*{`Bow : ${data[5][0]}`}*/}
-                        {`運弓 : ${bowMessage(data[6][0])}`}
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`左手 : ${leftHandWristMessage(data[6][0])}`}
                       </div>
                     </div>
                     <div
@@ -649,10 +656,23 @@ export function PlayVideo(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Bow : ${data[5][0]}`}*/}
+                        {`運弓 : ${bowMessage(data[7][0])}`}
+                      </div>
+                    </div>
+                    <div
+                      className={
+                        data[8][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
                       <KneeIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Knee(s) : ${kneesMessage(data[6][0])}`}*/}
-                        {`兩膝 : ${kneesMessage(data[7][0])}`}
+                        {`兩膝 : ${kneesMessage(data[8][0])}`}
                       </div>
                     </div>
                   </div>

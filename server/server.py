@@ -1,6 +1,6 @@
 import os.path
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 import cv2
@@ -379,6 +379,10 @@ def file_list():
     }
     return jsonify(value)
 
+@app.route('/predict/<path:path>')
+def send_report(path):
+    return send_file(PREDICT_DIR_SEND_FILE + path, conditional=False)
+
 
 @socketio.on('connect', namespace='/work')
 def connect():
@@ -421,6 +425,88 @@ def stop_work():
     worker.stop()
     emit("update", {"msg": "worker has been stoppped"})
 
+
+##### -------------- #####
+## SIGN LANGUAGE SERVER ##
+##### -------------- #####
+
+# Directory List
+SL_UPLOAD_DIR = r"./sign-language/upload/"
+
+SL_UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign-language/upload/"
+
+@app.route("/sign-language/send-video", methods=['POST'])
+@cross_origin()
+def sl_send_video():
+    video = request.files.get('video')
+    print('received..', video.filename)
+
+    now = datetime.now()  # current date and time
+    date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
+
+    # Video Metadata
+    filename = f"{date_time}.webm"
+    processed_blurred = f"{date_time}_blur.mp4"
+
+    video.filename = filename
+
+    value = {
+        "ok": True,
+        "filename": filename
+    }
+
+    print("saving...", filename)
+    video.save(SL_UPLOAD_DIR + filename)
+
+    # video_length = get_length(SL_UPLOAD_DIR + filename)
+    #
+    # print('vid_length :', video_length)
+
+    try:
+        # # run classifier & blurring sub-process
+        # print("blurring...", filename)
+        # subprocess.Popen(
+        #     ['python', './server/FaceMosaicMediaPipe.py', SLICED_DIR + filename, PROCESSED_DIR + processed_filename])
+
+        # print("processing...", filename)
+        # subprocess.Popen(
+        #     ['python', './classifier/classifier.py', SLICED_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
+
+        eventlet.sleep(2)
+
+    except subprocess.CalledProcessError as e:
+        print("Unexpected error:", e)
+        value = {
+            "ok": False,
+            "filename": filename
+        }
+        print("error uploading file")
+        return value
+    return value
+
+@app.route('/sign-language/file-list')
+def sl_file_list():
+    # print('getting all predicted files name')
+    # onlyfiles = [f[:-4] for f in os_sorted(listdir(UPLOAD_DIR))]
+
+    list = []
+
+    for f in os_sorted(listdir(SL_UPLOAD_DIR)):
+        list.append({
+            "filename": f[:-5],
+            "original": f,
+            "processed": f"{f[:-5]}.mp4",
+            # "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.npz")) else True,
+            # "isPredictError": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}_blur.mp4")) else True,
+        })
+
+    # print(list)
+
+    value = {
+        "ok": True,
+        "filepath": list
+    }
+    return jsonify(value)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt",
