@@ -1250,6 +1250,7 @@ def body_landmark_segment(frame):
             lh_wrist_elbow_degree = get_angle(lh_wrist, lh_elbow)
 
             lh_slope_value = abs(lh_wrist_elbow_degree - lh_finger_wrist_degree)
+            lh_finger_wrist_elbow_coor = [lh_middle_finger, lh_wrist, lh_elbow]
 
             print('lh_slop_middle_finger_wrist:', lh_finger_wrist_degree)
             print('lh_slop_wrist_elbow:', lh_wrist_elbow_degree)
@@ -1300,12 +1301,13 @@ def body_landmark_segment(frame):
         degrees_shoulder = 0
         rh_hip, lh_hip = [0, 0], [0, 0]
         lh_slope_value = 0.05
+        lh_finger_wrist_elbow_coor = [[(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)]]
         head_rectangle_coordinate, body_rectangle_coordinate = [(0, 0), (0, 0)], [(0, 0), (0, 0)]
         RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped = image, image, image, image
         RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor = [(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)]
     return img_ori, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
            head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face, \
-           degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip
+           degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor
 
 
 def body_segment(frame, rh_elbow, rh_shoulder, rh_wrist, rh_index_finger, lh_shoulder, lh_wrist, lh_elbow, length_shoulder,
@@ -1510,7 +1512,7 @@ def main_predict(video_input, isFlip = True):
 
         image, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
         head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, \
-        degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip = body_landmark_segment(
+        degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor = body_landmark_segment(
             frame.copy())
 
         # cv2.imshow('RightHand', RH_Cropped)
@@ -1539,7 +1541,7 @@ def main_predict(video_input, isFlip = True):
         if len(x_test_all_body_point) < limit_sample:
             x_test_all_body_point.append(
                 [head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face,
-                 degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value])
+                 degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value, lh_finger_wrist_elbow_coor])
         if len(x_test_erhu_line_point) < limit_sample:
             erhu_line = [(350, 100), (350, 400)]
             x_test_erhu_line_point.append(erhu_line)
@@ -1865,6 +1867,7 @@ def main_predict(video_input, isFlip = True):
                 hip_right_point = all_body_point[7]
                 degree_lh_shoulder_elbow = all_body_point[8]
                 lh_slope_value = all_body_point[9]
+                lh_finger_wrist_elbow_coor = all_body_point[10]
 
                 if degree_ear_face >= K_var or degree_ear_face < (0 - K_var):
                     err_face += 1
@@ -1943,6 +1946,7 @@ def main_predict(video_input, isFlip = True):
                 hip_right_point = all_body_point[7]
                 degree_lh_shoulder_elbow = all_body_point[8]
                 lh_slope_value = all_body_point[9]
+                lh_finger_wrist_elbow_coor = all_body_point[10]
 
                 # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
                 # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
@@ -2079,7 +2083,30 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
                                          'E23-Left elbow and wrist in a line'])
-                    draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
+                    # print((lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]), (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]), (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1]))
+                    try:
+                        r_circle = 4
+                        draw_res_bow.ellipse(
+                            [(lh_finger_wrist_elbow_coor[0][0] - r_circle, lh_finger_wrist_elbow_coor[0][1] - r_circle),
+                             (lh_finger_wrist_elbow_coor[0][0] + r_circle, lh_finger_wrist_elbow_coor[0][1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.ellipse(
+                            [(lh_finger_wrist_elbow_coor[1][0] - r_circle, lh_finger_wrist_elbow_coor[1][1] - r_circle),
+                             (lh_finger_wrist_elbow_coor[1][0] + r_circle, lh_finger_wrist_elbow_coor[1][1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.ellipse(
+                            [(lh_finger_wrist_elbow_coor[2][0] - r_circle, lh_finger_wrist_elbow_coor[2][1] - r_circle),
+                             (lh_finger_wrist_elbow_coor[2][0] + r_circle, lh_finger_wrist_elbow_coor[2][1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
+                                           (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
+                                          fill='blue', width=4)
+                        draw_res_bow.line([(lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]),
+                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                          fill='blue', width=4)
+                    except:
+                        print('Body Landmark Missing')
                 else:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))

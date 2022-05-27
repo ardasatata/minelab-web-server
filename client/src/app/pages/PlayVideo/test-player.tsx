@@ -500,16 +500,6 @@ export function TestPlayer(props: Props) {
 
   // refVideo.current.subscribeToStateChange(state => console.log(state));
 
-  const handleStateChange = (state, prevState) => {
-    // copy player state to this component's state
-    console.log(state);
-  };
-
-  // useEffect(() => {
-  //   // console.log(refVideo.current.getState().player.currentTime);
-  //   return refVideo.current.subscribeToStateChange(state => console.log(state));
-  // },[]);
-
   const [jsonData, setJsonData] = useState(null);
 
   const [playing, setPlaying] = useState(false);
@@ -521,10 +511,7 @@ export function TestPlayer(props: Props) {
         if (err !== null) {
           alert('Something went wrong: ' + err);
         } else {
-          // alert(data);
-          console.log(data[0][0][0][0]);
           console.log(data.length);
-          console.log(data[frame][0][0][0]);
           setJsonData(data);
         }
       },
@@ -606,7 +593,7 @@ export function TestPlayer(props: Props) {
                       // console.log(jsonData.length);
                       // console.log(frameNum);
                       if (frameNum < jsonData.length) {
-                        setFrame(Math.round(state.playedSeconds * 30));
+                        setFrame(Math.round(frameNum));
                       }
                     }}
                     onPlay={() => console.log('play')}
