@@ -12,7 +12,7 @@ export function Nav() {
   return (
     <Wrapper>
       {/*<Item*/}
-      {/*  href={process.env.PUBLIC_URL + `/sign-language/list`}*/}
+      {/*  href={process.env.PUBLIC_URL + `/sign_language/list`}*/}
       {/*  title="Documentation Page"*/}
       {/*  rel="noopener noreferrer"*/}
       {/*>*/}

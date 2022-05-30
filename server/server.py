@@ -29,6 +29,7 @@ import locale
 # import random
 
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
+sys.path.append(os.path.abspath(os.path.join('..', 'sign_language')))
 
 from classifier.timeout import timeout
 from classifier.checking_tool import check_player_img_postition
@@ -182,6 +183,11 @@ def send_video():
 
     subprocess.run(
         ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
+
+    # subprocess.call(
+    #     ["ffmpeg", "-an", "-i", UPLOAD_DIR + filename_temp, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline',
+    #      '-level',
+    #      '3', UPLOAD_DIR + filename])
 
     video_length = get_length(UPLOAD_DIR + filename)
 
@@ -431,10 +437,18 @@ def stop_work():
 ## SIGN LANGUAGE SERVER ##
 ##### -------------- #####
 
-# Directory List
-SL_UPLOAD_DIR = r"./sign-language/upload/"
+# sys.path.append(os.path.abspath(os.path.join('..', 'sign_language')))
 
-SL_UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign-language/upload/"
+# from sign_language.keypoint_extract import extract_keypoint
+# from sign_language.evaluate import evaluate
+
+
+# Directory List
+SL_UPLOAD_DIR = r"./sign_language/upload/"
+SL_RESULT_DIR = r"./sign_language/result/"
+
+SL_UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/upload/"
+SL_RESULT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/result/"
 
 @app.route("/sign-language/send-video", methods=['POST'])
 @cross_origin()
@@ -447,7 +461,7 @@ def sl_send_video():
 
     # Video Metadata
     filename = f"{date_time}.webm"
-    processed_blurred = f"{date_time}_blur.mp4"
+    file_mp4 = f"{date_time}.mp4"
 
     video.filename = filename
 
@@ -459,19 +473,20 @@ def sl_send_video():
     print("saving...", filename)
     video.save(SL_UPLOAD_DIR + filename)
 
-    # video_length = get_length(SL_UPLOAD_DIR + filename)
-    #
-    # print('vid_length :', video_length)
-
     try:
-        # # run classifier & blurring sub-process
-        # print("blurring...", filename)
-        # subprocess.Popen(
-        #     ['python', './server/FaceMosaicMediaPipe.py', SLICED_DIR + filename, PROCESSED_DIR + processed_filename])
 
-        # print("processing...", filename)
-        # subprocess.Popen(
-        #     ['python', './classifier/classifier.py', SLICED_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred])
+        subprocess.call(
+            ["ffmpeg", "-an", "-i", SL_UPLOAD_DIR + filename, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline',
+             '-level',
+             '3', SL_RESULT_DIR_SEND_FILE + file_mp4])
+
+        print(SL_RESULT_DIR_SEND_FILE + file_mp4)
+
+        subprocess.call(
+            ['python', './sign_language/keypoint_extract.py', 'extract_keypoint', SL_RESULT_DIR_SEND_FILE + file_mp4])
+
+        subprocess.call(
+            ['python', './sign_language/evaluate.py', 'evaluate', SL_RESULT_DIR_SEND_FILE + file_mp4, SL_RESULT_DIR_SEND_FILE + file_mp4 + '.npy'])
 
         eventlet.sleep(2)
 

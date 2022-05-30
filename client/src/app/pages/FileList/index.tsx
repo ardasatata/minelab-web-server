@@ -189,25 +189,25 @@ export function FileList(props: Props) {
                                 {'✨ \u00A0 Download Analyzed'}
                               </a>
                             )}
-                            {row.isProcessing ? (
-                              <></>
-                            ) : (
-                              <Link
-                                to={
-                                  process.env.PUBLIC_URL +
-                                  `/playback?title=${row.filename}`
-                                }
-                                className={'text-blue-500'}
-                              >
-                                <div
-                                  className={
-                                    'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
-                                  }
-                                >
-                                  {'▶ \u00A0️ Play'}
-                                </div>
-                              </Link>
-                            )}
+                            {/*{row.isProcessing ? (*/}
+                            {/*  <></>*/}
+                            {/*) : (*/}
+                            {/*  <Link*/}
+                            {/*    to={*/}
+                            {/*      process.env.PUBLIC_URL +*/}
+                            {/*      `/playback?title=${row.filename}`*/}
+                            {/*    }*/}
+                            {/*    className={'text-blue-500'}*/}
+                            {/*  >*/}
+                            {/*    <div*/}
+                            {/*      className={*/}
+                            {/*        'flex h-full items-center justify-center mr-4 font-black cursor-pointer'*/}
+                            {/*      }*/}
+                            {/*    >*/}
+                            {/*      {'▶ \u00A0️ Play'}*/}
+                            {/*    </div>*/}
+                            {/*  </Link>*/}
+                            {/*)}*/}
                             {/* ### NEW PLAYER TEST ### */}
                             {row.isProcessing ? (
                               <></>
@@ -224,7 +224,7 @@ export function FileList(props: Props) {
                                     'flex h-full items-center justify-center mr-4 font-black cursor-pointer'
                                   }
                                 >
-                                  {'▶ \u00A0️ Play Test'}
+                                  {'▶ \u00A0️ Play'}
                                 </div>
                               </Link>
                             )}

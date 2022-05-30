@@ -1206,6 +1206,11 @@ def body_landmark_segment(frame):
             y_R_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_KNEE].y * image_height)
             rh_knees = [x_R_knees, y_R_knees]
 
+            # Get Left Knees
+            x_L_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_KNEE].x * image_width)
+            y_L_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_KNEE].y * image_height)
+            lh_knees = [x_L_knees, y_L_knees]
+
             # Get Left Ear
             x_L_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].x * image_width)
             y_L_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].y * image_height)
@@ -1299,7 +1304,7 @@ def body_landmark_segment(frame):
         degrees_ear_face = 90
         degrees_body = 90
         degrees_shoulder = 0
-        rh_hip, lh_hip = [0, 0], [0, 0]
+        rh_hip, lh_hip, lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear = [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]
         lh_slope_value = 0.05
         lh_finger_wrist_elbow_coor = [[(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)]]
         head_rectangle_coordinate, body_rectangle_coordinate = [(0, 0), (0, 0)], [(0, 0), (0, 0)]
@@ -1307,7 +1312,8 @@ def body_landmark_segment(frame):
         RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor = [(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)], [(0, 0), (0, 0)]
     return img_ori, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
            head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face, \
-           degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor
+           degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor, \
+           lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear
 
 
 def body_segment(frame, rh_elbow, rh_shoulder, rh_wrist, rh_index_finger, lh_shoulder, lh_wrist, lh_elbow, length_shoulder,
@@ -1512,8 +1518,8 @@ def main_predict(video_input, isFlip = True):
 
         image, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
         head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, \
-        degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor = body_landmark_segment(
-            frame.copy())
+        degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor,\
+        lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear = body_landmark_segment(frame.copy())
 
         # cv2.imshow('RightHand', RH_Cropped)
         # cv2.imshow('RightArm', RArm_Cropped)
@@ -1541,7 +1547,8 @@ def main_predict(video_input, isFlip = True):
         if len(x_test_all_body_point) < limit_sample:
             x_test_all_body_point.append(
                 [head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face,
-                 degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value, lh_finger_wrist_elbow_coor])
+                 degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value,
+                 lh_finger_wrist_elbow_coor, lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear])
         if len(x_test_erhu_line_point) < limit_sample:
             erhu_line = [(350, 100), (350, 400)]
             x_test_erhu_line_point.append(erhu_line)
@@ -1868,6 +1875,12 @@ def main_predict(video_input, isFlip = True):
                 degree_lh_shoulder_elbow = all_body_point[8]
                 lh_slope_value = all_body_point[9]
                 lh_finger_wrist_elbow_coor = all_body_point[10]
+                lh_knees_coor = all_body_point[11]
+                rh_knees_coor = all_body_point[12]
+                lh_shoulder_coor = all_body_point[13]
+                rh_shoulder_coor = all_body_point[14]
+                lh_ear_coor = all_body_point[15]
+                rh_ear_coor = all_body_point[16]
 
                 if degree_ear_face >= K_var or degree_ear_face < (0 - K_var):
                     err_face += 1
@@ -1947,6 +1960,12 @@ def main_predict(video_input, isFlip = True):
                 degree_lh_shoulder_elbow = all_body_point[8]
                 lh_slope_value = all_body_point[9]
                 lh_finger_wrist_elbow_coor = all_body_point[10]
+                lh_knees_coor = all_body_point[11]
+                rh_knees_coor = all_body_point[12]
+                lh_shoulder_coor = all_body_point[13]
+                rh_shoulder_coor = all_body_point[14]
+                lh_ear_coor = all_body_point[15]
+                rh_ear_coor = all_body_point[16]
 
                 # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
                 # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
@@ -1962,7 +1981,16 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 50), E11_classname + ':' + str(degree_ear_face), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E11", str(degree_ear_face), 'Head Position', str(degree_ear_face),
                                          'E11-Head position not normal (to L or R)'])
-                    draw_res_bow.rectangle(head_coordinate, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(head_coordinate, outline="blue", fill=None, width=4)
+                    r_circle = 5
+                    draw_res_bow.ellipse(
+                        [(lh_ear_coor[0] - r_circle, lh_ear_coor[1] - r_circle),
+                         (lh_ear_coor[0] + r_circle, lh_ear_coor[1] + r_circle)],
+                        fill='blue')
+                    draw_res_bow.ellipse(
+                        [(rh_ear_coor[0] - r_circle, rh_ear_coor[1] - r_circle),
+                         (rh_ear_coor[0] + r_circle, rh_ear_coor[1] + r_circle)],
+                        fill='blue')
                 else:
                     # print('Else Face')
                     # draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
@@ -1988,14 +2016,24 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 140), E13_classname + ':' + str(degree_shoulder), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E13", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
                                          'E13-Right shoulder too hight '])
-                    draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                    r_circle = 7
+                    draw_res_bow.ellipse(
+                        [(rh_shoulder_coor[0] - r_circle, rh_shoulder_coor[1] - r_circle),
+                         (rh_shoulder_coor[0] + r_circle, rh_shoulder_coor[1] + r_circle)],
+                        fill='blue')
                 # elif degree_shoulder < (0-((X_var/90)*100)):
                 elif is_left_shoulder_err == True:
                     # print('Else Shoulder')
                     # draw_res_bow.text((10, 140), E12_classname + ':' + str(degree_shoulder), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E12", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
                                          'E12-Left shoulder too hight'])
-                    draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                    r_circle = 7
+                    draw_res_bow.ellipse(
+                        [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                         (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                        fill='blue')
                 else:
                     # print('Else Shoulder')
                     # draw_res_bow.text((10, 140), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
@@ -2035,13 +2073,13 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 200), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E34", str(rightArm_E34), 'Right Arm Position', str(rightArm_E34),
                                          'E34-Right wrist position too inward'])
-                    draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
                 elif rightArm_E35 >= P_var:
                     # print('Else Right Arm')
                     # draw_res_bow.text((10, 200), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E35", str(rightArm_E35), 'Right Arm Position', str(rightArm_E35),
                                          'E35-Right wrist position too outward'])
-                    draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
                 elif rightArm_NArm >= P_var:
                     # print('Else Right Arm')
                     # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
@@ -2061,14 +2099,14 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 260), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E21", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow),
                                          'E21-Left elbow too Hight'])
-                    draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
                 # elif leftArm_E22 >= P_var:
                 elif is_left_arm_too_low == True:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(
                         ["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
-                    draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
                 elif leftArm_N >= P_var:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
@@ -2151,6 +2189,15 @@ def main_predict(video_input, isFlip = True):
                     warning_mess.append(["E15", str(knees_shoulder_distance), 'Knees Position', str(degree_body),
                                          'E15-Put knees in normal position'])
                     # draw_res_bow.rectangle((hip_left_point, hip_right_point), outline="blue", fill=None, width=4)
+                    r_circle = 7
+                    draw_res_bow.ellipse(
+                        [(lh_knees_coor[0] - r_circle, lh_knees_coor[1] - r_circle),
+                         (lh_knees_coor[0] + r_circle, lh_knees_coor[1] + r_circle)],
+                        fill='blue')
+                    draw_res_bow.ellipse(
+                        [(rh_knees_coor[0] - r_circle, rh_knees_coor[1] - r_circle),
+                         (rh_knees_coor[0] + r_circle, rh_knees_coor[1] + r_circle)],
+                        fill='blue')
                 else:
                     # draw_res_bow.text((10, 110), 'Knees Position : Normal', font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["Knees_Normal", "Normal", 'Knees Position', str(0), 'Normal'])
@@ -2279,4 +2326,4 @@ def main_predict(video_input, isFlip = True):
 
     return os.path.join(result_folder, filename + ".mp4")
 
-# main_predict('/home/minelab/dev/erhu-project/upload/24_05_2022_Tuesday(23:38:25).webm')
+# main_predict('reupload/11_05_2022_Wednesday(09:17:02).webm')

@@ -70,7 +70,7 @@ export function UploadVideo(props: Props) {
     formData.append('video', blob, file[0].name);
 
     const result = await axios.post(
-      'https://140.115.51.243/api/send-video',
+      'https://140.115.51.243/api/sign-language/send-video',
       formData,
       { headers },
     );

@@ -429,16 +429,16 @@ export function PlayVideo(props: Props) {
     }
   };
 
-  const rightArmMessage = (input: string) => {
-    switch (input) {
-      case 'RightArm_Normal':
-        return '正常';
-      case 'E34':
-        return '右手腕持弓太向內翻';
-      case 'E35':
-        return '右手腕持弓太向外翻';
-    }
-  };
+  // const rightArmMessage = (input: string) => {
+  //   switch (input) {
+  //     case 'RightArm_Normal':
+  //       return '正常';
+  //     case 'E34':
+  //       return '右手腕持弓太向內翻';
+  //     case 'E35':
+  //       return '右手腕持弓太向外翻';
+  //   }
+  // };
 
   const rightHandMessage = (input: string) => {
     switch (input) {
@@ -581,7 +581,7 @@ export function PlayVideo(props: Props) {
                     >
                       <TorsoIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`身體 : ${bodyMessage(data[1][0])}`}
+                        {`坐姿 : ${bodyMessage(data[1][0])}`}
                       </div>
                     </div>
                     <div
@@ -606,22 +606,22 @@ export function PlayVideo(props: Props) {
                     >
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`右手 : ${rightHandMessage(data[3][0])}`}
+                        {`右手持弓 : ${rightHandMessage(data[3][0])}`}
                       </div>
                     </div>
 
-                    <div
-                      className={
-                        data[4][4] === 'Normal'
-                          ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
-                      }
-                    >
-                      <ShoulderIcon className={'w-12 mr-4'} />
-                      <div className={'whitespace-nowrap'}>
-                        {`右臂 : ${rightArmMessage(data[4][0])}`}
-                      </div>
-                    </div>
+                    {/*<div*/}
+                    {/*  className={*/}
+                    {/*    data[4][4] === 'Normal'*/}
+                    {/*      ? 'flex items-center mb-2'*/}
+                    {/*      : 'flex items-center text-red-500 mb-2'*/}
+                    {/*  }*/}
+                    {/*>*/}
+                    {/*  <ShoulderIcon className={'w-12 mr-4'} />*/}
+                    {/*  <div className={'whitespace-nowrap'}>*/}
+                    {/*    {`右臂 : ${rightArmMessage(data[4][0])}`}*/}
+                    {/*  </div>*/}
+                    {/*</div>*/}
 
                     <div
                       className={
@@ -633,7 +633,7 @@ export function PlayVideo(props: Props) {
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手 : ${leftArmMessage(data[5][0])}`}
+                        {`左手持琴 : ${leftArmMessage(data[5][0])}`}
                       </div>
                     </div>
                     <div
@@ -646,7 +646,7 @@ export function PlayVideo(props: Props) {
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手 : ${leftHandWristMessage(data[6][0])}`}
+                        {`左手持琴 : ${leftHandWristMessage(data[6][0])}`}
                       </div>
                     </div>
                     <div
