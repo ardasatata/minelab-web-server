@@ -181,6 +181,9 @@ def send_video():
     print("saving...", filename_temp)
     video.save(UPLOAD_DIR + filename_temp)
 
+    # subprocess.run(
+        # ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
+
     subprocess.run(
         ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
 

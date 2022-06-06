@@ -548,7 +548,7 @@ export function PlayVideo(props: Props) {
                     'text-white text-3xl absolute mt-4 ml-4 transition ease-in-out bg-black p-2'
                   }
                 >
-                  {`Frame Number : ${frame}`}
+                  {/*{`Frame Number : ${frame}`}*/}
                 </div>
                 {data ? (
                   <div

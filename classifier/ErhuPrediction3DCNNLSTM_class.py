@@ -76,6 +76,8 @@ Y_var = configure.getint('traditional', 'y')
 N_var = configure.getint('traditional', 'n')
 M_var = configure.getint('traditional', 'm')
 P_var = configure.getfloat('deeplearning', 'p')
+S_var = configure.getfloat('traditional', 's') # Slope threshold
+KN_var = configure.getfloat('traditional', 'kn') # Knees threshold
 
 print("K_var:", K_var)
 print("X_var:", X_var)
@@ -83,6 +85,8 @@ print("Y_var:", Y_var)
 print("N_var:", N_var)
 print("M_var:", M_var)
 print("P_var:", P_var)
+print("S_var:", S_var)
+print("KN_var:", KN_var)
 
 img_chinese = np.zeros((200, 400, 3), np.uint8)
 b, g, r, a = 0, 255, 0, 0
@@ -1190,6 +1194,7 @@ def body_landmark_segment(frame):
             x_L_shoulder = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_SHOULDER].x * image_width)
             y_L_shoulder = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_SHOULDER].y * image_height)
             lh_shoulder = [x_L_shoulder, y_L_shoulder]
+            diff_shoulder = abs(x_L_shoulder-x_R_shoulder)
 
             # Get Elbow Right Hand
             x_R_elbow = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW].x * image_width)
@@ -1210,6 +1215,7 @@ def body_landmark_segment(frame):
             x_L_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_KNEE].x * image_width)
             y_L_knees = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_KNEE].y * image_height)
             lh_knees = [x_L_knees, y_L_knees]
+            diff_knees = abs(x_L_knees-x_R_knees)
 
             # Get Left Ear
             x_L_ear = round(results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].x * image_width)
@@ -1271,7 +1277,7 @@ def body_landmark_segment(frame):
             body_rectangle_coordinate = [(x_L_shoulder, y_L_shoulder), (x_R_hip, y_R_hip)]
 
             # Get Knees Shoulder Distance
-            knee_shoulder_distance = x_R_shoulder - x_R_knees
+            knee_shoulder_distance = int((abs(diff_shoulder - diff_knees)/diff_shoulder)*100)
 
             # Get Face Degree
             degrees_ear_face = get_angle((rh_ear[0], rh_ear[1]), (lh_ear[0], lh_ear[1]))
@@ -1297,8 +1303,8 @@ def body_landmark_segment(frame):
                                                                   length_shoulder_2times, length_shoulder_3times,
                                                                   length_half_shoulder, length_thirdhalf_shoulder)
 
-    except:
-        print('MediaPipe Failed')
+    except Exception as e:
+        print('MediaPipe Failed:', e)
         knee_shoulder_distance = 0
         degree_lh_shoulder_elbow = 45
         degrees_ear_face = 90
@@ -1368,6 +1374,144 @@ def body_segment(frame, rh_elbow, rh_shoulder, rh_wrist, rh_index_finger, lh_sho
     return RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor
 
 
+def scaleIMG(img, scale = 1) :
+    return cv2.resize(img, (int(img.shape[1] * scale), int(img.shape[0] * scale)), interpolation = cv2.INTER_AREA) if scale else img
+
+def distance2D(p1, p2) :
+    distance = math.sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))
+    return distance
+
+def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizontalLinePoint2, verticalLinePoint1,
+                     verticalLinePoint2, horizontalAvgSize, verticalAvgSize, horizontalArray1, horizontalArray2,
+                     verticalArray1, verticalArray2):
+    # scale = 720 / frame.shape[0]
+    # frame = scaleIMG(frame, scale)
+    print('skip_frame:', skipFrame)
+    img = frame.copy()
+    minLineSize = img.shape[0] / 2.4
+
+    edges = cv2.Canny(img, 100, 50, apertureSize = 3)
+    noiseValue = np.mean(edges)
+    #print(noiseValue)
+
+    if noiseValue > 10 :
+        blur = cv2.blur(img,(10, 5))
+        edges = cv2.Canny(blur, 50, 100, apertureSize = 3)
+        mask = subtractor.apply(blur)
+    else :
+        mask = subtractor.apply(img)
+    edges = cv2.dilate(edges, np.ones((3, 2), np.uint8), iterations=1)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((10, 10), np.uint8))
+    #cv2.imshow("Mask", mask)
+
+    edges[np.where((mask == 0))] = 0
+    # cv2.imshow("edges", edges)
+
+    _horizontalLinesPoint1 = []
+    _horizontalLinesPoint2 = []
+    _verticalLinesPoint1 = []
+    _verticalLinesPoint2 = []
+    bow_line_coor = [(0, 0), (0, 0)]
+    erhu_line_coor = [(0, 0), (0, 0)]
+
+    if skipFrame == 0 :
+        lines = cv2.HoughLinesP(image=edges,rho=1, theta=np.pi/180, threshold=100, lines=np.array([]), minLineLength=minLineSize, maxLineGap=80)
+
+        if hasattr(lines, 'shape') :
+            a, b, c = lines.shape
+
+            for i in range(a):
+                x1, y1 = lines[i][0][0], lines[i][0][1]
+                x2, y2 = lines[i][0][2], lines[i][0][3]
+                # cv2.line(img, (x1, y1), (x2, y2), (255, 255, 0), 2, cv2.LINE_AA)
+
+                theta = math.atan2(y2 - y1, x2 - x1)
+                angle = math.degrees(theta)
+                if angle < 0:
+                    angle = -angle
+                #print(angle)
+
+                if angle < 60 : # horizontal line
+                    if x1 > x2 :
+                        x1, y1, x2, y2 = x2, y2, x1, y1
+
+                    if y1 > frame.shape[0] / 2 and y2 > frame.shape[0] / 2 :
+                        _horizontalLinesPoint1.append([x1, y1])
+                        _horizontalLinesPoint2.append([x2, y2])
+
+                if angle > 70 : # vertical line
+                    if y1 > y2 :
+                        x1, y1, x2, y2 = x2, y2, x1, y1
+
+                    if x1 > frame.shape[1] / 2 and x2 > frame.shape[1] / 2 :
+                        _verticalLinesPoint1.append([x1, y1])
+                        _verticalLinesPoint2.append([x2, y2])
+
+        if len(_horizontalLinesPoint1) > 0 :
+            horizontalLinePoint1 = np.average(_horizontalLinesPoint1, axis=0)
+            horizontalLinePoint2 = np.average(_horizontalLinesPoint2, axis=0)
+
+        if len(_verticalLinesPoint1) > 0 :
+            verticalLinePoint1 = np.average(_verticalLinesPoint1, axis=0)
+            verticalLinePoint2 = np.average(_verticalLinesPoint2, axis=0)
+
+
+        if len(horizontalLinePoint1) > 0 :
+            if len(horizontalArray1) > horizontalAvgSize :
+                horizontalArray1.pop(0)
+                horizontalArray2.pop(0)
+
+            horizontalArray1.append(horizontalLinePoint1)
+            horizontalArray2.append(horizontalLinePoint2)
+            horizontalLinePoint1 = np.average(horizontalArray1, axis=0)
+            horizontalLinePoint2 = np.average(horizontalArray2, axis=0)
+
+            x1, y1 = int(horizontalLinePoint1[0]), int(horizontalLinePoint1[1])
+            x2, y2 = int(horizontalLinePoint2[0]), int(horizontalLinePoint2[1])
+            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 2, cv2.LINE_AA)
+            bow_line_coor = [(x1, y1), (x2, y2)]
+        else:
+            try:
+                horizontalLinePoint1 = np.average(horizontalArray1, axis=0)
+                horizontalLinePoint2 = np.average(horizontalArray2, axis=0)
+                print(horizontalLinePoint1, horizontalLinePoint2)
+                x1, y1 = int(horizontalLinePoint1[0]), int(horizontalLinePoint1[1])
+                x2, y2 = int(horizontalLinePoint2[0]), int(horizontalLinePoint2[1])
+                bow_line_coor = [(x1, y1), (x2, y2)]
+            except:
+                bow_line_coor = [(0, 0),(0, 0)]
+
+        if len(verticalLinePoint1) > 0 :
+            if len(verticalArray1) > verticalAvgSize :
+                verticalArray1.pop(0)
+                verticalArray2.pop(0)
+
+            verticalArray1.append(verticalLinePoint1)
+            verticalArray2.append(verticalLinePoint2)
+            verticalLinePoint1 = np.average(verticalArray1, axis=0)
+            verticalLinePoint2 = np.average(verticalArray2, axis=0)
+
+            x1, y1 = int(verticalLinePoint1[0]), int(verticalLinePoint1[1])
+            x2, y2 = int(verticalLinePoint2[0]), int(verticalLinePoint2[1])
+            cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
+            erhu_line_coor = [(x1, y1), (x2, y2)]
+        else:
+            try:
+                verticalLinePoint1 = np.average(verticalArray1, axis=0)
+                verticalLinePoint2 = np.average(verticalArray2, axis=0)
+                print(verticalLinePoint1, verticalLinePoint2)
+                x1, y1 = int(verticalLinePoint1[0]), int(verticalLinePoint1[1])
+                x2, y2 = int(verticalLinePoint2[0]), int(verticalLinePoint2[1])
+                erhu_line_coor = [(x1, y1), (x2, y2)]
+            except:
+                erhu_line_coor = [(0, 0),(0, 0)]
+    else :
+        skipFrame -= 1
+
+    return skipFrame, erhu_line_coor, bow_line_coor
+
+
+
 def main_predict(video_input, isFlip = True):
     print('video_input', video_input)
     start_now = datetime.now()
@@ -1402,7 +1546,7 @@ def main_predict(video_input, isFlip = True):
     video_path = video_input
     filename = video_path.split("/")[-1]
     filename = filename[:-5]
-    # print(video_path)
+    print(video_path)
     # path = os.path.join(os.path.abspath(__file__ + "/../../"), "upload", video_path)
 
     videoInput = cv2.VideoCapture(video_path)
@@ -1494,7 +1638,7 @@ def main_predict(video_input, isFlip = True):
     length = int(videoInput.get(cv2.CAP_PROP_FRAME_COUNT))
     print(f'vid length : {length}')
 
-    start_frame_number = 30
+    start_frame_number = 0
     videoInput.set(cv2.CAP_PROP_POS_FRAMES, start_frame_number)
     # videoInput.set(cv2.CAP_PROP_FPS, 30.0)
 
@@ -1502,6 +1646,22 @@ def main_predict(video_input, isFlip = True):
     end_frame = length - 45
     idx_write_frame = 0
     print(videoInput.isOpened())
+
+    # Variabel for Erhu and Bow Segment =============================
+    subtractor = cv2.createBackgroundSubtractorKNN(10, 50, True)
+    skipFrame = 10
+    horizontalLinePoint1 = []
+    horizontalLinePoint2 = []
+    verticalLinePoint1 = []
+    verticalLinePoint2 = []
+    horizontalAvgSize = 5
+    verticalAvgSize = 20
+    horizontalArray1 = []
+    horizontalArray2 = []
+    verticalArray1 = []
+    verticalArray2 = []
+    # ================================================================
+    output_json_number = 0
     while videoInput.isOpened():
         print('Frame open')
         success, frame = videoInput.read()
@@ -1520,7 +1680,11 @@ def main_predict(video_input, isFlip = True):
         head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, \
         degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor,\
         lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear = body_landmark_segment(frame.copy())
-
+        skipFrameRes, ErhuLine, BowLine = erhu_bow_segment(frame.copy(), subtractor, skipFrame, horizontalLinePoint1,
+                                                           horizontalLinePoint2, verticalLinePoint1, verticalLinePoint2,
+                                                           horizontalAvgSize, verticalAvgSize, horizontalArray1,
+                                                           horizontalArray2, verticalArray1, verticalArray2)
+        skipFrame = skipFrameRes
         # cv2.imshow('RightHand', RH_Cropped)
         # cv2.imshow('RightArm', RArm_Cropped)
         # cv2.imshow('LeftArm', LArm_Cropped)
@@ -1550,10 +1714,16 @@ def main_predict(video_input, isFlip = True):
                  degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value,
                  lh_finger_wrist_elbow_coor, lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear])
         if len(x_test_erhu_line_point) < limit_sample:
-            erhu_line = [(350, 100), (350, 400)]
+            # erhu_line = [(350, 100), (350, 400)]
+            # x_test_erhu_line_point.append(erhu_line)
+            erhu_line = ErhuLine
+            print('Erhu Line:', erhu_line)
             x_test_erhu_line_point.append(erhu_line)
         if len(x_test_bow_line_point) < limit_sample:
-            bow_line = [(100, 300), (400, 300)]
+            # bow_line = [(100, 300), (400, 300)]
+            # x_test_bow_line_point.append(bow_line)
+            bow_line = BowLine
+            print('Bow Line:', bow_line)
             x_test_bow_line_point.append(bow_line)
 
         # seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
@@ -1890,26 +2060,26 @@ def main_predict(video_input, isFlip = True):
                     err_right_shoulder += 1
                 elif degree_shoulder < (0 - ((X_var / 90) * 100)):
                     err_left_shoulder += 1
-                if abs(knees_shoulder_distance) > K_var:
+                if abs(knees_shoulder_distance) > KN_var:
                     err_knees_shoulder += 1
                 if degree_lh_shoulder_elbow < K_LArm_high_var:
                     err_left_arm_high += 1
                 elif degree_lh_shoulder_elbow > K_LArm_low_var:
                     err_left_arm_low += 1
-                if lh_slope_value > K_var:
+                if lh_slope_value > S_var:
                     err_left_hand_slope += 1
 
 
                 L1_angle = get_angle(erhu_line[0], erhu_line[1])
                 L2_angle = get_angle(bow_line[0], bow_line[1])
                 orthogonal_angle = abs(abs(L1_angle) - abs(L2_angle))
-                if (orthogonal_angle <= 90 - N_var or orthogonal_angle >= 90 + N_var):
+                if (orthogonal_angle <= 90 - N_var or orthogonal_angle >= 90 + N_var) and erhu_line[0][0]!=0 and erhu_line[0][1]!=0 and erhu_line[1][0]!=0 and erhu_line[1][1]!=0:
                     err_orthogonal += 1
                     if L1_angle > (90 + N_var):
                         err_erhu_left += 1
                     else:
                         err_erhu_right += 1
-                elif (L2_angle > (0 + N_var) or L2_angle < (0 - N_var)):
+                if (L2_angle > (0 + N_var) or L2_angle < (0 - N_var)):
                     err_bow += 1
 
             if err_face > limit_sample // 2:
@@ -1986,24 +2156,24 @@ def main_predict(video_input, isFlip = True):
                     draw_res_bow.ellipse(
                         [(lh_ear_coor[0] - r_circle, lh_ear_coor[1] - r_circle),
                          (lh_ear_coor[0] + r_circle, lh_ear_coor[1] + r_circle)],
-                        fill='blue')
+                        fill=(0, 128, 255))
                     draw_res_bow.ellipse(
                         [(rh_ear_coor[0] - r_circle, rh_ear_coor[1] - r_circle),
                          (rh_ear_coor[0] + r_circle, rh_ear_coor[1] + r_circle)],
-                        fill='blue')
+                        fill=(0, 128, 255))
                 else:
                     # print('Else Face')
                     # draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["Head_Normal", "Normal", 'Head Position', str(0), 'Normal'])
 
-                # E14 : Error Body Position ========================================================================== 1
+                # E14 : Error Body/Sitting Position ==================================================================== 1
                 # if degree_body > (90+K_var) or degree_body < (90-K_var):
                 if is_body_err == True:
                     # print('Body')
                     # draw_res_bow.text((10, 80), E14_classname + ':' + str(degree_body), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E14", str(degree_body), 'Body Position', str(degree_body),
                                          'E14-Need to seat straight (to L or R)'])
-                    draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
+                    draw_res_bow.rectangle(body_coordinate, outline=(0, 128, 255), fill=None, width=4)
                 else:
                     # print('Else Body')
                     # draw_res_bow.text((10, 80), 'Body Position : Normal', font=result_font, fill=(b, g, r, a))
@@ -2021,7 +2191,7 @@ def main_predict(video_input, isFlip = True):
                     draw_res_bow.ellipse(
                         [(rh_shoulder_coor[0] - r_circle, rh_shoulder_coor[1] - r_circle),
                          (rh_shoulder_coor[0] + r_circle, rh_shoulder_coor[1] + r_circle)],
-                        fill='blue')
+                        fill=(0, 128, 255))
                 # elif degree_shoulder < (0-((X_var/90)*100)):
                 elif is_left_shoulder_err == True:
                     # print('Else Shoulder')
@@ -2033,13 +2203,13 @@ def main_predict(video_input, isFlip = True):
                     draw_res_bow.ellipse(
                         [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
                          (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
-                        fill='blue')
+                        fill=(0, 128, 255))
                 else:
                     # print('Else Shoulder')
                     # draw_res_bow.text((10, 140), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
                     warning_mess.append(['Shoulder_Normal', 'Normal', 'Shoulders Position', str(0), 'Normal'])
 
-                # E31 Error Right Arm ================================================================================ 3
+                # E31 Error Right Hand ================================================================================ 3
                 # draw_res_bow.text((10, 170), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
                 if rightArm_E31 >= P_var:
                     # print('Right Arm')
@@ -2068,6 +2238,7 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["RightHand_Normal", 'Normal', "Right Hand Position", str(1.0), 'Normal'])
 
+                # E34/E35 Error Right Arm ================================================================================ 3
                 if rightArm_E34 >= P_var:
                     # print('Else Right Arm')
                     # draw_res_bow.text((10, 200), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
@@ -2089,7 +2260,7 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
 
-                # E21 Error Left Arm ================================================================================= 4
+                # E21/E22/E23 Error Left Arm ================================================================================= 4
                 # draw_res_bow.text((10, 230), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
                 ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
                 ori_left_hand_rectangle_shape = [ori_left_hand_point[0], ori_left_hand_point[1]]
@@ -2100,23 +2271,37 @@ def main_predict(video_input, isFlip = True):
                     warning_mess.append(["E21", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow),
                                          'E21-Left elbow too Hight'])
                     # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                    try:
+                        r_circle = 4
+                        draw_res_bow.ellipse(
+                            [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                             (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                          fill='blue', width=4)
+                    except:
+                        print('Missing Mediapipe')
                 # elif leftArm_E22 >= P_var:
                 elif is_left_arm_too_low == True:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(
-                        ["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
+                    warning_mess.append(["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
                     # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                elif leftArm_N >= P_var:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
-                else:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
-                # if leftArm_E23 >= P_var:
-                if is_left_hand_slope == True:
+                    try:
+                        r_circle = 4
+                        draw_res_bow.ellipse(
+                            [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                             (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                            fill='blue')
+                        # print(lh_shoulder_coor[0])
+                        # print(lh_shoulder_coor[1])
+                        draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                          fill='blue', width=4)
+                    except:
+                        print('Missing Mediapipe')
+                elif is_left_hand_slope == True:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
@@ -2127,15 +2312,18 @@ def main_predict(video_input, isFlip = True):
                         r_circle = 4
                         draw_res_bow.ellipse(
                             [(lh_finger_wrist_elbow_coor[0][0] - r_circle, lh_finger_wrist_elbow_coor[0][1] - r_circle),
-                             (lh_finger_wrist_elbow_coor[0][0] + r_circle, lh_finger_wrist_elbow_coor[0][1] + r_circle)],
+                             (
+                             lh_finger_wrist_elbow_coor[0][0] + r_circle, lh_finger_wrist_elbow_coor[0][1] + r_circle)],
                             fill='blue')
                         draw_res_bow.ellipse(
                             [(lh_finger_wrist_elbow_coor[1][0] - r_circle, lh_finger_wrist_elbow_coor[1][1] - r_circle),
-                             (lh_finger_wrist_elbow_coor[1][0] + r_circle, lh_finger_wrist_elbow_coor[1][1] + r_circle)],
+                             (
+                             lh_finger_wrist_elbow_coor[1][0] + r_circle, lh_finger_wrist_elbow_coor[1][1] + r_circle)],
                             fill='blue')
                         draw_res_bow.ellipse(
                             [(lh_finger_wrist_elbow_coor[2][0] - r_circle, lh_finger_wrist_elbow_coor[2][1] - r_circle),
-                             (lh_finger_wrist_elbow_coor[2][0] + r_circle, lh_finger_wrist_elbow_coor[2][1] + r_circle)],
+                             (
+                             lh_finger_wrist_elbow_coor[2][0] + r_circle, lh_finger_wrist_elbow_coor[2][1] + r_circle)],
                             fill='blue')
                         draw_res_bow.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
                                            (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
@@ -2145,12 +2333,52 @@ def main_predict(video_input, isFlip = True):
                                           fill='blue', width=4)
                     except:
                         print('Body Landmark Missing')
+                elif leftArm_N >= P_var:
+                    # print('Else Left Arm')
+                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    # warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
+                    warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
                 else:
                     # print('Else Left Arm')
                     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    # warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
                     warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
+                # # if leftArm_E23 >= P_var:
+                # if is_left_hand_slope == True:
+                #     # print('Else Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
+                #                          'E23-Left elbow and wrist in a line'])
+                #     # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
+                #     # print((lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]), (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]), (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1]))
+                #     try:
+                #         r_circle = 4
+                #         draw_res_bow.ellipse(
+                #             [(lh_finger_wrist_elbow_coor[0][0] - r_circle, lh_finger_wrist_elbow_coor[0][1] - r_circle),
+                #              (lh_finger_wrist_elbow_coor[0][0] + r_circle, lh_finger_wrist_elbow_coor[0][1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.ellipse(
+                #             [(lh_finger_wrist_elbow_coor[1][0] - r_circle, lh_finger_wrist_elbow_coor[1][1] - r_circle),
+                #              (lh_finger_wrist_elbow_coor[1][0] + r_circle, lh_finger_wrist_elbow_coor[1][1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.ellipse(
+                #             [(lh_finger_wrist_elbow_coor[2][0] - r_circle, lh_finger_wrist_elbow_coor[2][1] - r_circle),
+                #              (lh_finger_wrist_elbow_coor[2][0] + r_circle, lh_finger_wrist_elbow_coor[2][1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
+                #                            (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
+                #                           fill='blue', width=4)
+                #         draw_res_bow.line([(lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]),
+                #                            (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                #                           fill='blue', width=4)
+                #     except:
+                #         print('Body Landmark Missing')
+                # else:
+                #     # print('Else Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
 
-                # E41 Error Bow Erhu ================================================================================= 5
+                # E41/E42 Erhu Position ==================================================================================== 5
                 # bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
                 # erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), hip_left_point]
                 erhu_line_shape = erhu_line
@@ -2164,26 +2392,32 @@ def main_predict(video_input, isFlip = True):
                         # draw_res_bow.text((10, 320), E41_classname, font=result_font, fill=(b, g, r, a))
                         warning_mess.append(["E41", str(L1_angle), "Erhu Position", str(L1_angle),
                                              "E41-Pole tilt to left - Bow hair and string must be orthogonal"])
-                        draw_res_bow.line(bow_line_shape, fill='blue', width=4)
-                        draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
+                        draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                        draw_res_bow.line(erhu_line_shape, fill=(0, 255, 255), width=4)
                     else:
                         # draw_res_bow.text((10, 320), E42_classname, font=result_font, fill=(b, g, r, a))
                         warning_mess.append(["E42", str(L1_angle), "Erhu Position", str(L1_angle),
                                              "E42-Pole tilt to right - Bow hair and string must be orthogonal"])
-                        draw_res_bow.line(bow_line_shape, fill='blue', width=4)
-                        draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
-                elif is_bow_err == True:
+                        draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                        draw_res_bow.line(erhu_line_shape, fill=(0, 255, 255), width=4)
+                        print('bow_line_shape', bow_line_shape)
+                        print('erhu_line_shape', erhu_line_shape)
+                else:
+                    warning_mess.append(["Erhu_Normal", "Normal", "Erhu Position", str(1.0), "Normal"])
+
+                # E43 Bow Trajectory must stright line ================================================================= 6
+                if is_bow_err == True:
                     # draw_res_bow.text((10, 320), E43_classname, font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E43", str(L2_angle), "Bow Position", str(L2_angle),
                                          "E43-Trace of bow must be in straight line"])
-                    draw_res_bow.line(bow_line_shape, fill='blue', width=4)
+                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
                     # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
                 else:
                     # print('Else Orthogonal')
                     # draw_res_bow.text((10, 320), 'Bow and Erhu is Orthogonal', font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["Bow_normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
+                    warning_mess.append(["Bow_Normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
 
-                # E15 Error Knees Position =========================================================================== 6
+                # E15 Error Knees Position ============================================================================= 7
                 if is_knees_shoulder == True:
                     # draw_res_bow.text((10, 110), E15_classname + ':' + str(knees_shoulder_distance), font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E15", str(knees_shoulder_distance), 'Knees Position', str(degree_body),
@@ -2193,11 +2427,11 @@ def main_predict(video_input, isFlip = True):
                     draw_res_bow.ellipse(
                         [(lh_knees_coor[0] - r_circle, lh_knees_coor[1] - r_circle),
                          (lh_knees_coor[0] + r_circle, lh_knees_coor[1] + r_circle)],
-                        fill='blue')
+                        fill=(0, 128, 255))
                     draw_res_bow.ellipse(
                         [(rh_knees_coor[0] - r_circle, rh_knees_coor[1] - r_circle),
                          (rh_knees_coor[0] + r_circle, rh_knees_coor[1] + r_circle)],
-                        fill='blue')
+                        fill=(0, 128, 255))
                 else:
                     # draw_res_bow.text((10, 110), 'Knees Position : Normal', font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["Knees_Normal", "Normal", 'Knees Position', str(0), 'Normal'])
@@ -2206,6 +2440,7 @@ def main_predict(video_input, isFlip = True):
                 img_original = np.array(img_pil)
                 # output_array.append([warning_mess, img_original])
                 output_array.append([warning_mess])
+                output_json_number += 1
                 videoOut_1.write(img_original)
                 print('Write Frame -', idx_write_frame)
             #
@@ -2298,6 +2533,26 @@ def main_predict(video_input, isFlip = True):
         #     frame_number += 1
     # print(output_array)
     # np.savez_compressed(os.path.join(result_folder, filename + "_" + curr_time), output_array)
+
+    if len(x_test_video_original) > 0:
+        indx = 0
+        for img in x_test_video_original:
+            indx += 1
+            print('Last Frame:', str(indx))
+            warning_mess = []
+            warning_mess.append(["Head_Normal", "Normal", 'Head Position', str(0), 'Normal'])
+            warning_mess.append(["Body_Normal", "Normal", 'Body Position', str(0), 'Normal'])
+            warning_mess.append(['Shoulder_Normal', 'Normal', 'Shoulders Position', str(0), 'Normal'])
+            warning_mess.append(["RightHand_Normal", 'Normal', "Right Hand Position", str(1.0), 'Normal'])
+            warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
+            warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
+            warning_mess.append(["Erhu_Normal", "Normal", "Erhu Position", str(1.0), "Normal"])
+            warning_mess.append(["Bow_Normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
+            warning_mess.append(["Knees_Normal", "Normal", 'Knees Position', str(0), 'Normal'])
+            output_array.append([warning_mess])
+            output_json_number += 1
+            videoOut_1.write(img)
+
     np.savez_compressed(os.path.join(result_folder, filename), output_array)
 
     # Save JSON ==========
@@ -2323,7 +2578,8 @@ def main_predict(video_input, isFlip = True):
     end_time = end_now.strftime("%H:%M:%S")
     print("Start Time =", start_time)
     print("End Time =", end_time)
-
+    print("Json Count=", output_json_number)
+    print("Frame Count=", frame_number)
     return os.path.join(result_folder, filename + ".mp4")
 
-# main_predict('reupload/11_05_2022_Wednesday(09:17:02).webm')
+# main_predict('/home/minelab/dev/erhu-project/upload/03_06_2022_Friday(17:41:15).webm')

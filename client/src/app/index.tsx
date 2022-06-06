@@ -28,12 +28,12 @@ export function App() {
     <BrowserRouter>
       <Helmet
         titleTemplate="%s - Minelab"
-        defaultTitle="Erhu Trainer | 二胡學習"
+        defaultTitle="二胡基礎學習診斷 \nFundamental Erhu Learning Diagnosis"
         htmlAttributes={{ lang: i18n.language }}
       >
         <meta
           name="description"
-          content="An Erhu Trainer|二胡學習 application"
+          content="An 二胡基礎學習診斷 \nFundamental Erhu Learning Diagnosis application"
         />
       </Helmet>
 

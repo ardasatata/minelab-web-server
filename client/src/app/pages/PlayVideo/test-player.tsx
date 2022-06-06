@@ -180,6 +180,8 @@ const columns = [
 
 interface Props {}
 
+const OFFSET = 30
+
 export function TestPlayer(props: Props) {
   const query = useQuery();
   // console.log(query.get('title'));
@@ -275,29 +277,10 @@ export function TestPlayer(props: Props) {
 
   // @ts-ignore
   useEffect(() => {
-    const newSocket = io(`https://140.115.51.243:5000/work`, {
-      transports: ['websocket'],
-      upgrade: false,
-    });
-    // @ts-ignore
-    newSocket.connect();
-    setSocket(newSocket);
-
-    newSocket.on('image', data => {
-      const obj = JSON.parse(data);
-      setFrame(obj.frame);
-      setData(obj.data);
-      setImg('data:image/jpeg;base64,' + obj.image);
-
-      let labelsNew = labels;
-
-      labelsNew.push(obj.frame);
-      setLabels(Object.assign({}, labels, labelsNew));
-
-      increment(obj);
-    });
-    return () => newSocket.close();
-  }, [setSocket]);
+    setTimeout(() => {
+      setSocket(true);
+    }, 1000);
+  }, []);
 
   const play = () => {
     setPlaying(true);
@@ -312,7 +295,7 @@ export function TestPlayer(props: Props) {
   useEffect(() => {
     setTimeout(() => {
       play();
-    }, 1000);
+    }, 2000);
   }, []);
 
   const increment = obj => {
@@ -406,7 +389,7 @@ export function TestPlayer(props: Props) {
       case 'Head_Normal':
         return '正常';
       case 'E11':
-        return '頭要擺正';
+        return '要擺正';
     }
   };
 
@@ -430,6 +413,39 @@ export function TestPlayer(props: Props) {
     }
   };
 
+  const erhuMessage = (input: string) => {
+    switch (input) {
+      case 'Erhu_Normal':
+        return '正常';
+      case 'E41':
+        return '左傾斜';
+      case 'E42':
+        return '右傾斜';
+    }
+  };
+
+  const bowMessage = (input: string) => {
+    switch (input) {
+      case 'Bow_Normal':
+        return '正常';
+      case 'E43':
+        return '軌跡必須一直線';
+    }
+  };
+
+  const leftArmMessage = (input: string) => {
+    switch (input) {
+      case 'LeftHand_Normal':
+        return '正常';
+      case 'E21':
+        return '手臂過高';
+      case 'E22':
+        return '手臂太低';
+      case 'E23':
+        return '手腕手肘盡量一直線';
+    }
+  };
+
   // const rightArmMessage = (input: string) => {
   //   switch (input) {
   //     case 'RightArm_Normal':
@@ -441,6 +457,18 @@ export function TestPlayer(props: Props) {
   //   }
   // };
 
+  const leftHandMessage = (input: string) => {
+    switch (input) {
+      case 'LeftHand_Normal':
+        return '正常';
+      case 'A-L1':
+        return '錯誤類型1';
+      case 'A-L2':
+        return '錯誤類型2';
+    }
+  };
+
+
   const rightHandMessage = (input: string) => {
     switch (input) {
       case 'RightHand_Normal':
@@ -451,39 +479,6 @@ export function TestPlayer(props: Props) {
         return '食指觸弓桿錯誤';
       case 'E33':
         return '中指無名指觸弓毛錯誤';
-    }
-  };
-
-  const leftArmMessage = (input: string) => {
-    switch (input) {
-      case 'LeftArm_Normal':
-        return '正常';
-      case 'E21':
-        return '左手肘過高';
-      case 'E22':
-        return '左手肘太低';
-    }
-  };
-
-  const leftHandWristMessage = (input: string) => {
-    switch (input) {
-      case 'LeftHand_Normal':
-        return '正常';
-      case 'E23':
-        return '手腕手肘放輕鬆連成一直線';
-    }
-  };
-
-  const bowMessage = (input: string) => {
-    switch (input) {
-      case 'Bow_normal':
-        return '正常';
-      case 'E41':
-        return '左傾斜';
-      case 'E42':
-        return '右傾斜';
-      case 'E43':
-        return '軌跡必須一直線';
     }
   };
 
@@ -566,13 +561,13 @@ export function TestPlayer(props: Props) {
             {/*</div>*/}
             {socket ? (
               <div className="flex flex-1 justify-center max-w-7xl">
-                <div
-                  className={
-                    'text-white text-3xl absolute mt-4 ml-4 transition ease-in-out bg-black p-2 z-50'
-                  }
-                >
-                  {`Frame Number : ${frame}`}
-                </div>
+                {/*<div*/}
+                {/*  className={*/}
+                {/*    'text-white text-3xl absolute mt-4 ml-4 transition ease-in-out bg-black p-2 z-50'*/}
+                {/*  }*/}
+                {/*>*/}
+                {/*  {`Frame Number : ${frame}`}*/}
+                {/*</div>*/}
 
                 <div
                   className={'bg-black'}
@@ -593,10 +588,10 @@ export function TestPlayer(props: Props) {
                       // console.log(jsonData.length);
                       // console.log(frameNum);
                       if (frameNum < jsonData.length) {
-                        setFrame(Math.round(frameNum));
+                        setFrame(Math.round(frameNum) + OFFSET);
                       }
                     }}
-                    onPlay={() => console.log('play')}
+                    // onPlay={() => console.log('play')}
                     progressInterval={1}
                     width="100%"
                     height="100%"
@@ -621,7 +616,7 @@ export function TestPlayer(props: Props) {
                       className={
                         jsonData[frame][0][0][4] === 'Normal'
                           ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
+                          : 'flex items-center text-orange-500 mb-2'
                       }
                     >
                       <HeadIcon className={'w-12 mr-4'} />
@@ -635,7 +630,7 @@ export function TestPlayer(props: Props) {
                       className={
                         jsonData[frame][0][1][4] === 'Normal'
                           ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
+                          : 'flex items-center text-orange-500 mb-2'
                       }
                     >
                       <TorsoIcon className={'w-12 mr-4'} />
@@ -649,12 +644,70 @@ export function TestPlayer(props: Props) {
                       className={
                         jsonData[frame][0][2][4] === 'Normal'
                           ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
+                          : 'flex items-center text-orange-500 mb-2'
                       }
                     >
                       <ShoulderIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {`肩 : ${shoulderMessage(jsonData[frame][0][2][0])}`}
+                      </div>
+                    </div>
+
+                    {/*ERHU MESSAGE*/}
+                    <div
+                      className={
+                        jsonData[frame][0][6][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-yellow-500 mb-2'
+                      }
+                    >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`琴桿 : ${erhuMessage(jsonData[frame][0][6][0])}`}
+                      </div>
+                    </div>
+
+                    {/*BOW MESSAGE*/}
+                    <div
+                      className={
+                        jsonData[frame][0][7][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-yellow-500 mb-2'
+                      }
+                    >
+                      <BowIcon className={'w-12 h-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Bow : ${data[5][0]}`}*/}
+                        {`運弓 : ${bowMessage(jsonData[frame][0][7][0])}`}
+                      </div>
+                    </div>
+
+                    {/*LEFT HAND*/}
+                    <div
+                      className={
+                        jsonData[frame][0][5][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <HandIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`左手持琴 : ${leftArmMessage(jsonData[frame][0][5][0])}`}
+                      </div>
+                    </div>
+
+                    {/*LEFT HAND FRET*/}
+                    <div
+                      className={
+                        'flex items-center mb-2'
+                      }
+                    >
+                      <HandIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`左手按弦 : 正常`}
                       </div>
                     </div>
 
@@ -686,57 +739,12 @@ export function TestPlayer(props: Props) {
                     {/*  </div>*/}
                     {/*</div>*/}
 
-                    {/*LEFT HAND*/}
-                    <div
-                      className={
-                        jsonData[frame][0][5][4] === 'Normal'
-                          ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
-                      }
-                    >
-                      <HandIcon className={'w-12 mr-4'} />
-                      <div className={'whitespace-nowrap'}>
-                        {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手持琴 : ${leftArmMessage(jsonData[frame][0][5][0])}`}
-                      </div>
-                    </div>
-
-                    {/*LEFT HAND WRIST*/}
-                    <div
-                      className={
-                        jsonData[frame][0][6][4] === 'Normal'
-                          ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
-                      }
-                    >
-                      <HandIcon className={'w-12 mr-4'} />
-                      <div className={'whitespace-nowrap'}>
-                        {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手持琴 : ${leftHandWristMessage(jsonData[frame][0][6][0])}`}
-                      </div>
-                    </div>
-
-                    {/*BOW MESSAGE*/}
-                    <div
-                      className={
-                        jsonData[frame][0][7][4] === 'Normal'
-                          ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
-                      }
-                    >
-                      <BowIcon className={'w-12 h-12 mr-4'} />
-                      <div className={'whitespace-nowrap'}>
-                        {/*{`Bow : ${data[5][0]}`}*/}
-                        {`運弓 : ${bowMessage(jsonData[frame][0][7][0])}`}
-                      </div>
-                    </div>
-
                     {/*KNEES*/}
                     <div
                       className={
                         jsonData[frame][0][8][4] === 'Normal'
                           ? 'flex items-center mb-2'
-                          : 'flex items-center text-red-500 mb-2'
+                          : 'flex items-center text-orange-500 mb-2'
                       }
                     >
                       <KneeIcon className={'w-12 h-12 mr-4'} />

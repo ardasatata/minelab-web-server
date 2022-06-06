@@ -9,7 +9,10 @@ export function Logo() {
     <Wrapper>
       <img src={ncuWhite} className={'h-10 mt-1'} />
       <NTUAicon className={'h-12 whitespace-nowrap block'} style={{}} />
-      <Title style={{ whiteSpace: 'normal' }}>Erhu Trainer | 二胡學習</Title>
+        <div className={"flex flex-col items-center justify-center text-center"}>
+            <Title style={{ whiteSpace: 'normal', fontSize: 18 }}>二胡基礎學習診斷</Title>
+            <Title style={{ whiteSpace: 'normal', fontSize: 14 }}>Fundamental Erhu Learning Diagnosis</Title>
+        </div>
       {/*<Description>Minelab 2022</Description>*/}
     </Wrapper>
   );
