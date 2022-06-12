@@ -1,4 +1,5 @@
 import os.path
+import time
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_socketio import SocketIO, emit
@@ -163,10 +164,10 @@ def send_video():
 
     # Video Metadata
     filename_temp = f"{date_time}_temp.webm"
-    filename = f"{date_time}.webm"
-    processed_filename = f"{date_time}.mp4"
-    processed_blurred = f"{date_time}_blur.mp4"
-    stream_file = f"{date_time}_stream.mp4"
+    filename = f"{date_time}.mov"
+    processed_filename = f"{date_time}.mov"
+    processed_blurred = f"{date_time}_blur.mov"
+    stream_file = f"{date_time}_stream.mov"
 
     video.filename = filename_temp
 
@@ -181,47 +182,19 @@ def send_video():
     print("saving...", filename_temp)
     video.save(UPLOAD_DIR + filename_temp)
 
-    # subprocess.run(
-        # ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
+    subprocess.Popen(
+        ['python', './server/upload.py',
+         UPLOAD_DIR + filename_temp,
+         UPLOAD_DIR + filename,
+         SLICED_DIR + filename,
+         PROCESSED_DIR + processed_filename,
+         PREDICT_DIR_SEND_FILE + processed_blurred,
+         PREDICT_DIR_SEND_FILE + stream_file,
+         filename
+     ])
 
-    subprocess.run(
-        ["ffmpeg", "-i", UPLOAD_DIR + filename_temp, '-preset', 'superfast', '-r', '30', UPLOAD_DIR + filename])
+    time.sleep(2)
 
-    # subprocess.call(
-    #     ["ffmpeg", "-an", "-i", UPLOAD_DIR + filename_temp, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline',
-    #      '-level',
-    #      '3', UPLOAD_DIR + filename])
-
-    video_length = get_length(UPLOAD_DIR + filename)
-
-    print('vid_length :', video_length)
-    print('vid_length sliced :', video_length - 2.0)
-    print('vid_length :', with_opencv(UPLOAD_DIR + filename))
-
-    subprocess.run(["rm", "-rf", UPLOAD_DIR + filename_temp])
-
-    ffmpeg_extract_subclip(UPLOAD_DIR + filename, 0, video_length - 2.0, targetname=SLICED_DIR + filename)
-    print('vid_length sliced:', with_opencv(SLICED_DIR + filename))
-    # subprocess.run(["cp", UPLOAD_DIR + filename, SLICED_DIR + filename])
-
-    try:
-        # run classifier & blurring sub-process
-        print("blurring...", filename)
-        subprocess.Popen(
-            ['python', './server/FaceMosaicMediaPipe.py', SLICED_DIR + filename, PROCESSED_DIR + processed_filename])
-
-        print("processing...", filename)
-        subprocess.Popen(
-            ['python', './classifier/classifier.py', SLICED_DIR + filename, PREDICT_DIR_SEND_FILE + processed_blurred, PREDICT_DIR_SEND_FILE + stream_file])
-
-    except subprocess.CalledProcessError as e:
-        print("Unexpected error:", e)
-        value = {
-            "ok": False,
-            "filename": filename
-        }
-        print("error uploading file")
-        return value
     return value
 
 
@@ -373,13 +346,15 @@ def file_list():
     list = []
 
     for f in os_sorted(listdir(UPLOAD_DIR)):
-        list.append({
-            "filename": f[:-5],
-            "original": f,
-            "processed": f"{f[:-5]}.mp4",
-            "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.npz")) else True,
-            "isPredictError": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}_blur.mp4")) else True,
-        })
+        filename = f[:-4]
+        if not filename[-4:] == 'temp':
+            list.append({
+                "filename": filename,
+                "original": f,
+                "processed": f"{filename}.mov",
+                "isProcessing": False if isfile(join(PREDICTION_DIR, f"{filename}.npz")) else True,
+                "isPredictError": False if isfile(join(PREDICTION_DIR, f"{filename}_blur.mov")) else True,
+            })
 
     # print(list)
 

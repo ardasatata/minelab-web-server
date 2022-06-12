@@ -12,12 +12,20 @@ export function Nav() {
   return (
     <Wrapper>
       <Item
+        href={process.env.PUBLIC_URL + `/`}
+        title="Auto Record"
+        rel="noopener noreferrer"
+      >
+        <VideoCameraAddOutlined className={'mr-2'} />
+        Auto Recording
+      </Item>
+      <Item
         href={process.env.PUBLIC_URL + `/list`}
         title="Documentation Page"
         rel="noopener noreferrer"
       >
         <OrderedListOutlined className={'mr-2'} />
-        Video List
+        Analyzed Video
       </Item>
       {/*<Item*/}
       {/*  href={process.env.PUBLIC_URL + `/`}*/}
@@ -35,14 +43,6 @@ export function Nav() {
         <ArrowUpOutlined className={'mr-2'} />
         Upload Video
       </Item>
-      <Item
-        href={process.env.PUBLIC_URL + `/`}
-        title="Auto Record"
-        rel="noopener noreferrer"
-      >
-        <VideoCameraAddOutlined className={'mr-2'} />
-        Auto Record
-      </Item>
     </Wrapper>
   );
 }
@@ -58,7 +58,7 @@ const Item = styled.a`
   text-decoration: none;
   display: flex;
   padding: 0.25rem 1rem;
-  font-size: 0.875rem;
+  font-size: 0.775rem;
   font-weight: 500;
   align-items: center;
 

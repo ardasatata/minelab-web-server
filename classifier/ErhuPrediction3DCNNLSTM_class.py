@@ -55,6 +55,8 @@ def getVideoProperties(video):
 mp_drawing = mp.solutions.drawing_utils
 # mp_drawing_styles   = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
+mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 bow_line = [[0, 0], [0, 0]]
 erhu_line = [[0, 0], [0, 0]]
 
@@ -1277,7 +1279,7 @@ def body_landmark_segment(frame):
             body_rectangle_coordinate = [(x_L_shoulder, y_L_shoulder), (x_R_hip, y_R_hip)]
 
             # Get Knees Shoulder Distance
-            knee_shoulder_distance = int((abs(diff_shoulder - diff_knees)/diff_shoulder)*100)
+            knee_shoulder_distance = int((abs(diff_shoulder - diff_knees)/diff_knees)*100)
 
             # Get Face Degree
             degrees_ear_face = get_angle((rh_ear[0], rh_ear[1]), (lh_ear[0], lh_ear[1]))
@@ -1381,28 +1383,192 @@ def distance2D(p1, p2) :
     distance = math.sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))
     return distance
 
+# def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizontalLinePoint2, verticalLinePoint1,
+#                      verticalLinePoint2, horizontalAvgSize, verticalAvgSize, horizontalArray1, horizontalArray2,
+#                      verticalArray1, verticalArray2):
+#     # scale = 720 / frame.shape[0]
+#     # frame = scaleIMG(frame, scale)
+#     print('skip_frame:', skipFrame)
+#     img = frame.copy()
+#     minLineSize = img.shape[0] / 2.4
+#
+#     edges = cv2.Canny(img, 100, 50, apertureSize = 3)
+#     noiseValue = np.mean(edges)
+#     #print(noiseValue)
+#
+#     if noiseValue > 10 :
+#         blur = cv2.blur(img,(10, 5))
+#         edges = cv2.Canny(blur, 50, 100, apertureSize = 3)
+#         mask = subtractor.apply(blur)
+#     else :
+#         mask = subtractor.apply(img)
+#     edges = cv2.dilate(edges, np.ones((3, 2), np.uint8), iterations=1)
+#     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((10, 10), np.uint8))
+#     #cv2.imshow("Mask", mask)
+#
+#     edges[np.where((mask == 0))] = 0
+#     # cv2.imshow("edges", edges)
+#
+#     _horizontalLinesPoint1 = []
+#     _horizontalLinesPoint2 = []
+#     _verticalLinesPoint1 = []
+#     _verticalLinesPoint2 = []
+#     bow_line_coor = [(0, 0), (0, 0)]
+#     erhu_line_coor = [(0, 0), (0, 0)]
+#
+#     if skipFrame == 0 :
+#         lines = cv2.HoughLinesP(image=edges,rho=1, theta=np.pi/180, threshold=100, lines=np.array([]), minLineLength=minLineSize, maxLineGap=80)
+#
+#         if hasattr(lines, 'shape') :
+#             a, b, c = lines.shape
+#
+#             for i in range(a):
+#                 x1, y1 = lines[i][0][0], lines[i][0][1]
+#                 x2, y2 = lines[i][0][2], lines[i][0][3]
+#                 # cv2.line(img, (x1, y1), (x2, y2), (255, 255, 0), 2, cv2.LINE_AA)
+#
+#                 theta = math.atan2(y2 - y1, x2 - x1)
+#                 angle = math.degrees(theta)
+#                 if angle < 0:
+#                     angle = -angle
+#                 #print(angle)
+#
+#                 if angle < 60 : # horizontal line
+#                     if x1 > x2 :
+#                         x1, y1, x2, y2 = x2, y2, x1, y1
+#
+#                     if y1 > frame.shape[0] / 2 and y2 > frame.shape[0] / 2 :
+#                         _horizontalLinesPoint1.append([x1, y1])
+#                         _horizontalLinesPoint2.append([x2, y2])
+#
+#                 if angle > 70 : # vertical line
+#                     if y1 > y2 :
+#                         x1, y1, x2, y2 = x2, y2, x1, y1
+#
+#                     if x1 > frame.shape[1] / 2 and x2 > frame.shape[1] / 2 :
+#                         _verticalLinesPoint1.append([x1, y1])
+#                         _verticalLinesPoint2.append([x2, y2])
+#
+#         if len(_horizontalLinesPoint1) > 0 :
+#             horizontalLinePoint1 = np.average(_horizontalLinesPoint1, axis=0)
+#             horizontalLinePoint2 = np.average(_horizontalLinesPoint2, axis=0)
+#
+#         if len(_verticalLinesPoint1) > 0 :
+#             verticalLinePoint1 = np.average(_verticalLinesPoint1, axis=0)
+#             verticalLinePoint2 = np.average(_verticalLinesPoint2, axis=0)
+#
+#
+#         if len(horizontalLinePoint1) > 0 :
+#             if len(horizontalArray1) > horizontalAvgSize :
+#                 horizontalArray1.pop(0)
+#                 horizontalArray2.pop(0)
+#
+#             horizontalArray1.append(horizontalLinePoint1)
+#             horizontalArray2.append(horizontalLinePoint2)
+#             horizontalLinePoint1 = np.average(horizontalArray1, axis=0)
+#             horizontalLinePoint2 = np.average(horizontalArray2, axis=0)
+#
+#             x1, y1 = int(horizontalLinePoint1[0]), int(horizontalLinePoint1[1])
+#             x2, y2 = int(horizontalLinePoint2[0]), int(horizontalLinePoint2[1])
+#             cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 2, cv2.LINE_AA)
+#             bow_line_coor = [(x1, y1), (x2, y2)]
+#         else:
+#             try:
+#                 horizontalLinePoint1 = np.average(horizontalArray1, axis=0)
+#                 horizontalLinePoint2 = np.average(horizontalArray2, axis=0)
+#                 print(horizontalLinePoint1, horizontalLinePoint2)
+#                 x1, y1 = int(horizontalLinePoint1[0]), int(horizontalLinePoint1[1])
+#                 x2, y2 = int(horizontalLinePoint2[0]), int(horizontalLinePoint2[1])
+#                 bow_line_coor = [(x1, y1), (x2, y2)]
+#             except:
+#                 bow_line_coor = [(0, 0),(0, 0)]
+#
+#         if len(verticalLinePoint1) > 0 :
+#             if len(verticalArray1) > verticalAvgSize :
+#                 verticalArray1.pop(0)
+#                 verticalArray2.pop(0)
+#
+#             verticalArray1.append(verticalLinePoint1)
+#             verticalArray2.append(verticalLinePoint2)
+#             verticalLinePoint1 = np.average(verticalArray1, axis=0)
+#             verticalLinePoint2 = np.average(verticalArray2, axis=0)
+#
+#             x1, y1 = int(verticalLinePoint1[0]), int(verticalLinePoint1[1])
+#             x2, y2 = int(verticalLinePoint2[0]), int(verticalLinePoint2[1])
+#             cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
+#             erhu_line_coor = [(x1, y1), (x2, y2)]
+#         else:
+#             try:
+#                 verticalLinePoint1 = np.average(verticalArray1, axis=0)
+#                 verticalLinePoint2 = np.average(verticalArray2, axis=0)
+#                 print(verticalLinePoint1, verticalLinePoint2)
+#                 x1, y1 = int(verticalLinePoint1[0]), int(verticalLinePoint1[1])
+#                 x2, y2 = int(verticalLinePoint2[0]), int(verticalLinePoint2[1])
+#                 erhu_line_coor = [(x1, y1), (x2, y2)]
+#             except:
+#                 erhu_line_coor = [(0, 0),(0, 0)]
+#     else :
+#         skipFrame -= 1
+#
+#     return skipFrame, erhu_line_coor, bow_line_coor
+
 def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizontalLinePoint2, verticalLinePoint1,
                      verticalLinePoint2, horizontalAvgSize, verticalAvgSize, horizontalArray1, horizontalArray2,
-                     verticalArray1, verticalArray2):
-    # scale = 720 / frame.shape[0]
-    # frame = scaleIMG(frame, scale)
+                     verticalArray1, verticalArray2, crossDistanceMaxH , crossDistanceMaxV, handPointsAvgSize,
+                     rightHandPoints, leftHandPoints):
+
+    scale = 600 / frame.shape[0]
+    frame = scaleIMG(frame, scale)
+    showLines = False
     print('skip_frame:', skipFrame)
     img = frame.copy()
-    minLineSize = img.shape[0] / 2.4
 
-    edges = cv2.Canny(img, 100, 50, apertureSize = 3)
+    minLineSize = img.shape[0] / 3
+
+    img.flags.writeable = False
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    poseResults = pose.process(img)
+    img.flags.writeable = True
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    # mp_drawing.draw_landmarks(img, poseResults.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+
+    bottomLimit = img.shape[0]
+    rightShoulderX = 0
+
+    if hasattr(poseResults.pose_landmarks, 'landmark'):
+        handRight = [int(poseResults.pose_landmarks.landmark[20].x * img.shape[1]),
+                     int(poseResults.pose_landmarks.landmark[16].y * img.shape[0])]
+        handLeft = [int(poseResults.pose_landmarks.landmark[19].x * img.shape[1]),
+                    int(poseResults.pose_landmarks.landmark[19].y * img.shape[0])]
+
+        rightShoulderX = poseResults.pose_landmarks.landmark[12].x * img.shape[1]
+        leftHipX = poseResults.pose_landmarks.landmark[23].x * img.shape[1] - 30
+        bottomLimit = poseResults.pose_landmarks.landmark[23].y * img.shape[0] + 30
+
+        if len(rightHandPoints) > handPointsAvgSize:
+            rightHandPoints.pop(0)
+        rightHandPoints.append(handRight)
+
+        if len(leftHandPoints) > handPointsAvgSize:
+            leftHandPoints.pop(0)
+        leftHandPoints.append(handLeft)
+
+    edges = cv2.Canny(img, 100, 50, apertureSize=3)
     noiseValue = np.mean(edges)
-    #print(noiseValue)
+    # print(noiseValue)
 
-    if noiseValue > 10 :
-        blur = cv2.blur(img,(10, 5))
-        edges = cv2.Canny(blur, 50, 100, apertureSize = 3)
+    if noiseValue > 10:
+        blur = cv2.blur(img, (10, 5))
+        edges = cv2.Canny(blur, 50, 100, apertureSize=3)
         mask = subtractor.apply(blur)
-    else :
+    else:
         mask = subtractor.apply(img)
+
     edges = cv2.dilate(edges, np.ones((3, 2), np.uint8), iterations=1)
+    # cv2.imshow("edges", edges)
+
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((10, 10), np.uint8))
-    #cv2.imshow("Mask", mask)
+    # cv2.imshow("Mask", mask)
 
     edges[np.where((mask == 0))] = 0
     # cv2.imshow("edges", edges)
@@ -1417,54 +1583,155 @@ def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizon
     if skipFrame == 0 :
         lines = cv2.HoughLinesP(image=edges,rho=1, theta=np.pi/180, threshold=100, lines=np.array([]), minLineLength=minLineSize, maxLineGap=80)
 
-        if hasattr(lines, 'shape') :
+        if hasattr(lines, 'shape'):
             a, b, c = lines.shape
 
             for i in range(a):
                 x1, y1 = lines[i][0][0], lines[i][0][1]
                 x2, y2 = lines[i][0][2], lines[i][0][3]
-                # cv2.line(img, (x1, y1), (x2, y2), (255, 255, 0), 2, cv2.LINE_AA)
+                # cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2, cv2.LINE_AA)
 
                 theta = math.atan2(y2 - y1, x2 - x1)
                 angle = math.degrees(theta)
                 if angle < 0:
                     angle = -angle
-                #print(angle)
+                # print(angle)
 
-                if angle < 60 : # horizontal line
-                    if x1 > x2 :
+                if angle < 60:  # horizontal line
+                    if x1 > x2:
                         x1, y1, x2, y2 = x2, y2, x1, y1
 
-                    if y1 > frame.shape[0] / 2 and y2 > frame.shape[0] / 2 :
+                    if y1 > frame.shape[0] / 2.2 and y2 > frame.shape[0] / 2.2 and x2 > rightShoulderX:
                         _horizontalLinesPoint1.append([x1, y1])
                         _horizontalLinesPoint2.append([x2, y2])
 
-                if angle > 70 : # vertical line
-                    if y1 > y2 :
+                        if showLines:
+                            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 255), 1, cv2.LINE_AA)
+
+                if angle > 70:  # vertical line vertical
+                    if y1 > y2:
                         x1, y1, x2, y2 = x2, y2, x1, y1
 
-                    if x1 > frame.shape[1] / 2 and x2 > frame.shape[1] / 2 :
+                    dist = crossDistanceMaxV
+                    if len(leftHandPoints) > 0:
+                        leftHandPoint = np.mean(leftHandPoints, axis=0)
+
+                        if showLines:
+                            cv2.circle(img, (int(leftHandPoint[0]), int(leftHandPoint[1])), 5, (0, 255, 0), -1)
+
+                        p1 = np.array([x1, y1])
+                        p2 = np.array([x2, y2])
+                        p3 = np.array(leftHandPoint)
+                        dist = abs(np.cross(p2 - p1, p3 - p1) / np.linalg.norm(p2 - p1))
+
+                    if x1 > frame.shape[1] / 2.2 and x2 > frame.shape[
+                        1] / 2.2 and dist < crossDistanceMaxV and x2 > leftHipX and y2 < bottomLimit:
                         _verticalLinesPoint1.append([x1, y1])
                         _verticalLinesPoint2.append([x2, y2])
 
-        if len(_horizontalLinesPoint1) > 0 :
-            horizontalLinePoint1 = np.average(_horizontalLinesPoint1, axis=0)
-            horizontalLinePoint2 = np.average(_horizontalLinesPoint2, axis=0)
+                        if showLines:
+                            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 255), 1, cv2.LINE_AA)
 
-        if len(_verticalLinesPoint1) > 0 :
-            verticalLinePoint1 = np.average(_verticalLinesPoint1, axis=0)
-            verticalLinePoint2 = np.average(_verticalLinesPoint2, axis=0)
+        meanAngle = 0
+        angles = []
+        diffAngle = 180
+        diffAngleArr = []
+        meanDistance = 0
+        distances = []
 
+        if len(_verticalLinesPoint1) > 0:
+            for i, point in enumerate(_verticalLinesPoint1):
+                x1, y1 = _verticalLinesPoint1[i][0], _verticalLinesPoint1[i][1]
+                x2, y2 = _verticalLinesPoint2[i][0], _verticalLinesPoint2[i][1]
 
-        if len(horizontalLinePoint1) > 0 :
-            if len(horizontalArray1) > horizontalAvgSize :
+                theta = math.atan2(y2 - y1, x2 - x1)
+                angle = math.degrees(theta)
+                angles.append(angle)
+
+                distance = math.dist([x1, y1], [x2, y2])
+                distances.append(distance)
+
+            meanAngle = np.mean(angles, axis=0)
+            meanDistance = np.mean(distances, axis=0)
+
+            for angle in angles:
+                diffAngleArr.append(abs(angle - meanAngle))
+            diffAngle = np.mean(diffAngleArr, axis=0) * 1.1
+
+            for i in range(len(angles) - 1, -1, -1):
+                angle = angles[i]
+                distance = distances[i]
+
+                if len(_verticalLinesPoint1) > 1 and abs(
+                        angle - meanAngle) > diffAngle or angle < meanAngle or distance < meanDistance:
+                    _verticalLinesPoint1.pop(i)
+                    _verticalLinesPoint2.pop(i)
+
+        meanAngle = 0
+        angles = []
+        diffAngle = 180
+        diffAngleArr = []
+        meanDistance = 0
+        distances = []
+        meanLength = 0
+        lengths = []
+
+        if len(_horizontalLinesPoint1) > 0:
+            if len(leftHandPoints) > 0:
+                rightHandPoint = np.mean(rightHandPoints, axis=0)
+
+                if showLines:
+                    cv2.circle(img, (int(rightHandPoint[0]), int(rightHandPoint[1])), 5, (0, 0, 255), -1)
+
+                for i, point in enumerate(_horizontalLinesPoint1):
+                    x1, y1 = _horizontalLinesPoint1[i][0], _horizontalLinesPoint1[i][1]
+                    x2, y2 = _horizontalLinesPoint2[i][0], _horizontalLinesPoint2[i][1]
+
+                    theta = math.atan2(y2 - y1, x2 - x1)
+                    angle = math.degrees(theta)
+                    angles.append(angle)
+
+                    distance = math.dist([x1, y1], rightHandPoint)
+                    distances.append(distance)
+
+                    length = math.dist([x1, y1], [x2, y2])
+                    lengths.append(length)
+
+                meanAngle = np.mean(angles, axis=0)
+                meanDistance = np.mean(distances, axis=0) * 1.1
+                meanLength = np.mean(lengths, axis=0) * 0.9
+
+                for angle in angles:
+                    diffAngleArr.append(abs(angle - meanAngle))
+                diffAngle = np.mean(diffAngleArr, axis=0) * 1.1
+
+                for i in range(len(angles) - 1, -1, -1):
+                    angle = angles[i]
+                    distance = distances[i]
+                    length = lengths[i]
+
+                    if len(_horizontalLinesPoint1) > 1 and abs(
+                            angle - meanAngle) > diffAngle or distance > meanDistance or length < meanLength:
+                        _horizontalLinesPoint1.pop(i)
+                        _horizontalLinesPoint2.pop(i)
+
+        if len(_horizontalLinesPoint1) > 0:
+            horizontalLinePoint1 = np.mean(_horizontalLinesPoint1, axis=0)
+            horizontalLinePoint2 = np.mean(_horizontalLinesPoint2, axis=0)
+
+        if len(_verticalLinesPoint1) > 0:
+            verticalLinePoint1 = np.mean(_verticalLinesPoint1, axis=0)
+            verticalLinePoint2 = np.mean(_verticalLinesPoint2, axis=0)
+
+        if len(horizontalLinePoint1) > 0:
+            if len(horizontalArray1) > horizontalAvgSize:
                 horizontalArray1.pop(0)
                 horizontalArray2.pop(0)
 
             horizontalArray1.append(horizontalLinePoint1)
             horizontalArray2.append(horizontalLinePoint2)
-            horizontalLinePoint1 = np.average(horizontalArray1, axis=0)
-            horizontalLinePoint2 = np.average(horizontalArray2, axis=0)
+            horizontalLinePoint1 = np.mean(horizontalArray1, axis=0)
+            horizontalLinePoint2 = np.mean(horizontalArray2, axis=0)
 
             x1, y1 = int(horizontalLinePoint1[0]), int(horizontalLinePoint1[1])
             x2, y2 = int(horizontalLinePoint2[0]), int(horizontalLinePoint2[1])
@@ -1472,9 +1739,8 @@ def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizon
             bow_line_coor = [(x1, y1), (x2, y2)]
         else:
             try:
-                horizontalLinePoint1 = np.average(horizontalArray1, axis=0)
-                horizontalLinePoint2 = np.average(horizontalArray2, axis=0)
-                print(horizontalLinePoint1, horizontalLinePoint2)
+                horizontalLinePoint1 = np.mean(horizontalArray1, axis=0)
+                horizontalLinePoint2 = np.mean(horizontalArray2, axis=0)
                 x1, y1 = int(horizontalLinePoint1[0]), int(horizontalLinePoint1[1])
                 x2, y2 = int(horizontalLinePoint2[0]), int(horizontalLinePoint2[1])
                 bow_line_coor = [(x1, y1), (x2, y2)]
@@ -1482,14 +1748,14 @@ def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizon
                 bow_line_coor = [(0, 0),(0, 0)]
 
         if len(verticalLinePoint1) > 0 :
-            if len(verticalArray1) > verticalAvgSize :
+            if len(verticalArray1) > verticalAvgSize:
                 verticalArray1.pop(0)
                 verticalArray2.pop(0)
 
             verticalArray1.append(verticalLinePoint1)
             verticalArray2.append(verticalLinePoint2)
-            verticalLinePoint1 = np.average(verticalArray1, axis=0)
-            verticalLinePoint2 = np.average(verticalArray2, axis=0)
+            verticalLinePoint1 = np.mean(verticalArray1, axis=0)
+            verticalLinePoint2 = np.mean(verticalArray2, axis=0)
 
             x1, y1 = int(verticalLinePoint1[0]), int(verticalLinePoint1[1])
             x2, y2 = int(verticalLinePoint2[0]), int(verticalLinePoint2[1])
@@ -1497,9 +1763,8 @@ def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizon
             erhu_line_coor = [(x1, y1), (x2, y2)]
         else:
             try:
-                verticalLinePoint1 = np.average(verticalArray1, axis=0)
-                verticalLinePoint2 = np.average(verticalArray2, axis=0)
-                print(verticalLinePoint1, verticalLinePoint2)
+                verticalLinePoint1 = np.mean(verticalArray1, axis=0)
+                verticalLinePoint2 = np.mean(verticalArray2, axis=0)
                 x1, y1 = int(verticalLinePoint1[0]), int(verticalLinePoint1[1])
                 x2, y2 = int(verticalLinePoint2[0]), int(verticalLinePoint2[1])
                 erhu_line_coor = [(x1, y1), (x2, y2)]
@@ -1545,7 +1810,7 @@ def main_predict(video_input, isFlip = True):
     # video_path      = 'video/5th_datasets_10 Apr 2022/0409 Separate each group/E23.mp4'
     video_path = video_input
     filename = video_path.split("/")[-1]
-    filename = filename[:-5]
+    filename = filename[:-4]
     print(video_path)
     # path = os.path.join(os.path.abspath(__file__ + "/../../"), "upload", video_path)
 
@@ -1654,20 +1919,41 @@ def main_predict(video_input, isFlip = True):
     horizontalLinePoint2 = []
     verticalLinePoint1 = []
     verticalLinePoint2 = []
+
     horizontalAvgSize = 5
-    verticalAvgSize = 20
+    verticalAvgSize = 10
     horizontalArray1 = []
     horizontalArray2 = []
     verticalArray1 = []
     verticalArray2 = []
+    crossDistanceMaxH = 10
+    crossDistanceMaxV = 10
+    handPointsAvgSize = 2
+    rightHandPoints = []
+    leftHandPoints = []
     # ================================================================
+    frame_failed = 0
     output_json_number = 0
     while videoInput.isOpened():
         print('Frame open')
         success, frame = videoInput.read()
-        if not success:
-            print('Frame open failed')
-            break
+        # if not success:
+        #     frame_failed += 1
+        #     print('Frame open failed')
+        #     break
+
+        if frame is None:
+            break;
+
+        # if frame.shape[0] > 1080 and frame.shape[1] > 1920:
+        scale = 600 / frame.shape[0]
+        frame = scaleIMG(frame, scale)
+
+        if videoInput.get(cv2.CAP_PROP_POS_FRAMES) == 1:
+            videoOut_1 = cv2.VideoWriter(os.path.join(result_folder, filename + ".mp4"), fourcc, vid_fps,
+                                         (frame.shape[1], frame.shape[0]))
+            videoOut_1.set(cv2.CAP_PROP_FPS, 30.0)
+
         # cv2.imshow('test', frame)
         # cv2.waitKey(0)
         # image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
@@ -1675,7 +1961,6 @@ def main_predict(video_input, isFlip = True):
         # rightHandPartOri, left_arm_point, right_arm_point, right_hand_point, head_coordinate, body_coordinate, \
         # knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder, hip_left, hip_right = new_body_segment(
         #     frame.copy())
-
         image, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
         head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, \
         degree_body, degree_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor,\
@@ -1683,7 +1968,9 @@ def main_predict(video_input, isFlip = True):
         skipFrameRes, ErhuLine, BowLine = erhu_bow_segment(frame.copy(), subtractor, skipFrame, horizontalLinePoint1,
                                                            horizontalLinePoint2, verticalLinePoint1, verticalLinePoint2,
                                                            horizontalAvgSize, verticalAvgSize, horizontalArray1,
-                                                           horizontalArray2, verticalArray1, verticalArray2)
+                                                           horizontalArray2, verticalArray1, verticalArray2,
+                                                           crossDistanceMaxH , crossDistanceMaxV, handPointsAvgSize,
+                                                           rightHandPoints, leftHandPoints)
         skipFrame = skipFrameRes
         # cv2.imshow('RightHand', RH_Cropped)
         # cv2.imshow('RightArm', RArm_Cropped)
@@ -2033,6 +2320,11 @@ def main_predict(video_input, isFlip = True):
             is_left_arm_too_high = False
             is_left_arm_too_low = False
             is_left_hand_slope = False
+            is_bow_high = False
+            is_bow_low = False
+            prev_bow_angle = 0
+            err_bow_high = 0
+            err_bow_low = 0
             for (all_body_point, bow_line, erhu_line) in zip(x_test_all_body_point, x_test_bow_line_point, x_test_erhu_line_point):
                 head_coordinate = all_body_point[0]
                 body_coordinate = all_body_point[1]
@@ -2076,11 +2368,20 @@ def main_predict(video_input, isFlip = True):
                 if (orthogonal_angle <= 90 - N_var or orthogonal_angle >= 90 + N_var) and erhu_line[0][0]!=0 and erhu_line[0][1]!=0 and erhu_line[1][0]!=0 and erhu_line[1][1]!=0:
                     err_orthogonal += 1
                     if L1_angle > (90 + N_var):
-                        err_erhu_left += 1
-                    else:
                         err_erhu_right += 1
-                if (L2_angle > (0 + N_var) or L2_angle < (0 - N_var)):
+                    else:
+                        err_erhu_left += 1
+                # if (abs(prev_bow_angle-L2_angle) > (0 + N_var) or abs(prev_bow_angle-L2_angle) < (0 - N_var)):
+                #     err_bow += 1
+                if L2_angle > 9 :
+                    err_bow_high += 1
+                    print(L2_angle)
+                elif L2_angle < -9:
+                    err_bow_low += 1
+                    print(L2_angle)
+                elif abs(prev_bow_angle-L2_angle) > M_var:
                     err_bow += 1
+                prev_bow_angle = L2_angle
 
             if err_face > limit_sample // 2:
                 is_face_err = True
@@ -2106,6 +2407,10 @@ def main_predict(video_input, isFlip = True):
                 is_left_arm_too_low = True
             if err_left_hand_slope > limit_sample // 2:
                 is_left_hand_slope = True
+            if err_bow_high > limit_sample // 2:
+                is_bow_high = True
+            if err_bow_low > limit_sample // 2:
+                is_bow_low = True
 
             for img_original, ori_right_hand_point, ori_right_arm_point, ori_left_arm_point, ori_left_hand_point, all_body_point, bow_line, erhu_line in \
                     zip(x_test_video_original, x_test_right_hand_point, x_test_right_arm_point, x_test_left_arm_point, x_test_left_hand_point,
@@ -2406,7 +2711,15 @@ def main_predict(video_input, isFlip = True):
                     warning_mess.append(["Erhu_Normal", "Normal", "Erhu Position", str(1.0), "Normal"])
 
                 # E43 Bow Trajectory must stright line ================================================================= 6
-                if is_bow_err == True:
+                if is_bow_high == True:
+                    warning_mess.append(["E44", str(L2_angle), "Bow Position", str(L2_angle),
+                                         "E44-Trace of bow too high"])
+                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                elif is_bow_low == True:
+                    warning_mess.append(["E45", str(L2_angle), "Bow Position", str(L2_angle),
+                                         "E45-Trace of bow too high"])
+                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                elif is_bow_err == True:
                     # draw_res_bow.text((10, 320), E43_classname, font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["E43", str(L2_angle), "Bow Position", str(L2_angle),
                                          "E43-Trace of bow must be in straight line"])
@@ -2580,6 +2893,7 @@ def main_predict(video_input, isFlip = True):
     print("End Time =", end_time)
     print("Json Count=", output_json_number)
     print("Frame Count=", frame_number)
+    print("Frame Count Failed=", frame_failed)
     return os.path.join(result_folder, filename + ".mp4")
 
-# main_predict('/home/minelab/dev/erhu-project/upload/03_06_2022_Friday(17:41:15).webm')
+# main_predict('/home/minelab/dev/erhu-project/E22_5078.MOV')

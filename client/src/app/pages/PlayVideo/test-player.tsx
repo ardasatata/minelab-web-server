@@ -430,6 +430,10 @@ export function TestPlayer(props: Props) {
         return '正常';
       case 'E43':
         return '軌跡必須一直線';
+      case 'E44':
+        return '運弓太高';
+      case 'E45':
+        return '運弓太低';
     }
   };
 
@@ -581,7 +585,7 @@ export function TestPlayer(props: Props) {
                     className="absolute top-0 left-0"
                     url={`https://140.115.51.243:5001/predict/${query.get(
                       'title',
-                    )}_stream.mp4`}
+                    )}_stream.mov`}
                     controls={true}
                     onProgress={state => {
                       const frameNum = Math.round(state.playedSeconds * 30);

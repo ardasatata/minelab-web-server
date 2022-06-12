@@ -106,6 +106,7 @@ export function FileList(props: Props) {
           <div className={'flex h-full w-full bg-black justify-center'}>
             <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl mt-20">
               <DataTable
+                noDataComponent={<h1 className={'text-4xl my-12'}>No video record is available</h1>}
                 paginationRowsPerPageOptions={[10, 20]}
                 pagination={true}
                 paginationPerPage={20}
@@ -184,7 +185,7 @@ export function FileList(props: Props) {
                                 className={
                                   'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
                                 }
-                                href={`https://140.115.51.243/api/download-predict?filename=${row.filename}_blur.mp4`}
+                                href={`https://140.115.51.243/api/download-predict?filename=${row.filename}_blur.mov`}
                               >
                                 {'✨ \u00A0 Download Analyzed'}
                               </a>

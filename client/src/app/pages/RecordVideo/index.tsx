@@ -122,8 +122,8 @@ export function RecordVideo(props: Props) {
             >
               {isUploaded ? (
                 <>
-                  <h1 className={'text-4xl mb-2'}>Your file is uploaded!</h1>
                   <h1 className={'text-2xl mb-12 text-center text-teal-300'}>
+                    <h1 className={'text-4xl mb-2 text-white'}>Your file is uploaded!</h1>
                     We appreciate your contribution to allow us for using your
                     video file for research purposes.
                   </h1>
@@ -139,8 +139,9 @@ export function RecordVideo(props: Props) {
                   Your file is ready to upload!
                 </h1>
               ) : (
-                <h1 className={'text-2xl mb-4 text-amber-50 mt-8'}>
-                  Please Drag a video file below!
+                <h1 className={'text-2xl mb-4 text-amber-50 mt-8 text-center max-w-3xl'}>
+                  Drag and drop a video file to the box below.
+                  Video length is limited to 5 minutes and with size limited to 250MB.
                 </h1>
               )}
               {file !== null ? (
@@ -170,7 +171,23 @@ export function RecordVideo(props: Props) {
                   handleChange={handleChange}
                   name="file"
                   types={fileTypes}
-                />
+                >
+                  <div className="flex justify-center items-center w-full">
+                    <label htmlFor="dropzone-file"
+                           className="flex flex-col justify-center items-center w-full h-32 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                      <div className="flex flex-col justify-center items-center pt-5 pb-6">
+                        <svg className="mb-3 w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 px-8"><span className="font-semibold">Click to upload</span> or
+                          drop a <span className="font-semibold">MP4/MOV/Webm video file here</span></p>
+                      </div>
+                      <input id="dropzone-file" type="file" className="hidden"/>
+                    </label>
+                  </div>
+                </FileUploader>
               )}
               <p className={'mt-6 text-amber-200'}>
                 {file ? `File name: ${file[0].name}` : 'no files uploaded yet'}
