@@ -156,6 +156,14 @@ def with_opencv(filename):
 @app.route("/send-video", methods=['POST'])
 @cross_origin()
 def send_video():
+
+    list = []
+    for f in os_sorted(listdir(SL_UPLOAD_DIR)):
+        list.append(f)
+
+    value = len(list)
+    number = str(value).zfill(4)
+
     video = request.files.get('video')
     print('received..', video.filename)
 
@@ -163,13 +171,13 @@ def send_video():
     date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
 
     # Video Metadata
-    filename_temp = f"{date_time}_temp.webm"
-    filename = f"{date_time}.mov"
-    processed_filename = f"{date_time}.mov"
-    processed_blurred = f"{date_time}_blur.mov"
-    stream_file = f"{date_time}_stream.mov"
+    filename_temp = f"{number}_{date_time}_temp.webm"
+    filename = f"{number}_{date_time}.mov"
+    processed_filename = f"{number}_{date_time}.mov"
+    processed_blurred = f"{number}_{date_time}_blur.mov"
+    stream_file = f"{number}_{date_time}_stream.mov"
 
-    analyzed_blurred = f"{date_time}_message_blur.mov"
+    analyzed_blurred = f"{number}_{date_time}_message_blur.mov"
 
     video.filename = filename_temp
 

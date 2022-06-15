@@ -20,12 +20,36 @@ import DataTable from 'react-data-table-component';
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
+import TablePagination from '@material-ui/core/TablePagination';
+import IconButton from '@material-ui/core/IconButton';
+import FirstPageIcon from '@material-ui/icons/FirstPage';
+import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
+import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
+import LastPageIcon from '@material-ui/icons/LastPage';
+import {PaginationChangePage, PaginationChangeRowsPerPage} from "react-data-table-component/dist/src/DataTable/types";
+
+export function getNumberOfPages(rowCount: number, rowsPerPage: number): number {
+	return Math.ceil(rowCount / rowsPerPage);
+}
+
 interface Props {}
 
 export function FileList(props: Props) {
   const [isLoading, setIsloading] = useState(false);
 
   const [datalist, setDatalist] = useState([]);
+
+  const [page, setPage] = useState<number>(() => {
+      // getting stored value
+      const saved = localStorage.getItem("page");
+      const initialValue = JSON.parse(saved);
+      return initialValue || 1;
+  });
+
+  const savePage = (page: number) => {
+    localStorage.setItem("page", page)
+    setPage(page)
+  }
 
   const getFileList = async () => {
     setIsloading(true);
@@ -83,6 +107,71 @@ export function FileList(props: Props) {
     });
   };
 
+  function TablePaginationActions({ count, page, rowsPerPage, onPageChange }) {
+    const handleFirstPageButtonClick = () => {
+        onPageChange(1);
+        savePage(1)
+    };
+
+    // RDT uses page index starting at 1, MUI starts at 0
+    // i.e. page prop will be off by one here
+    const handleBackButtonClick = () => {
+        onPageChange(page);
+        savePage(page)
+    };
+
+    const handleNextButtonClick = () => {
+        onPageChange(page + 2);
+        savePage(page + 2)
+    };
+
+    const handleLastPageButtonClick = () => {
+        onPageChange(getNumberOfPages(count, rowsPerPage));
+        savePage(getNumberOfPages(count, rowsPerPage))
+    };
+
+    return (
+        <>
+            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0} aria-label="first page">
+                <FirstPageIcon />
+            </IconButton>
+            <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
+                <KeyboardArrowLeft />
+            </IconButton>
+            <IconButton
+                onClick={handleNextButtonClick}
+                disabled={page >= getNumberOfPages(count, rowsPerPage) - 1}
+                aria-label="next page"
+            >
+                <KeyboardArrowRight />
+            </IconButton>
+            <IconButton
+                onClick={handleLastPageButtonClick}
+                disabled={page >= getNumberOfPages(count, rowsPerPage) - 1}
+                aria-label="last page"
+            >
+                <LastPageIcon />
+            </IconButton>
+        </>
+    );
+}
+
+    const CustomMaterialPagination = ({ rowsPerPage, rowCount, onChangePage, onChangeRowsPerPage, currentPage }) => (
+        <TablePagination
+            style={{backgroundColor: 'white', paddingTop: '24px'}}
+            component="nav"
+            count={rowCount}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[10, 20]}
+            page={currentPage - 1}
+            // onChangePage={onChangePage}
+            // onChangeRowsPerPage={({ target }) => onChangeRowsPerPage(Number(target.value))}
+            ActionsComponent={TablePaginationActions}
+            onPageChange={onChangePage}
+            onRowsPerPageChange={({ target }) => onChangeRowsPerPage(Number(target.value))}
+        />
+    );
+
   return (
     <>
       <Helmet>
@@ -106,25 +195,27 @@ export function FileList(props: Props) {
           <div className={'flex h-full w-full bg-black justify-center'}>
             <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl mt-20">
               <DataTable
+                paginationDefaultPage={page}
                 noDataComponent={<h1 className={'text-4xl my-12'}>No video record is available</h1>}
                 paginationRowsPerPageOptions={[10, 20]}
                 pagination={true}
                 paginationPerPage={20}
+                paginationComponent={CustomMaterialPagination}
                 columns={[
                   {
                     name: 'File Name',
                     selector: row => row.filename,
                     style: {
                       fontWeight: 'bold',
+                      flex: 1
                     },
                     sortable: true,
-                    maxWidth: '20em',
                   },
                   {
-                    center: true,
+                    left: true,
                     name: 'Analysis Completed',
                     cell: row => (
-                      <div>
+                      <div style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', textAlign: 'center'}}>
                         {row.isProcessing ? (
                           <LoadingOutlined />
                         ) : row.isPredictError ? (
@@ -134,7 +225,10 @@ export function FileList(props: Props) {
                         )}
                       </div>
                     ),
-                    width: '12em',
+                    style:{
+                      flex: 1,
+                      width: '100%',
+                    }
                   },
                   // {
                   //   maxWidth: '8em',
@@ -157,9 +251,10 @@ export function FileList(props: Props) {
                   //   ),
                   // },
                   {
-                    right: true,
+                    style:{
+                      flex: 2
+                    },
                     name: 'Download or Play Analyzed Video When Completed',
-                    minWidth: '32em',
                     cell: row => (
                       <div className="flex flex-row text-sm font-light items-center">
                         {row.isProcessing ? (
