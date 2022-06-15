@@ -169,6 +169,8 @@ def send_video():
     processed_blurred = f"{date_time}_blur.mov"
     stream_file = f"{date_time}_stream.mov"
 
+    analyzed_blurred = f"{date_time}_message_blur.mov"
+
     video.filename = filename_temp
 
     # # Saved Video Path
@@ -190,7 +192,8 @@ def send_video():
          PROCESSED_DIR + processed_filename,
          PREDICT_DIR_SEND_FILE + processed_blurred,
          PREDICT_DIR_SEND_FILE + stream_file,
-         filename
+         filename,
+         PREDICT_DIR_SEND_FILE + analyzed_blurred
      ])
 
     time.sleep(2)
@@ -353,7 +356,7 @@ def file_list():
                 "original": f,
                 "processed": f"{filename}.mov",
                 "isProcessing": False if isfile(join(PREDICTION_DIR, f"{filename}.npz")) else True,
-                "isPredictError": False if isfile(join(PREDICTION_DIR, f"{filename}_blur.mov")) else True,
+                "isPredictError": False if isfile(join(PREDICTION_DIR, f"{filename}_message_blur.mov")) else True,
             })
 
     # print(list)

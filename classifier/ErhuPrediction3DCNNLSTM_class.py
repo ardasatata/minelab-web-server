@@ -94,7 +94,7 @@ img_chinese = np.zeros((200, 400, 3), np.uint8)
 b, g, r, a = 0, 255, 0, 0
 chinese_font = './util/simsun.ttc'
 
-result_font = ImageFont.truetype(os.path.join(thisfolder, 'util/simsun.ttc'), 28)
+# result_font = ImageFont.truetype(os.path.join(thisfolder, 'util/simsun.ttc'), 28)
 coordTop = []
 coordBottom = []
 coordLeft = []
@@ -1623,14 +1623,16 @@ def erhu_bow_segment(frame, subtractor, skipFrame, horizontalLinePoint1, horizon
                         p2 = np.array([x2, y2])
                         p3 = np.array(leftHandPoint)
                         dist = abs(np.cross(p2 - p1, p3 - p1) / np.linalg.norm(p2 - p1))
+                    try:
+                        if x1 > frame.shape[1] / 2.2 and x2 > frame.shape[
+                            1] / 2.2 and dist < crossDistanceMaxV and x2 > leftHipX and y2 < bottomLimit:
+                            _verticalLinesPoint1.append([x1, y1])
+                            _verticalLinesPoint2.append([x2, y2])
 
-                    if x1 > frame.shape[1] / 2.2 and x2 > frame.shape[
-                        1] / 2.2 and dist < crossDistanceMaxV and x2 > leftHipX and y2 < bottomLimit:
-                        _verticalLinesPoint1.append([x1, y1])
-                        _verticalLinesPoint2.append([x2, y2])
-
-                        if showLines:
-                            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 255), 1, cv2.LINE_AA)
+                            if showLines:
+                                cv2.line(img, (x1, y1), (x2, y2), (0, 255, 255), 1, cv2.LINE_AA)
+                    except:
+                        print('Missing Landmark')
 
         meanAngle = 0
         angles = []
@@ -1948,12 +1950,15 @@ def main_predict(video_input, isFlip = True):
         # if frame.shape[0] > 1080 and frame.shape[1] > 1920:
         scale = 600 / frame.shape[0]
         frame = scaleIMG(frame, scale)
-
+        err_mess_frame = [frame.shape[1] // 5, frame.shape[0] // 3]
+        result_font = ImageFont.truetype(os.path.join(thisfolder, 'util/simsun.ttc'), err_mess_frame[0] // 12)
         if videoInput.get(cv2.CAP_PROP_POS_FRAMES) == 1:
             videoOut_1 = cv2.VideoWriter(os.path.join(result_folder, filename + ".mp4"), fourcc, vid_fps,
                                          (frame.shape[1], frame.shape[0]))
             videoOut_1.set(cv2.CAP_PROP_FPS, 30.0)
-
+            videoOut_2 = cv2.VideoWriter(os.path.join(result_folder, filename + "_err_msg.mp4"), fourcc, vid_fps,
+                                         (frame.shape[1], frame.shape[0]))
+            videoOut_2.set(cv2.CAP_PROP_FPS, 30.0)
         # cv2.imshow('test', frame)
         # cv2.waitKey(0)
         # image, rightHandPart, rightArmPart, leftHandPart, leftArmPart, \
@@ -2284,18 +2289,22 @@ def main_predict(video_input, isFlip = True):
             print('rightArm_E33:', rightArm_E33)
             print('rightArm_E34:', rightArm_E34)
             print('rightArm_E35:', rightArm_E35)
-            leftArm_Normal_ClassName = 'N-左手正常'
-            leftArm_E21_ClassName = 'E21-左手肘過高'
-            leftArm_E22_ClassName = 'E22-左手肘太低'
-            leftArm_E23_ClassName = 'E23-手腕手肘放輕鬆連成一直線'
-            E11_classname = 'E11-頭要擺正'
-            E14_classname = 'E14-坐姿要正'
-            E15_classname = 'E15-兩膝與肩同寬'
-            E13_classname = 'E13-右肩太高'
-            E12_classname = 'E12-右肩太高'
-            E41_classname = 'E41-琴桿左傾斜 - 弓毛與琴弦必須垂直'
-            E42_classname = 'E42-琴桿右傾斜 - 弓毛與琴弦必須垂直'
-            E43_classname = 'E43-運弓軌跡必須保持一直線'
+            leftArm_Normal_ClassName = '左手持琴: 正常'
+            leftArm_E21_ClassName = '左手持琴: 手臂過高'
+            leftArm_E22_ClassName = '左手持琴: 手臂太低'
+            leftArm_E23_ClassName = '左手持琴: 手腕手肘盡量一直線'
+            E11_classname = '頭: 要擺正'
+            E14_classname = '坐姿: 要坐正'
+            E15_classname = '兩膝: 要與肩同寬'
+            E13_classname = '肩: 右肩太高'
+            E12_classname = '肩: 左肩太高'
+            E41_classname = '琴桿: 左傾斜'
+            E42_classname = '琴桿: 右傾斜'
+            E43_classname = '運弓: 軌跡必須一直線'
+            E44_classname = '運弓: 運弓太高'
+            E45_classname = '運弓: 運弓太低'
+            leftHand_AL1_ClassName = '左手按弦: 大拇指不可往上翹'
+            leftHand_AL2_ClassName = '左手按弦: 手掌不可緊靠琴桿'
             err_face = 0
             err_body = 0
             err_orthogonal = 0
@@ -2418,7 +2427,9 @@ def main_predict(video_input, isFlip = True):
                 idx_write_frame += 1
                 warning_mess = []
                 img_pil = Image.fromarray(img_original)
+                img_err = Image.fromarray(img_original)
                 draw_res_bow = ImageDraw.Draw(img_pil)
+                draw_res_err_box = ImageDraw.Draw(img_err)
                 # print('Rectangle:', right_hand_point, right_arm_point, left_arm_point)
                 ori_right_hand_rectangle_shape = [ori_right_hand_point[0], ori_right_hand_point[1]]
                 ori_right_arm_rectangle_shape = [ori_right_arm_point[0], ori_right_arm_point[1]]
@@ -2444,16 +2455,25 @@ def main_predict(video_input, isFlip = True):
 
                 # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
                 # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
-                cv2.rectangle(img_chinese, (10, 10), (100, 100), (255, 255, 255))
+                div_space_val = 10
+                err_mess_coor = [1, 1]
+                draw_res_err_box.rectangle(
+                    [(err_mess_coor[0], err_mess_coor[1]), (err_mess_frame[0] * 1.5, err_mess_frame[1])], outline=None,
+                    fill=(200, 200, 200))
+                # cv2.rectangle(img_chinese, (10, 10), (100, 100), (255, 255, 255))
                 # draw_res_bow.rectangle([(5, 5), (300, 150)], outline=None, fill="#ffffff")
 
                 # draw_res_bow.text((10, 20), "===== Traditional Algorithm =====", font=result_font, fill=(b, g, r, a))
 
                 # E11 : Head position not normal ===================================================================== 0
                 # if degree_ear_face >= K_var or degree_ear_face < (0-K_var):
+                head_err_mess_coor = [err_mess_coor[0] + int(err_mess_frame[0] // 20),
+                                      err_mess_coor[1] + int(err_mess_frame[0] // 20)]
                 if is_face_err == True:
                     # print('Face')
                     # draw_res_bow.text((10, 50), E11_classname + ':' + str(degree_ear_face), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((head_err_mess_coor[0], head_err_mess_coor[1]), E11_classname,
+                                          font=result_font, fill=(0, 128, 255))
                     warning_mess.append(["E11", str(degree_ear_face), 'Head Position', str(degree_ear_face),
                                          'E11-Head position not normal (to L or R)'])
                     # draw_res_bow.rectangle(head_coordinate, outline="blue", fill=None, width=4)
@@ -2466,29 +2486,50 @@ def main_predict(video_input, isFlip = True):
                         [(rh_ear_coor[0] - r_circle, rh_ear_coor[1] - r_circle),
                          (rh_ear_coor[0] + r_circle, rh_ear_coor[1] + r_circle)],
                         fill=(0, 128, 255))
+                    draw_res_err_box.ellipse(
+                        [(lh_ear_coor[0] - r_circle, lh_ear_coor[1] - r_circle),
+                         (lh_ear_coor[0] + r_circle, lh_ear_coor[1] + r_circle)],
+                        fill=(0, 128, 255))
+                    draw_res_err_box.ellipse(
+                        [(rh_ear_coor[0] - r_circle, rh_ear_coor[1] - r_circle),
+                         (rh_ear_coor[0] + r_circle, rh_ear_coor[1] + r_circle)],
+                        fill=(0, 128, 255))
                 else:
                     # print('Else Face')
                     # draw_res_bow.text((10, 50), 'Head Position : Normal', font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((head_err_mess_coor[0], head_err_mess_coor[1]), '頭: 正常', font=result_font,
+                                          fill=(0, 0, 0))
                     warning_mess.append(["Head_Normal", "Normal", 'Head Position', str(0), 'Normal'])
 
                 # E14 : Error Body/Sitting Position ==================================================================== 1
                 # if degree_body > (90+K_var) or degree_body < (90-K_var):
+                body_err_mess_coor = [head_err_mess_coor[0],
+                                      head_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
                 if is_body_err == True:
                     # print('Body')
                     # draw_res_bow.text((10, 80), E14_classname + ':' + str(degree_body), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((body_err_mess_coor[0], body_err_mess_coor[1]), E14_classname,
+                                          font=result_font, fill=(0, 128, 255))
                     warning_mess.append(["E14", str(degree_body), 'Body Position', str(degree_body),
                                          'E14-Need to seat straight (to L or R)'])
                     draw_res_bow.rectangle(body_coordinate, outline=(0, 128, 255), fill=None, width=4)
+                    draw_res_err_box.rectangle(body_coordinate, outline=(0, 128, 255), fill=None, width=4)
                 else:
                     # print('Else Body')
                     # draw_res_bow.text((10, 80), 'Body Position : Normal', font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((body_err_mess_coor[0], body_err_mess_coor[1]), '坐姿: 正常', font=result_font,
+                                          fill=(0, 0, 0))
                     warning_mess.append(["Body_Normal", "Normal", 'Body Position', str(0), 'Normal'])
 
                 # E12 - E13 Left Shoulder too High / Right Shoulder too High ========================================= 2
                 # if degree_shoulder > ((X_var/90)*100):
+                shoulder_err_mess_coor = [body_err_mess_coor[0],
+                                          body_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
                 if is_right_shoulder_err == True:
                     # print('Shoulder')
                     # draw_res_bow.text((10, 140), E13_classname + ':' + str(degree_shoulder), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((shoulder_err_mess_coor[0], shoulder_err_mess_coor[1]), E13_classname,
+                                          font=result_font, fill=(0, 128, 255))
                     warning_mess.append(["E13", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
                                          'E13-Right shoulder too hight '])
                     # draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
@@ -2497,10 +2538,18 @@ def main_predict(video_input, isFlip = True):
                         [(rh_shoulder_coor[0] - r_circle, rh_shoulder_coor[1] - r_circle),
                          (rh_shoulder_coor[0] + r_circle, rh_shoulder_coor[1] + r_circle)],
                         fill=(0, 128, 255))
+                    draw_res_err_box.ellipse(
+                        [(rh_shoulder_coor[0] - r_circle, rh_shoulder_coor[1] - r_circle),
+                         (rh_shoulder_coor[0] + r_circle, rh_shoulder_coor[1] + r_circle)],
+                        fill=(0, 128, 255))
                 # elif degree_shoulder < (0-((X_var/90)*100)):
                 elif is_left_shoulder_err == True:
                     # print('Else Shoulder')
                     # draw_res_bow.text((10, 140), E12_classname + ':' + str(degree_shoulder), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((shoulder_err_mess_coor[0], shoulder_err_mess_coor[1]), E12_classname,
+                                          font=result_font, fill=(0, 128, 255))
+                    draw_res_err_box.text((shoulder_err_mess_coor[0], shoulder_err_mess_coor[1]), E12_classname,
+                                          font=result_font, fill=(0, 128, 255))
                     warning_mess.append(["E12", str(degree_shoulder), 'Shoulder Position', str(degree_shoulder),
                                          'E12-Left shoulder too hight'])
                     # draw_res_bow.rectangle(body_coordinate, outline="blue", fill=None, width=4)
@@ -2509,39 +2558,277 @@ def main_predict(video_input, isFlip = True):
                         [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
                          (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
                         fill=(0, 128, 255))
+                    draw_res_err_box.ellipse(
+                        [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                         (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                        fill=(0, 128, 255))
                 else:
                     # print('Else Shoulder')
                     # draw_res_bow.text((10, 140), 'Shoulders Position : Normal', font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((shoulder_err_mess_coor[0], shoulder_err_mess_coor[1]), '肩: 正常',
+                                          font=result_font, fill=(0, 0, 0))
                     warning_mess.append(['Shoulder_Normal', 'Normal', 'Shoulders Position', str(0), 'Normal'])
+
+                # E41/E42 Erhu Position ==================================================================================== 5
+                erhu_err_mess_coor = [shoulder_err_mess_coor[0],
+                                      shoulder_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                erhu_line_shape = erhu_line
+                bow_line_shape = bow_line
+                # print('Erhu Bow Line Shape:', bow_line_shape, erhu_line_shape)
+                # if is_orthogonal == False:
+                if is_not_orthogonal == True:
+                    L1_angle = get_angle(erhu_line[0], erhu_line[1])
+                    L2_angle = get_angle(bow_line[0], bow_line[1])
+                    if is_erhu_left == True:
+                        # draw_res_bow.text((10, 320), E41_classname, font=result_font, fill=(b, g, r, a))
+                        draw_res_err_box.text((erhu_err_mess_coor[0], erhu_err_mess_coor[1]), E41_classname,
+                                              font=result_font, fill=(0, 255, 255))
+                        warning_mess.append(["E41", str(L1_angle), "Erhu Position", str(L1_angle),
+                                             "E41-Pole tilt to left - Bow hair and string must be orthogonal"])
+                        draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                        draw_res_bow.line(erhu_line_shape, fill=(0, 255, 255), width=4)
+                        draw_res_err_box.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                        draw_res_err_box.line(erhu_line_shape, fill=(0, 255, 255), width=4)
+                    else:
+                        # draw_res_bow.text((10, 320), E42_classname, font=result_font, fill=(b, g, r, a))
+                        draw_res_err_box.text((erhu_err_mess_coor[0], erhu_err_mess_coor[1]), E42_classname,
+                                              font=result_font, fill=(0, 255, 255))
+                        warning_mess.append(["E42", str(L1_angle), "Erhu Position", str(L1_angle),
+                                             "E42-Pole tilt to right - Bow hair and string must be orthogonal"])
+                        draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                        draw_res_bow.line(erhu_line_shape, fill=(0, 255, 255), width=4)
+                        draw_res_err_box.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                        draw_res_err_box.line(erhu_line_shape, fill=(0, 255, 255), width=4)
+                else:
+                    draw_res_err_box.text((erhu_err_mess_coor[0], erhu_err_mess_coor[1]), '琴桿: 正常', font=result_font,
+                                          fill=(0, 0, 0))
+                    warning_mess.append(["Erhu_Normal", "Normal", "Erhu Position", str(1.0), "Normal"])
+
+                # E43 Bow Trajectory must stright line ================================================================= 6
+                bow_err_mess_coor = [erhu_err_mess_coor[0],
+                                     erhu_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                if is_bow_high == True:
+                    draw_res_err_box.text((bow_err_mess_coor[0], bow_err_mess_coor[1]), E44_classname, font=result_font,
+                                          fill=(0, 255, 0))
+                    warning_mess.append(["E44", str(L2_angle), "Bow Position", str(L2_angle),
+                                         "E44-Trace of bow too high"])
+                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                    draw_res_err_box.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                elif is_bow_low == True:
+                    draw_res_err_box.text((bow_err_mess_coor[0], bow_err_mess_coor[1]), E45_classname, font=result_font,
+                                          fill=(0, 255, 0))
+                    warning_mess.append(["E45", str(L2_angle), "Bow Position", str(L2_angle),
+                                         "E45-Trace of bow too high"])
+                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                    draw_res_err_box.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                elif is_bow_err == True:
+                    # draw_res_bow.text((10, 320), E43_classname, font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((bow_err_mess_coor[0], bow_err_mess_coor[1]), E43_classname, font=result_font,
+                                          fill=(0, 255, 0))
+                    warning_mess.append(["E43", str(L2_angle), "Bow Position", str(L2_angle),
+                                         "E43-Trace of bow must be in straight line"])
+                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                    draw_res_err_box.line(bow_line_shape, fill=(0, 255, 0), width=4)
+                    # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
+                else:
+                    # print('Else Orthogonal')
+                    # draw_res_bow.text((10, 320), 'Bow and Erhu is Orthogonal', font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((bow_err_mess_coor[0], bow_err_mess_coor[1]), '運弓: 正常', font=result_font,
+                                          fill=(0, 0, 0))
+                    warning_mess.append(["Bow_Normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
+
+                # E21/E22/E23 Error Left Arm ================================================================================= 4
+                leftarm_err_mess_coor = [bow_err_mess_coor[0],
+                                         bow_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                if is_left_arm_too_high == True:
+                    draw_res_err_box.text((leftarm_err_mess_coor[0], leftarm_err_mess_coor[1]),
+                                          leftArm_E21_ClassName, font=result_font,
+                                          fill=(0, 0, 255))
+                    warning_mess.append(["E21", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position',
+                                         str(degree_lh_shoulder_elbow),
+                                         'E21-Left elbow too Hight'])
+                    # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                    try:
+                        r_circle = 4
+                        draw_res_bow.ellipse(
+                            [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                             (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                          fill='blue', width=4)
+                        draw_res_err_box.ellipse([(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                                                  (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                                                 fill='blue')
+                        draw_res_err_box.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                                               (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                              fill='blue', width=4)
+                    except:
+                        print('Missing Mediapipe')
+                # elif leftArm_E22 >= P_var:
+                elif is_left_arm_too_low == True:
+                    draw_res_err_box.text((leftarm_err_mess_coor[0], leftarm_err_mess_coor[1]),
+                                          leftArm_E22_ClassName, font=result_font,
+                                          fill=(0, 0, 255))
+                    warning_mess.append(["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position',
+                                         str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
+                    # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                    try:
+                        r_circle = 4
+                        draw_res_bow.ellipse(
+                            [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                             (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                          fill='blue', width=4)
+                        draw_res_err_box.ellipse([(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                                                  (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                                                 fill='blue')
+                        draw_res_err_box.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                                               (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                              fill='blue', width=4)
+                    except:
+                        print('Missing Mediapipe')
+                elif is_left_hand_slope == True:
+                    draw_res_err_box.text((leftarm_err_mess_coor[0], leftarm_err_mess_coor[1]),
+                                          leftArm_E23_ClassName, font=result_font,
+                                          fill=(0, 0, 255))
+                    warning_mess.append(
+                        ["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
+                         'E23-Left elbow and wrist in a line'])
+                    # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
+                    # print((lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]), (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]), (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1]))
+                    try:
+                        r_circle = 4
+                        draw_res_bow.ellipse(
+                            [(lh_finger_wrist_elbow_coor[0][0] - r_circle,
+                              lh_finger_wrist_elbow_coor[0][1] - r_circle),
+                             (
+                                 lh_finger_wrist_elbow_coor[0][0] + r_circle,
+                                 lh_finger_wrist_elbow_coor[0][1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.ellipse(
+                            [(lh_finger_wrist_elbow_coor[1][0] - r_circle,
+                              lh_finger_wrist_elbow_coor[1][1] - r_circle),
+                             (
+                                 lh_finger_wrist_elbow_coor[1][0] + r_circle,
+                                 lh_finger_wrist_elbow_coor[1][1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.ellipse(
+                            [(lh_finger_wrist_elbow_coor[2][0] - r_circle,
+                              lh_finger_wrist_elbow_coor[2][1] - r_circle),
+                             (
+                                 lh_finger_wrist_elbow_coor[2][0] + r_circle,
+                                 lh_finger_wrist_elbow_coor[2][1] + r_circle)],
+                            fill='blue')
+                        draw_res_bow.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
+                                           (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
+                                          fill='blue', width=4)
+                        draw_res_bow.line([(lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]),
+                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                          fill='blue', width=4)
+                        draw_res_err_box.ellipse(
+                            [(lh_finger_wrist_elbow_coor[0][0] - r_circle,
+                              lh_finger_wrist_elbow_coor[0][1] - r_circle),
+                             (
+                                 lh_finger_wrist_elbow_coor[0][0] + r_circle,
+                                 lh_finger_wrist_elbow_coor[0][1] + r_circle)],
+                            fill='blue')
+                        draw_res_err_box.ellipse(
+                            [(lh_finger_wrist_elbow_coor[1][0] - r_circle,
+                              lh_finger_wrist_elbow_coor[1][1] - r_circle),
+                             (
+                                 lh_finger_wrist_elbow_coor[1][0] + r_circle,
+                                 lh_finger_wrist_elbow_coor[1][1] + r_circle)],
+                            fill='blue')
+                        draw_res_err_box.ellipse(
+                            [(lh_finger_wrist_elbow_coor[2][0] - r_circle,
+                              lh_finger_wrist_elbow_coor[2][1] - r_circle),
+                             (
+                                 lh_finger_wrist_elbow_coor[2][0] + r_circle,
+                                 lh_finger_wrist_elbow_coor[2][1] + r_circle)],
+                            fill='blue')
+                        draw_res_err_box.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
+                                               (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
+                                              fill='blue', width=4)
+                        draw_res_err_box.line([(lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]),
+                                               (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                                              fill='blue', width=4)
+                    except:
+                        print('Body Landmark Missing')
+                elif leftArm_N >= P_var:
+                    draw_res_err_box.text((leftarm_err_mess_coor[0], leftarm_err_mess_coor[1]),
+                                          leftArm_Normal_ClassName, font=result_font, fill=(0, 0, 0))
+                    warning_mess.append(
+                        ["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
+                else:
+                    draw_res_err_box.text((leftarm_err_mess_coor[0], leftarm_err_mess_coor[1]),
+                                          leftArm_Normal_ClassName, font=result_font, fill=(0, 0, 0))
+                    warning_mess.append(
+                        ["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
 
                 # E31 Error Right Hand ================================================================================ 3
                 # draw_res_bow.text((10, 170), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
+                rightarm_err_mess_coor = [leftarm_err_mess_coor[0],
+                                          leftarm_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
                 if rightArm_E31 >= P_var:
-                    # print('Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_E31_ClassName + ':' + str(rightArm_E31), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]),
+                                          rightArm_E31_ClassName, font=result_font, fill=(0, 0, 255))
                     warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Hand Position', str(rightArm_E31),
                                          'E31-Wrong RH thumb position'])
                     draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
                 elif rightArm_E32 >= P_var:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_E32_ClassName + ':' + str(rightArm_E32), font=result_font,fill=(b, g, r, a))
+                    draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]),
+                                          rightArm_E32_ClassName, font=result_font, fill=(0, 0, 255))
                     warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Hand Position', str(rightArm_E32),
                                          'E32-Wrong RH index finger position'])
                     draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
                 elif rightArm_E33 >= P_var:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_E33_ClassName + ':' + str(rightArm_E33), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]),
+                                          rightArm_E33_ClassName, font=result_font, fill=(0, 0, 255))
                     warning_mess.append(["E33", str(rightArm_E33), 'Right Hand Hand Position', str(rightArm_E33),
                                          'E33-Wrong RH middle or ring finger position'])
                     draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
                 elif rightArm_NHand >= P_var:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]), '右手持弓: 正常',
+                                          font=result_font, fill=(0, 0, 0))
                     warning_mess.append(["RightHand_Normal", 'Normal', "Right Hand Position", str(1.0), 'Normal'])
                 else:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]), '右手持弓: 正常',
+                                          font=result_font, fill=(0, 0, 0))
                     warning_mess.append(["RightHand_Normal", 'Normal', "Right Hand Position", str(1.0), 'Normal'])
+
+                # A-L Error Left Hand ================================================================================ 3
+                lefthand_err_mess_coor = [rightarm_err_mess_coor[0],
+                                          rightarm_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                if 0 >= P_var:
+                    # print('Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
+                                          leftHand_AL1_ClassName, font=result_font, fill=(0, 0, 255))
+                    # warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Hand Position', str(rightArm_E31),
+                    #                      'E31-Wrong RH thumb position'])
+                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                elif 0 >= P_var:
+                    # print('Else Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
+                                          leftHand_AL2_ClassName, font=result_font, fill=(0, 0, 255))
+                    # warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Hand Position', str(rightArm_E32),
+                    #                      'E32-Wrong RH index finger position'])
+                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                # elif lefthand_NHand >= P_var:
+                #     # print('Else Right Arm')
+                #     draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
+                #                           font=result_font, fill=(0, 0, 0))
+                #     warning_mess.append(["LeftHand_Normal", 'Normal', "Left Hand Position", str(1.0), 'Normal'])
+                else:
+                    # print('Else Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
+                                          font=result_font, fill=(0, 0, 0))
+                    # warning_mess.append(["LeftHand_Normal", 'Normal', "Left Hand Position", str(1.0), 'Normal'])
 
                 # E34/E35 Error Right Arm ================================================================================ 3
                 if rightArm_E34 >= P_var:
@@ -2565,89 +2852,91 @@ def main_predict(video_input, isFlip = True):
                     # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                     warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
 
-                # E21/E22/E23 Error Left Arm ================================================================================= 4
-                # draw_res_bow.text((10, 230), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
-                ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
-                ori_left_hand_rectangle_shape = [ori_left_hand_point[0], ori_left_hand_point[1]]
-                # if leftArm_E21 >= P_var:
-                if is_left_arm_too_high == True :
-                    # print('Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E21", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow),
-                                         'E21-Left elbow too Hight'])
-                    # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                    try:
-                        r_circle = 4
-                        draw_res_bow.ellipse(
-                            [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
-                             (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
-                            fill='blue')
-                        draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
-                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
-                                          fill='blue', width=4)
-                    except:
-                        print('Missing Mediapipe')
-                # elif leftArm_E22 >= P_var:
-                elif is_left_arm_too_low == True:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
-                    # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
-                    try:
-                        r_circle = 4
-                        draw_res_bow.ellipse(
-                            [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
-                             (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
-                            fill='blue')
-                        # print(lh_shoulder_coor[0])
-                        # print(lh_shoulder_coor[1])
-                        draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
-                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
-                                          fill='blue', width=4)
-                    except:
-                        print('Missing Mediapipe')
-                elif is_left_hand_slope == True:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
-                                         'E23-Left elbow and wrist in a line'])
-                    # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
-                    # print((lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]), (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]), (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1]))
-                    try:
-                        r_circle = 4
-                        draw_res_bow.ellipse(
-                            [(lh_finger_wrist_elbow_coor[0][0] - r_circle, lh_finger_wrist_elbow_coor[0][1] - r_circle),
-                             (
-                             lh_finger_wrist_elbow_coor[0][0] + r_circle, lh_finger_wrist_elbow_coor[0][1] + r_circle)],
-                            fill='blue')
-                        draw_res_bow.ellipse(
-                            [(lh_finger_wrist_elbow_coor[1][0] - r_circle, lh_finger_wrist_elbow_coor[1][1] - r_circle),
-                             (
-                             lh_finger_wrist_elbow_coor[1][0] + r_circle, lh_finger_wrist_elbow_coor[1][1] + r_circle)],
-                            fill='blue')
-                        draw_res_bow.ellipse(
-                            [(lh_finger_wrist_elbow_coor[2][0] - r_circle, lh_finger_wrist_elbow_coor[2][1] - r_circle),
-                             (
-                             lh_finger_wrist_elbow_coor[2][0] + r_circle, lh_finger_wrist_elbow_coor[2][1] + r_circle)],
-                            fill='blue')
-                        draw_res_bow.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
-                                           (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
-                                          fill='blue', width=4)
-                        draw_res_bow.line([(lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]),
-                                           (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
-                                          fill='blue', width=4)
-                    except:
-                        print('Body Landmark Missing')
-                elif leftArm_N >= P_var:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                    # warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
-                    warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
-                else:
-                    # print('Else Left Arm')
-                    # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                    # warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
-                    warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
+                # # E21/E22/E23 Error Left Arm ================================================================================= 4
+                # # draw_res_bow.text((10, 230), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
+                # ori_left_arm_rectangle_shape = [ori_left_arm_point[0], ori_left_arm_point[1]]
+                # ori_left_hand_rectangle_shape = [ori_left_hand_point[0], ori_left_hand_point[1]]
+                # # if leftArm_E21 >= P_var:
+                # if is_left_arm_too_high == True :
+                #     # print('Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_E21_ClassName + ':' + str(leftArm_E21), font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["E21", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow),
+                #                          'E21-Left elbow too Hight'])
+                #     # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                #     try:
+                #         r_circle = 4
+                #         draw_res_bow.ellipse(
+                #             [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                #              (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                #                            (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                #                           fill='blue', width=4)
+                #     except:
+                #         print('Missing Mediapipe')
+                # # elif leftArm_E22 >= P_var:
+                # elif is_left_arm_too_low == True:
+                #     # print('Else Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_E22_ClassName + ':' + str(leftArm_E22), font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["E22", str(degree_lh_shoulder_elbow), 'Left Hand Arm Position', str(degree_lh_shoulder_elbow), 'E22-Left elbow too Low'])
+                #     # draw_res_bow.rectangle(ori_left_arm_rectangle_shape, outline='blue', fill=None, width=4)
+                #     try:
+                #         r_circle = 4
+                #         draw_res_bow.ellipse(
+                #             [(lh_shoulder_coor[0] - r_circle, lh_shoulder_coor[1] - r_circle),
+                #              (lh_shoulder_coor[0] + r_circle, lh_shoulder_coor[1] + r_circle)],
+                #             fill='blue')
+                #         # print(lh_shoulder_coor[0])
+                #         # print(lh_shoulder_coor[1])
+                #         draw_res_bow.line([(lh_shoulder_coor[0], lh_shoulder_coor[1]),
+                #                            (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                #                           fill='blue', width=4)
+                #     except:
+                #         print('Missing Mediapipe')
+                # elif is_left_hand_slope == True:
+                #     # print('Else Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_E23_ClassName + ':' + str(leftArm_E23), font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["E23", str(lh_slope_value), 'Left Hand Wrist Position', str(lh_slope_value),
+                #                          'E23-Left elbow and wrist in a line'])
+                #     # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline='blue', fill=None, width=4)
+                #     # print((lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]), (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]), (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1]))
+                #     try:
+                #         r_circle = 4
+                #         draw_res_bow.ellipse(
+                #             [(lh_finger_wrist_elbow_coor[0][0] - r_circle, lh_finger_wrist_elbow_coor[0][1] - r_circle),
+                #              (
+                #              lh_finger_wrist_elbow_coor[0][0] + r_circle, lh_finger_wrist_elbow_coor[0][1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.ellipse(
+                #             [(lh_finger_wrist_elbow_coor[1][0] - r_circle, lh_finger_wrist_elbow_coor[1][1] - r_circle),
+                #              (
+                #              lh_finger_wrist_elbow_coor[1][0] + r_circle, lh_finger_wrist_elbow_coor[1][1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.ellipse(
+                #             [(lh_finger_wrist_elbow_coor[2][0] - r_circle, lh_finger_wrist_elbow_coor[2][1] - r_circle),
+                #              (
+                #              lh_finger_wrist_elbow_coor[2][0] + r_circle, lh_finger_wrist_elbow_coor[2][1] + r_circle)],
+                #             fill='blue')
+                #         draw_res_bow.line([(lh_finger_wrist_elbow_coor[0][0], lh_finger_wrist_elbow_coor[0][1]),
+                #                            (lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1])],
+                #                           fill='blue', width=4)
+                #         draw_res_bow.line([(lh_finger_wrist_elbow_coor[1][0], lh_finger_wrist_elbow_coor[1][1]),
+                #                            (lh_finger_wrist_elbow_coor[2][0], lh_finger_wrist_elbow_coor[2][1])],
+                #                           fill='blue', width=4)
+                #     except:
+                #         print('Body Landmark Missing')
+                # elif leftArm_N >= P_var:
+                #     # print('Else Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                #     # warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
+                #     warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
+                # else:
+                #     # print('Else Left Arm')
+                #     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                #     # warning_mess.append(["LeftArm_Normal", "Normal", 'Left Hand Arm Position', str(1.0), 'Normal'])
+                #     warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
+
+
                 # # if leftArm_E23 >= P_var:
                 # if is_left_hand_slope == True:
                 #     # print('Else Left Arm')
@@ -2683,56 +2972,12 @@ def main_predict(video_input, isFlip = True):
                 #     # draw_res_bow.text((10, 260), leftArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
                 #     warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
 
-                # E41/E42 Erhu Position ==================================================================================== 5
-                # bow_line_shape = [(bow_line[0][0], bow_line[0][1]), (bow_line[1][0], bow_line[1][1])]
-                # erhu_line_shape = [(erhu_line[0][0], erhu_line[0][1]), hip_left_point]
-                erhu_line_shape = erhu_line
-                bow_line_shape = bow_line
-                # print('Erhu Bow Line Shape:', bow_line_shape, erhu_line_shape)
-                # if is_orthogonal == False:
-                if is_not_orthogonal == True:
-                    L1_angle = get_angle(erhu_line[0], erhu_line[1])
-                    L2_angle = get_angle(bow_line[0], bow_line[1])
-                    if is_erhu_left == True:
-                        # draw_res_bow.text((10, 320), E41_classname, font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(["E41", str(L1_angle), "Erhu Position", str(L1_angle),
-                                             "E41-Pole tilt to left - Bow hair and string must be orthogonal"])
-                        draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
-                        draw_res_bow.line(erhu_line_shape, fill=(0, 255, 255), width=4)
-                    else:
-                        # draw_res_bow.text((10, 320), E42_classname, font=result_font, fill=(b, g, r, a))
-                        warning_mess.append(["E42", str(L1_angle), "Erhu Position", str(L1_angle),
-                                             "E42-Pole tilt to right - Bow hair and string must be orthogonal"])
-                        draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
-                        draw_res_bow.line(erhu_line_shape, fill=(0, 255, 255), width=4)
-                        print('bow_line_shape', bow_line_shape)
-                        print('erhu_line_shape', erhu_line_shape)
-                else:
-                    warning_mess.append(["Erhu_Normal", "Normal", "Erhu Position", str(1.0), "Normal"])
-
-                # E43 Bow Trajectory must stright line ================================================================= 6
-                if is_bow_high == True:
-                    warning_mess.append(["E44", str(L2_angle), "Bow Position", str(L2_angle),
-                                         "E44-Trace of bow too high"])
-                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
-                elif is_bow_low == True:
-                    warning_mess.append(["E45", str(L2_angle), "Bow Position", str(L2_angle),
-                                         "E45-Trace of bow too high"])
-                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
-                elif is_bow_err == True:
-                    # draw_res_bow.text((10, 320), E43_classname, font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E43", str(L2_angle), "Bow Position", str(L2_angle),
-                                         "E43-Trace of bow must be in straight line"])
-                    draw_res_bow.line(bow_line_shape, fill=(0, 255, 0), width=4)
-                    # draw_res_bow.line(erhu_line_shape, fill='blue', width=4)
-                else:
-                    # print('Else Orthogonal')
-                    # draw_res_bow.text((10, 320), 'Bow and Erhu is Orthogonal', font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["Bow_Normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
-
                 # E15 Error Knees Position ============================================================================= 7
+                knee_err_mess_coor = [lefthand_err_mess_coor[0],
+                                      lefthand_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
                 if is_knees_shoulder == True:
-                    # draw_res_bow.text((10, 110), E15_classname + ':' + str(knees_shoulder_distance), font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((knee_err_mess_coor[0], knee_err_mess_coor[1]), E15_classname,
+                                          font=result_font, fill=(0, 128, 255))
                     warning_mess.append(["E15", str(knees_shoulder_distance), 'Knees Position', str(degree_body),
                                          'E15-Put knees in normal position'])
                     # draw_res_bow.rectangle((hip_left_point, hip_right_point), outline="blue", fill=None, width=4)
@@ -2745,16 +2990,27 @@ def main_predict(video_input, isFlip = True):
                         [(rh_knees_coor[0] - r_circle, rh_knees_coor[1] - r_circle),
                          (rh_knees_coor[0] + r_circle, rh_knees_coor[1] + r_circle)],
                         fill=(0, 128, 255))
+                    draw_res_err_box.ellipse(
+                        [(lh_knees_coor[0] - r_circle, lh_knees_coor[1] - r_circle),
+                         (lh_knees_coor[0] + r_circle, lh_knees_coor[1] + r_circle)],
+                        fill=(0, 128, 255))
+                    draw_res_err_box.ellipse(
+                        [(rh_knees_coor[0] - r_circle, rh_knees_coor[1] - r_circle),
+                         (rh_knees_coor[0] + r_circle, rh_knees_coor[1] + r_circle)],
+                        fill=(0, 128, 255))
                 else:
-                    # draw_res_bow.text((10, 110), 'Knees Position : Normal', font=result_font, fill=(b, g, r, a))
+                    draw_res_err_box.text((knee_err_mess_coor[0], knee_err_mess_coor[1]), '兩膝: 正常', font=result_font,
+                                          fill=(0, 0, 0))
                     warning_mess.append(["Knees_Normal", "Normal", 'Knees Position', str(0), 'Normal'])
                 resize_img = (256, 256)
                 img_resized = np.array(img_pil.resize(resize_img))
                 img_original = np.array(img_pil)
+                img_err_mess = np.array(img_err)
                 # output_array.append([warning_mess, img_original])
                 output_array.append([warning_mess])
                 output_json_number += 1
                 videoOut_1.write(img_original)
+                videoOut_2.write(img_err_mess)
                 print('Write Frame -', idx_write_frame)
             #
             # for img_leftArm, left_arm_point in zip(x_test_video_leftArm, x_test_left_arm_point):
@@ -2877,6 +3133,7 @@ def main_predict(video_input, isFlip = True):
     videoInput.release()
     tensorflow.keras.backend.clear_session()
     videoOut_1.release()
+    videoOut_2.release()
     # videoOut_qinthong.release()
     # videoOut_qinzhen.release()
     # videoOut_lefthand.release()
@@ -2894,6 +3151,6 @@ def main_predict(video_input, isFlip = True):
     print("Json Count=", output_json_number)
     print("Frame Count=", frame_number)
     print("Frame Count Failed=", frame_failed)
-    return os.path.join(result_folder, filename + ".mp4")
+    return os.path.join(result_folder, filename + ".mp4"), os.path.join(result_folder, filename + "_err_msg.mp4")
 
 # main_predict('/home/minelab/dev/erhu-project/E22_5078.MOV')

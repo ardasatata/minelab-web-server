@@ -9,6 +9,7 @@ path4 = sys.argv[4] # PROCESSED_DIR + processed_filename
 path5 = sys.argv[5] # PREDICT_DIR_SEND_FILE + processed_blurred
 path6 = sys.argv[6] # PREDICT_DIR_SEND_FILE + stream_file
 filename = sys.argv[7] # filename
+path7 = sys.argv[8] # PREDICT_DIR_SEND_FILE + analyzed message file
 
 def get_length(filename):
     result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
@@ -28,7 +29,7 @@ def with_opencv(filename):
     return duration, frame_count
 
 
-subprocess.run(["ffmpeg", "-i", path1, '-preset', 'superfast', path2])
+subprocess.run(["ffmpeg", "-i", path1, '-preset', 'superfast', '-r', '30', path2])
 # subprocess.run(["ffmpeg", "-an", "-i", path1, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline', '-level', '3', path2])
 
 video_length = get_length(path2)
@@ -49,5 +50,5 @@ subprocess.Popen(
 
 print("processing...", filename)
 subprocess.Popen(
-    ['python', './classifier/classifier.py', path3, path5, path6])
+    ['python', './classifier/classifier.py', path3, path5, path6, path7])
 

@@ -660,7 +660,7 @@ export function TestPlayer(props: Props) {
                     {/*ERHU MESSAGE*/}
                     <div
                       className={
-                        jsonData[frame][0][6][4] === 'Normal'
+                        jsonData[frame][0][3][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-yellow-500 mb-2'
                       }
@@ -668,22 +668,22 @@ export function TestPlayer(props: Props) {
                       <BowIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Left : ${data[4][0]}`}*/}
-                        {`琴桿 : ${erhuMessage(jsonData[frame][0][6][0])}`}
+                        {`琴桿 : ${erhuMessage(jsonData[frame][0][3][0])}`}
                       </div>
                     </div>
 
                     {/*BOW MESSAGE*/}
                     <div
                       className={
-                        jsonData[frame][0][7][4] === 'Normal'
+                        jsonData[frame][0][4][4] === 'Normal'
                           ? 'flex items-center mb-2'
-                          : 'flex items-center text-yellow-500 mb-2'
+                          : 'flex items-center text-green-500 mb-2'
                       }
                     >
                       <BowIcon className={'w-12 h-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {/*{`Bow : ${data[5][0]}`}*/}
-                        {`運弓 : ${bowMessage(jsonData[frame][0][7][0])}`}
+                        {`運弓 : ${bowMessage(jsonData[frame][0][4][0])}`}
                       </div>
                     </div>
 
@@ -718,14 +718,14 @@ export function TestPlayer(props: Props) {
                     {/*RIGHT HAND*/}
                     <div
                       className={
-                        jsonData[frame][0][3][4] === 'Normal'
+                        jsonData[frame][0][6][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`右手持弓 : ${rightHandMessage(jsonData[frame][0][3][0])}`}
+                        {`右手持弓 : ${rightHandMessage(jsonData[frame][0][6][0])}`}
                       </div>
                     </div>
 
