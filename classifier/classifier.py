@@ -1,5 +1,6 @@
 import sys
-from ErhuPrediction3DCNNLSTM_class import main_predict
+# from ErhuPrediction3DCNNLSTM_class import main_predict
+from ErhuPredictionYOLO_GCN_class import main_predict
 import mediapipe as mp
 import subprocess
 

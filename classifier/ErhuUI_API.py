@@ -3,7 +3,8 @@ import subprocess
 from datetime import datetime
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
-from ErhuPrediction3DCNNLSTM_class import main_predict
+# from ErhuPrediction3DCNNLSTM_class import main_predict
+from ErhuPredictionYOLO_GCN_class import main_predict
 
 app = Flask(__name__)
 CORS(app)

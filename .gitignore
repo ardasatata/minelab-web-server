@@ -139,3 +139,16 @@ upload/
 
 *.mp4
 *.webm
+*.mov
+*.MOV
+*.yarn-integrity
+*.key
+*.cert
+*.png
+*.pem
+*.crt
+*.npy
+*.pt
+*.csr
+
+/classifier/mmpose

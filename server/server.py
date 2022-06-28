@@ -158,11 +158,19 @@ def with_opencv(filename):
 def send_video():
 
     list = []
-    for f in os_sorted(listdir(SL_UPLOAD_DIR)):
+    for f in os_sorted(listdir(UPLOAD_DIR)):
         list.append(f)
 
     value = len(list)
-    number = str(value).zfill(4)
+
+    if value > 0:
+        last_element = list[-1]
+        number = int(last_element[0:4]) + 1
+        number = str(number).zfill(4)
+        # return
+    else:
+        number = str(value).zfill(4)
+
 
     video = request.files.get('video')
     print('received..', video.filename)
