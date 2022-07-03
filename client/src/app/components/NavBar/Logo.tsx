@@ -7,11 +7,11 @@ import { ReactComponent as NTUAicon } from '../../../assets/ntua-white.svg';
 export function Logo() {
   return (
     <Wrapper>
-      <img src={ncuWhite} className={'h-10 mt-1'} />
-      <NTUAicon className={'h-12 whitespace-nowrap block'} style={{}} />
+      <img src={ncuWhite} className={'h-6 mt-1'} />
+      <NTUAicon className={'h-8 whitespace-nowrap block'} style={{}} />
         <div className={"flex flex-col items-center justify-center text-center"}>
-            <Title style={{ whiteSpace: 'normal', fontSize: 18 }}>二胡基礎學習診斷</Title>
-            <Title style={{ whiteSpace: 'normal', fontSize: 14 }}>Fundamental Erhu Learning Diagnosis</Title>
+            <Title style={{ whiteSpace: 'normal', fontSize: 16 }}>二胡基礎學習診斷</Title>
+            <Title style={{ whiteSpace: 'normal', fontSize: 13 }}>Fundamental Erhu Learning Diagnosis</Title>
         </div>
       {/*<Description>Minelab 2022</Description>*/}
     </Wrapper>
@@ -27,8 +27,6 @@ const Title = styled.div`
   font-size: 1.25rem;
   color: ${p => p.theme.text};
   font-weight: bold;
-  margin-right: 1rem;
-  margin-left: 1rem;
 `;
 
 const Description = styled.div`

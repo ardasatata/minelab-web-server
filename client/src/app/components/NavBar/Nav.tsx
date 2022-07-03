@@ -1,11 +1,10 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import { ReactComponent as DocumentationIcon } from './assets/documentation-icon.svg';
-import { ReactComponent as GithubIcon } from './assets/github-icon.svg';
 import {
   ArrowUpOutlined,
   OrderedListOutlined,
   VideoCameraAddOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 
 export function Nav() {
@@ -27,14 +26,6 @@ export function Nav() {
         <OrderedListOutlined className={'mr-2'} />
         Analyzed Video
       </Item>
-      {/*<Item*/}
-      {/*  href={process.env.PUBLIC_URL + `/`}*/}
-      {/*  title="Github Page"*/}
-      {/*  rel="noopener noreferrer"*/}
-      {/*>*/}
-      {/*  <ArrowUpOutlined className={'mr-2'} />*/}
-      {/*  Upload Video*/}
-      {/*</Item>*/}
       <Item
         href={process.env.PUBLIC_URL + `/upload`}
         title="Upload"
@@ -42,6 +33,14 @@ export function Nav() {
       >
         <ArrowUpOutlined className={'mr-2'} />
         Upload Video
+      </Item>
+      <Item
+        href={process.env.PUBLIC_URL + `/about`}
+        title="Development Team"
+        rel="noopener noreferrer"
+      >
+        <InfoCircleOutlined className={'mr-2'} />
+        Devlopment Team
       </Item>
     </Wrapper>
   );
@@ -57,8 +56,8 @@ const Item = styled.a`
   cursor: pointer;
   text-decoration: none;
   display: flex;
-  padding: 0.25rem 1rem;
-  font-size: 0.775rem;
+  padding: 0.25rem 0.50rem;
+  font-size: 0.725rem;
   font-weight: 500;
   align-items: center;
 

@@ -21,6 +21,7 @@ import { RecordVideo } from './pages/RecordVideo';
 import { UploadVideo as UploadSignLanguage } from './pages/SignLanguage/upload-video';
 import { RecordVideo as RecordSignLanguage } from './pages/SignLanguage/record-video';
 import { TestPlayer } from './pages/PlayVideo/test-player';
+import {AboutPage} from "./pages/AboutPage";
 
 export function App() {
   const { i18n } = useTranslation();
@@ -89,6 +90,11 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/'}
           component={() => <AutoRecord />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/about'}
+          component={() => <AboutPage />}
         />
         <Route component={NotFoundPage} />
       </Switch>
