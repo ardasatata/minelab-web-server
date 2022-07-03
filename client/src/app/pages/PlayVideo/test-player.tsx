@@ -450,6 +450,7 @@ export function TestPlayer(props: Props) {
     }
   };
 
+
   // const rightArmMessage = (input: string) => {
   //   switch (input) {
   //     case 'RightArm_Normal':
@@ -466,9 +467,9 @@ export function TestPlayer(props: Props) {
       case 'LeftHand_Normal':
         return '正常';
       case 'A-L1':
-        return '錯誤類型1';
+        return '大拇指不可往上翹';
       case 'A-L2':
-        return '錯誤類型2';
+        return '手掌不可緊靠琴桿';
     }
   };
 
@@ -705,19 +706,6 @@ export function TestPlayer(props: Props) {
                     {/*LEFT HAND FRET*/}
                     <div
                       className={
-                        'flex items-center mb-2'
-                      }
-                    >
-                      <HandIcon className={'w-12 mr-4'} />
-                      <div className={'whitespace-nowrap'}>
-                        {/*{`Left : ${data[4][0]}`}*/}
-                        {`左手按弦 : 正常`}
-                      </div>
-                    </div>
-
-                    {/*RIGHT HAND*/}
-                    <div
-                      className={
                         jsonData[frame][0][6][4] === 'Normal'
                           ? 'flex items-center mb-2'
                           : 'flex items-center text-red-500 mb-2'
@@ -725,7 +713,22 @@ export function TestPlayer(props: Props) {
                     >
                       <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
-                        {`右手持弓 : ${rightHandMessage(jsonData[frame][0][6][0])}`}
+                        {/*{`Left : ${data[4][0]}`}*/}
+                        {`左手按弦 : ${leftHandMessage(jsonData[frame][0][6][0])}`}
+                      </div>
+                    </div>
+
+                    {/*RIGHT HAND*/}
+                    <div
+                      className={
+                        jsonData[frame][0][7][4] === 'Normal'
+                          ? 'flex items-center mb-2'
+                          : 'flex items-center text-red-500 mb-2'
+                      }
+                    >
+                      <HandIcon className={'w-12 mr-4'} />
+                      <div className={'whitespace-nowrap'}>
+                        {`右手持弓 : ${rightHandMessage(jsonData[frame][0][7][0])}`}
                       </div>
                     </div>
 

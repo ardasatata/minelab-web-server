@@ -1847,8 +1847,9 @@ def get_cropped_image(frame, length_shoulders,length_half_shoulders, length_shou
     RArm_box = [top_left_RArm_box, bottom_right_RArm_box]
 
     top_left_LArm_box = (x_LArm - length_half_shoulders, y_LArm - length_thirdhalf_shoulders)
-    bottom_left_LArm_box = (x_LArm + length_shoulders + length_half_shoulders, y_LArm + length_shoulders + length_thirdhalf_shoulders)
+    bottom_left_LArm_box = (lh_finger_wrist_elbow_coor[3][0] + length_thirdhalf_shoulders, lh_finger_wrist_elbow_coor[3][1] + length_thirdhalf_shoulders)
     LArm_box = [top_left_LArm_box, bottom_left_LArm_box]
+
     RH_Cropped = cropped_by_pixel(img, RH_box[0][0], RH_box[0][1], RH_box[1][0], RH_box[1][1])
     RH_Cropped_Coor = [(RH_box[0][0], RH_box[0][1]), (RH_box[1][0], RH_box[1][1])]
     LH_Cropped = cropped_by_pixel(img, LH_box[0][0], LH_box[0][1], LH_box[1][0], LH_box[1][1])
@@ -2026,7 +2027,8 @@ def main_predict(video_input, isFlip = True):
     # model_right_arm.summary()
     # # print('TEST')
     # # exit()
-    model = load_model("/home/minelab/dev/erhu-project/classifier/model/YOLO_GCN/rightHand/combine_new_model_right.h5", custom_objects={"GraphConv": GraphConv, "GraphMaxPool": GraphMaxPool})
+    model_rightHand = load_model("/home/minelab/dev/erhu-project/classifier/model/YOLO_GCN/rightHand/combine_new_model_right.h5", custom_objects={"GraphConv": GraphConv, "GraphMaxPool": GraphMaxPool})
+    model_leftHand  = load_model("/home/minelab/dev/erhu-project/classifier/model/YOLO_GCN/leftHand/left_hand_model.h5", custom_objects={"GraphConv": GraphConv, "GraphMaxPool": GraphMaxPool})
     result_folder = os.path.join(os.path.abspath(__file__ + "/../../"), "predict")
     if os.path.exists(result_folder) == False:
         os.mkdir(result_folder)
@@ -2083,7 +2085,7 @@ def main_predict(video_input, isFlip = True):
     skipped_frame = 0
     selected_frame = 10
     max_frame = 9999
-    img_height, img_width = 112, 112
+    img_height, img_width = 416, 416
     limit_sample = 30
     x_test_bow = []
     x_test_leftArm = []
@@ -2193,6 +2195,7 @@ def main_predict(video_input, isFlip = True):
     x_test_left_arm_keypoint = []
     hand_edge = np.zeros((21, 21))
     hand_edge2 = np.zeros((21, 21))
+    hand_edge_arm = np.zeros((4, 4))
 
     hand_edge2[0, 0] = 1
     hand_edge2[1, 1] = 1
@@ -2240,6 +2243,15 @@ def main_predict(video_input, isFlip = True):
     hand_edge2[17, 18] = 1
     hand_edge2[18, 19] = 1
     hand_edge2[19, 20] = 1
+
+    hand_edge_arm[0, 0] = 1
+    hand_edge_arm[1, 1] = 1
+    hand_edge_arm[2, 2] = 1
+    hand_edge_arm[3, 3] = 1
+    hand_edge_arm[0, 1] = 1
+    hand_edge_arm[1, 2] = 1
+    hand_edge_arm[2, 3] = 1
+
     while videoInput.isOpened():
         # print('Frame open')
         success, frame = videoInput.read()
@@ -2532,6 +2544,9 @@ def main_predict(video_input, isFlip = True):
             is_right_hand_E32 = False
             is_right_hand_E33 = False
             is_right_hand_E3N = False
+            is_leftArm_AL1 = False
+            is_leftArm_AL2 = False
+            is_leftArm_ALN = False
             prev_bow_angle = 0
             err_bow_high = 0
             err_bow_low = 0
@@ -2545,13 +2560,16 @@ def main_predict(video_input, isFlip = True):
             leftArm_E22 = 0
             leftArm_E23 = 0
             leftArm_N = 0
+            leftHand_AL1 = 0
+            leftHand_AL2 = 0
+            leftHand_ALN = 0
             for (imgLeftHand, imgRightHand, imgLeftArm, imgRightArm, leftHandPoint, rightHandPoint, leftArmPoint, \
                 rightArmPoint, all_body_point, leftHand_keypoint,\
                     leftArm_keypoint, rightHand_keypoint) in zip(x_test_video_leftHand_resized, x_test_video_rightHand_resized,
                                                      x_test_video_leftArm_resized, x_test_video_rightArm_resized,
                                                      x_test_left_hand_point, x_test_right_hand_point,x_test_left_arm_point,
-                                                     x_test_right_arm_point, x_test_all_body_point, x_test_left_arm_keypoint,
-                                                     x_test_left_hand_keypoint, x_test_right_hand_keypoint):
+                                                     x_test_right_arm_point, x_test_all_body_point, x_test_left_hand_keypoint,
+                                                     x_test_left_arm_keypoint, x_test_right_hand_keypoint):
                 limit_counter = 0
                 # limit_counter_bow = 0
                 # limit_counter_body = 0
@@ -2636,32 +2654,55 @@ def main_predict(video_input, isFlip = True):
                 # prediction_leftArm = model_left_arm.predict(test_x_leftArm)
                 # prediction_leftHand = model_left.predict(test_x_leftHand)
                 # prediction_rightArm = model.predict(test_x_rightArm)
-                x_train = []
+                x_train_rightHand = []
+                x_train_leftHand = []
+                x_train_leftElbow = []
                 y_train = []
-                edge_train = []
-                edge_train.append(hand_edge2)
-                x_train.append(rightHand_keypoint)
-                h, w, c = imgRightHand.shape
+                edge_train_rightHand = []
+                edge_train_leftHand = []
+                edge_train_leftArm = []
+                edge_train_rightHand.append(hand_edge2)
+                edge_train_leftHand.append(hand_edge2)
+                edge_train_leftArm.append(hand_edge_arm)
+                x_train_rightHand.append(rightHand_keypoint)
+                x_train_leftHand.append(leftHand_keypoint)
+                x_train_leftElbow.append(leftArm_keypoint)
+                h_lh, w_lh, c_lh = imgLeftArm.shape
+                h_rh, w_rh, c_rh = imgRightHand.shape
                 # img_padding = img_paddings
-                scale_w = 416 / w
+                scale_w_rightHand = 416 / w_rh
+                scale_w_leftHand = 416 / w_lh
                 color = [255, 255, 255]
-                h_scaled = int(h * scale_w)
-                img_scaled = cv2.resize(imgRightHand, (img_height, h_scaled))
+                h_scaled_rightHand = int(h_rh * scale_w_rightHand)
+                h_scaled_leftHand = int(h_lh * scale_w_leftHand)
+                img_scaled_rightHand = cv2.resize(imgRightHand, (img_height, h_scaled_rightHand))
+                img_scaled_leftHand = cv2.resize(imgLeftArm, (img_height, h_scaled_leftHand))
                 # cv2.imshow('imgRightHand', imgRightHand)
                 # cv2.imshow('img_scaled', img_scaled)
                 # cv2.waitKey(1)
                 try:
-                    img_padding = cv2.copyMakeBorder(img_scaled, 0, (img_height - h_scaled), 0, 0, cv2.BORDER_CONSTANT, value=color)
+                    img_padding_leftHand = cv2.copyMakeBorder(img_scaled_leftHand, 0, (img_height - h_scaled_leftHand), 0, 0, cv2.BORDER_CONSTANT, value=color)
+                    img_padding_rightHand = cv2.copyMakeBorder(img_scaled_rightHand, 0, (img_height - h_scaled_rightHand), 0, 0, cv2.BORDER_CONSTANT, value=color)
                 except:
-                    img_padding = cv2.resize(img_scaled, (416, 416))
-                x_train_yolo = []
-                x_train_yolo.append(img_padding)
-                yolo_x = np.asarray(x_train_yolo)
-                train_x = np.asarray(x_train)
-                edge = np.asarray(edge_train)
-                train_x = NormalizeData(train_x)
-                prediction_rightHand = model.predict([yolo_x, train_x, edge])
-
+                    img_padding_leftHand = cv2.resize(img_scaled_leftHand, (416, 416))
+                    img_padding_rightHand = cv2.resize(img_scaled_rightHand, (416, 416))
+                x_train_yolo_leftHand = []
+                x_train_yolo_rightHand = []
+                x_train_yolo_leftHand.append(img_padding_leftHand)
+                x_train_yolo_rightHand.append(img_padding_rightHand)
+                yolo_x_leftHand = np.asarray(x_train_yolo_leftHand)
+                yolo_x_rightHand = np.asarray(x_train_yolo_rightHand)
+                train_x_leftHand = np.asarray(x_train_leftHand)
+                train_x_rightHand = np.asarray(x_train_rightHand)
+                train_x_leftElbow = np.asarray(x_train_leftElbow)
+                edge_leftHand = np.asarray(edge_train_leftHand)
+                edge_leftElbow = np.asarray(edge_train_leftArm)
+                edge_rightHand = np.asarray(edge_train_rightHand)
+                train_x_leftHand = NormalizeData(train_x_leftHand)
+                train_x_rightHand = NormalizeData(train_x_rightHand)
+                train_x_leftElbow = NormalizeData(train_x_leftElbow)
+                prediction_leftHand = model_leftHand.predict([yolo_x_leftHand, train_x_leftHand, edge_leftHand, train_x_leftElbow, edge_leftElbow])
+                prediction_rightHand = model_rightHand.predict([yolo_x_rightHand, train_x_rightHand, edge_rightHand])
                 # print(prediction_rightArm)
                 # print(prediction_rightHand[0])
                 # print(prediction_leftArm)
@@ -2669,7 +2710,8 @@ def main_predict(video_input, isFlip = True):
                 # prediction_right_arm_max = np.argmax(prediction_rightArm[0])
                 # prediction_left_max = np.argmax(prediction_leftArm[0])
                 prediction_right_hand_max = np.argmax(prediction_rightHand[0])
-                # print(prediction_right_hand_max)
+                prediction_left_hand_max = np.argmax(prediction_leftHand[0])
+                print(prediction_leftHand[0])
 
 
                 if prediction_right_hand_max == 0:
@@ -2688,6 +2730,20 @@ def main_predict(video_input, isFlip = True):
                     if (round((prediction_rightHand[0][3]), 2) > P_var):
                         rightArm_NHand += 1
                     # rightArm_NHand = round((prediction_rightHand[0][3]), 2)
+
+                if prediction_left_hand_max == 0:
+                    if (round((prediction_leftHand[0][0]), 2) > P_var):
+                        leftHand_AL1 += 1
+                    # rightArm_E31 = round((prediction_rightHand[0][0]), 2)
+                elif prediction_left_hand_max == 1:
+                    if (round((prediction_leftHand[0][1]), 2) > P_var):
+                        leftHand_AL2 += 1
+                    # rightArm_E32 = round((prediction_rightHand[0][1]), 2)
+                elif prediction_left_hand_max == 2:
+                    if (round((prediction_leftHand[0][2]), 2) > P_var):
+                        leftHand_ALN += 1
+                    # rightArm_E33 = round((prediction_rightHand[0][2]), 2)
+
                 # if prediction_right_arm_max == 0:
                 #     rightArm_E34 = round((prediction_rightArm[0][0]), 2)
                 # elif prediction_right_arm_max == 1:
@@ -2695,14 +2751,12 @@ def main_predict(video_input, isFlip = True):
                 # elif prediction_right_hand_max == 2:
                 #     rightArm_NArm = round((prediction_rightArm[0][2]), 2)
 
-                # if prediction_left_max == 0:
-                #     leftArm_E21 = round((prediction_leftArm[0][0]), 2)
-                # elif prediction_left_max == 1:
-                #     leftArm_E22 = round((prediction_leftArm[0][1]), 2)
-                # elif prediction_left_max == 2:
-                #     leftArm_E23 = round((prediction_leftArm[0][2]), 2)
-                # elif prediction_left_max == 3:
-                #     leftArm_N = round((prediction_leftArm[0][3]), 2)
+                # if prediction_left_hand_max == 0:
+                #     leftHand_AL1 = round((prediction_leftHand[0][0]), 2)
+                # elif prediction_left_hand_max == 1:
+                #     leftHand_AL2 = round((prediction_leftHand[0][1]), 2)
+                # elif prediction_left_hand_max == 2:
+                #     leftHand_ALN = round((prediction_leftHand[0][2]), 2)
 
                 # rightArm_E31 = round(prediction_rightHand[0][3],2)
                 # rightArm_E32 = round(prediction_rightHand[0][4],2)
@@ -2810,10 +2864,23 @@ def main_predict(video_input, isFlip = True):
                 is_right_hand_E3N = True
             else:
                 is_right_hand_E3N = True
+
+            if leftHand_AL1 > limit_sample // 3:
+                is_leftArm_AL1 = True
+            elif leftHand_AL2 > limit_sample // 3:
+                is_leftArm_AL2 = True
+            elif leftHand_ALN > limit_sample // 3:
+                is_leftArm_ALN = True
+            else:
+                is_leftArm_ALN = True
+
             print('rightArm_E31:', rightArm_E31)
             print('rightArm_E32:', rightArm_E32)
             print('rightArm_E33:', rightArm_E33)
             print('rightArm_E3N:', rightArm_NHand)
+            print('leftHand_AL1:', leftHand_AL1)
+            print('leftHand_AL2:', leftHand_AL2)
+            print('leftHand_ALN:', leftHand_ALN)
 
             for img_original, ori_right_hand_point, ori_right_arm_point, ori_left_arm_point, ori_left_hand_point, all_body_point, bow_line, erhu_line in \
                     zip(x_test_video_original, x_test_right_hand_point, x_test_right_arm_point, x_test_left_arm_point, x_test_left_hand_point,
@@ -2827,6 +2894,7 @@ def main_predict(video_input, isFlip = True):
                 # print('Rectangle:', right_hand_point, right_arm_point, left_arm_point)
                 ori_right_hand_rectangle_shape = [ori_right_hand_point[0], ori_right_hand_point[1]]
                 ori_right_arm_rectangle_shape = [ori_right_arm_point[0], ori_right_arm_point[1]]
+                ori_left_hand_rectangle_shape = [ori_left_hand_point[0], ori_left_hand_point[1]]
                 # print('Shape:', ori_right_hand_rectangle_shape, ori_right_arm_rectangle_shape)
                 # x_test_all_body_point.append([head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face, degree_body, degree_shoulder])
                 head_coordinate = all_body_point[0]
@@ -3186,10 +3254,41 @@ def main_predict(video_input, isFlip = True):
                     warning_mess.append(
                         ["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
 
+                # A-L Error Left Hand ================================================================================ 3
+                lefthand_err_mess_coor = [leftarm_err_mess_coor[0],
+                                          leftarm_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                if is_leftArm_AL1 == True:
+                    # print('Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
+                                          leftHand_AL1_ClassName, font=result_font, fill=(0, 0, 255))
+                    draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    draw_res_err_box.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    warning_mess.append(
+                        ["A-L1", str(rightArm_E31), 'Left Hand Hand Position', str(rightArm_E31), 'A-L1-Wrong A-L1'])
+                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                elif is_leftArm_AL2 == True:
+                    # print('Else Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
+                                          leftHand_AL2_ClassName, font=result_font, fill=(0, 0, 255))
+                    draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    draw_res_err_box.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    warning_mess.append(
+                        ["A-L2", str(rightArm_E31), 'Left Hand Hand Position', str(rightArm_E31), 'A-L2-Wrong A-L2'])
+                elif is_leftArm_ALN == True:
+                    # print('Else Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
+                                          font=result_font, fill=(0, 0, 0))
+                    warning_mess.append(["LeftHand_Normal", 'Normal', "Left Hand Position", str(1.0), 'Normal'])
+                else:
+                    # print('Else Right Arm')
+                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
+                                          font=result_font, fill=(0, 0, 0))
+                    warning_mess.append(["LeftHand_Normal", 'Normal', "Left Hand Position", str(1.0), 'Normal'])
+
                 # E31 Error Right Hand ================================================================================ 3
                 # draw_res_bow.text((10, 170), "===== Right Arm =====", font=result_font, fill=(b, g, r, a))
-                rightarm_err_mess_coor = [leftarm_err_mess_coor[0],
-                                          leftarm_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                rightarm_err_mess_coor = [lefthand_err_mess_coor[0],
+                                          lefthand_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
                 # if rightArm_E31 >= P_var:
                 if is_right_hand_E31 == True:
                     draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]),
@@ -3224,55 +3323,29 @@ def main_predict(video_input, isFlip = True):
                                           font=result_font, fill=(0, 0, 0))
                     warning_mess.append(["RightHand_Normal", 'Normal', "Right Hand Position", str(1.0), 'Normal'])
 
-                # A-L Error Left Hand ================================================================================ 3
-                lefthand_err_mess_coor = [rightarm_err_mess_coor[0],
-                                          rightarm_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
-                if 0 >= P_var:
-                    # print('Right Arm')
-                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
-                                          leftHand_AL1_ClassName, font=result_font, fill=(0, 0, 255))
-                    # warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Hand Position', str(rightArm_E31),
-                    #                      'E31-Wrong RH thumb position'])
-                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                elif 0 >= P_var:
-                    # print('Else Right Arm')
-                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
-                                          leftHand_AL2_ClassName, font=result_font, fill=(0, 0, 255))
-                    # warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Hand Position', str(rightArm_E32),
-                    #                      'E32-Wrong RH index finger position'])
-                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                # elif lefthand_NHand >= P_var:
-                #     # print('Else Right Arm')
-                #     draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
-                #                           font=result_font, fill=(0, 0, 0))
-                #     warning_mess.append(["LeftHand_Normal", 'Normal', "Left Hand Position", str(1.0), 'Normal'])
-                else:
-                    # print('Else Right Arm')
-                    draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
-                                          font=result_font, fill=(0, 0, 0))
-                    # warning_mess.append(["LeftHand_Normal", 'Normal', "Left Hand Position", str(1.0), 'Normal'])
+
 
                 # E34/E35 Error Right Arm ================================================================================ 3
-                if rightArm_E34 >= P_var:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E34", str(rightArm_E34), 'Right Arm Position', str(rightArm_E34),
-                                         'E34-Right wrist position too inward'])
-                    # draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
-                elif rightArm_E35 >= P_var:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["E35", str(rightArm_E35), 'Right Arm Position', str(rightArm_E35),
-                                         'E35-Right wrist position too outward'])
-                    # draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
-                elif rightArm_NHand >= P_var:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
-                else:
-                    # print('Else Right Arm')
-                    # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
-                    warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
+                # if rightArm_E34 >= P_var:
+                #     # print('Else Right Arm')
+                #     # draw_res_bow.text((10, 200), rightArm_E34_ClassName + ':' + str(rightArm_E34), font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["E34", str(rightArm_E34), 'Right Arm Position', str(rightArm_E34),
+                #                          'E34-Right wrist position too inward'])
+                #     # draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+                # elif rightArm_E35 >= P_var:
+                #     # print('Else Right Arm')
+                #     # draw_res_bow.text((10, 200), rightArm_E35_ClassName + ':' + str(rightArm_E35), font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["E35", str(rightArm_E35), 'Right Arm Position', str(rightArm_E35),
+                #                          'E35-Right wrist position too outward'])
+                #     # draw_res_bow.rectangle(ori_right_arm_rectangle_shape, outline="blue", fill=None, width=4)
+                # elif rightArm_NHand >= P_var:
+                #     # print('Else Right Arm')
+                #     # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
+                # else:
+                #     # print('Else Right Arm')
+                #     # draw_res_bow.text((10, 200), rightArm_Normal_ClassName, font=result_font, fill=(b, g, r, a))
+                #     warning_mess.append(["RightArm_Normal", 'Normal', "Right Arm Position", str(1.0), 'Normal'])
 
                 # # E21/E22/E23 Error Left Arm ================================================================================= 4
                 # # draw_res_bow.text((10, 230), "===== Left Arm =====", font=result_font, fill=(b, g, r, a))
@@ -3395,8 +3468,8 @@ def main_predict(video_input, isFlip = True):
                 #     warning_mess.append(["LeftHand_Normal", "Normal", 'Left Hand Arm is Inline', str(1.0), 'Normal'])
 
                 # E15 Error Knees Position ============================================================================= 7
-                knee_err_mess_coor = [lefthand_err_mess_coor[0],
-                                      lefthand_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
+                knee_err_mess_coor = [rightarm_err_mess_coor[0],
+                                      rightarm_err_mess_coor[1] + int(err_mess_frame[0] // div_space_val)]
                 if is_knees_shoulder == True:
                     draw_res_err_box.text((knee_err_mess_coor[0], knee_err_mess_coor[1]), E15_classname,
                                           font=result_font, fill=(0, 128, 255))
@@ -3575,4 +3648,4 @@ def main_predict(video_input, isFlip = True):
     return os.path.join(result_folder, filename + ".mp4"), os.path.join(result_folder, filename + "_err_msg.mp4")
 
 # main_predict('/home/minelab/dev/erhu-project/Data Test/E33_5072_clip_0.mp4')
-# main_predict('/home/minelab/dev/erhu-project/Data Test/E32_clip_0.mp4')
+# main_predict('/home/minelab/dev/erhu-project/28_05_2022_Saturday(03:27:44).webm')
