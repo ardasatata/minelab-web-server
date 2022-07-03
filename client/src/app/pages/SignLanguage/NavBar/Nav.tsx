@@ -11,14 +11,14 @@ import {
 export function Nav() {
   return (
     <Wrapper>
-      {/*<Item*/}
-      {/*  href={process.env.PUBLIC_URL + `/sign_language/list`}*/}
-      {/*  title="Documentation Page"*/}
-      {/*  rel="noopener noreferrer"*/}
-      {/*>*/}
-      {/*  <OrderedListOutlined className={'mr-2'} />*/}
-      {/*  Video List*/}
-      {/*</Item>*/}
+      <Item
+        href={process.env.PUBLIC_URL + `/sign-language/list`}
+        title="Documentation Page"
+        rel="noopener noreferrer"
+      >
+        <OrderedListOutlined className={'mr-2'} />
+        Video List
+      </Item>
       <Item
         href={process.env.PUBLIC_URL + `/sign-language/upload`}
         title="Upload"

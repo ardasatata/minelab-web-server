@@ -6,13 +6,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { StyleConstants } from '../../../styles/StyleConstants';
-import { PageWrapper } from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
-
-import {
-  CloseOutlined, LoadingOutlined,
-  PlayCircleOutlined,
-} from '@ant-design/icons';
 import { NavBar } from '../../components/NavBar';
 
 interface Props {}

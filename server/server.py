@@ -140,9 +140,10 @@ def get_length(filename):
     result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
                              "format=duration", "-of",
                              "default=noprint_wrappers=1:nokey=1", filename],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
     return float(result.stdout)
+
 
 def with_opencv(filename):
     import cv2
@@ -153,10 +154,10 @@ def with_opencv(filename):
 
     return duration, frame_count
 
+
 @app.route("/send-video", methods=['POST'])
 @cross_origin()
 def send_video():
-
     list = []
     for f in os_sorted(listdir(UPLOAD_DIR)):
         list.append(f)
@@ -170,7 +171,6 @@ def send_video():
         # return
     else:
         number = str(value).zfill(4)
-
 
     video = request.files.get('video')
     print('received..', video.filename)
@@ -210,7 +210,7 @@ def send_video():
          PREDICT_DIR_SEND_FILE + stream_file,
          filename,
          PREDICT_DIR_SEND_FILE + analyzed_blurred
-     ])
+         ])
 
     time.sleep(2)
 
@@ -383,6 +383,7 @@ def file_list():
     }
     return jsonify(value)
 
+
 @app.route('/predict/<path:path>', methods=["GET"])
 def send_report(path):
     return send_from_directory(PREDICT_DIR_SEND_FILE, path, conditional=True)
@@ -447,6 +448,7 @@ SL_RESULT_DIR = r"./sign_language/result/"
 SL_UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/upload/"
 SL_RESULT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/result/"
 
+
 @app.route("/sign-language/send-video", methods=['POST'])
 @cross_origin()
 def sl_send_video():
@@ -457,8 +459,8 @@ def sl_send_video():
     date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
 
     # Video Metadata
-    filename = f"{date_time}.webm"
-    file_mp4 = f"{date_time}.mp4"
+    filename = f"{date_time}.mov"
+    file_mp4 = f"{date_time}.mov"
 
     video.filename = filename
 
@@ -471,9 +473,9 @@ def sl_send_video():
     video.save(SL_UPLOAD_DIR + filename)
 
     try:
-
         subprocess.call(
-            ["ffmpeg", "-an", "-i", SL_UPLOAD_DIR + filename, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline',
+            ["ffmpeg", "-an", "-i", SL_UPLOAD_DIR + filename, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v',
+             'baseline',
              '-level',
              '3', SL_RESULT_DIR_SEND_FILE + file_mp4])
 
@@ -482,10 +484,13 @@ def sl_send_video():
         subprocess.call(
             ['python', './sign_language/keypoint_extract.py', 'extract_keypoint', SL_RESULT_DIR_SEND_FILE + file_mp4])
 
-        subprocess.call(
-            ['python', './sign_language/evaluate.py', 'evaluate', SL_RESULT_DIR_SEND_FILE + file_mp4, SL_RESULT_DIR_SEND_FILE + file_mp4 + '.npy'])
+        subprocess.Popen(
+            ['python', './sign_language/evaluate.py', 'evaluate', SL_RESULT_DIR_SEND_FILE + file_mp4,
+             SL_RESULT_DIR_SEND_FILE + file_mp4 + '.npy',
+             SL_RESULT_DIR_SEND_FILE + file_mp4 + '.txt'
+             ])
 
-        eventlet.sleep(2)
+        eventlet.sleep(1)
 
     except subprocess.CalledProcessError as e:
         print("Unexpected error:", e)
@@ -497,6 +502,7 @@ def sl_send_video():
         return value
     return value
 
+
 @app.route('/sign-language/file-list')
 def sl_file_list():
     # print('getting all predicted files name')
@@ -505,21 +511,37 @@ def sl_file_list():
     list = []
 
     for f in os_sorted(listdir(SL_UPLOAD_DIR)):
+        filename = f[:-4]
         list.append({
-            "filename": f[:-5],
+            "filename": filename,
             "original": f,
-            "processed": f"{f[:-5]}.mp4",
-            # "isProcessing": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}.npz")) else True,
-            # "isPredictError": False if isfile(join(PREDICTION_DIR, f"{f[:-5]}_blur.mp4")) else True,
+            "processed": f"{filename}.mov",
+            "isProcessing": False if isfile(join(SL_RESULT_DIR, f"{filename}.mov.txt")) else True,
+            "isPredictError": False if isfile(join(SL_RESULT_DIR, f"{filename}.mov.txt")) else True,
         })
 
-    # print(list)
+    print(list)
 
     value = {
         "ok": True,
         "filepath": list
     }
     return jsonify(value)
+
+
+@app.route('/sentence-sl/<path:path>', methods=["GET"])
+def sl_predict_sentence(path):
+    full_path = SL_RESULT_DIR + path
+
+    with open(full_path) as f:
+        sentence = f.readlines()
+
+    value = {
+        "ok": True,
+        "prediction": sentence
+    }
+    return jsonify(value)
+
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt",

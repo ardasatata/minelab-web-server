@@ -22,6 +22,8 @@ import { UploadVideo as UploadSignLanguage } from './pages/SignLanguage/upload-v
 import { RecordVideo as RecordSignLanguage } from './pages/SignLanguage/record-video';
 import { TestPlayer } from './pages/PlayVideo/test-player';
 import {AboutPage} from "./pages/AboutPage";
+import {FileListSL} from "./pages/SignLanguage/FileList";
+import {VideoPlayerSL} from "./pages/SignLanguage/video-player";
 
 export function App() {
   const { i18n } = useTranslation();
@@ -48,6 +50,16 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/sign-language/record'}
           component={() => <RecordSignLanguage />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/sign-language/list'}
+          component={() => <FileListSL />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/sign-language/playback'}
+          component={() => <VideoPlayerSL />}
         />
 
         <Route

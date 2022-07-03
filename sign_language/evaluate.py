@@ -19,7 +19,7 @@ def modified_weights(state_dict, modified=False):
     return modified_dict
 
 
-def evaluate(video_path, keypoint_path):
+def evaluate(video_path, keypoint_path, predicted_sentence_path):
     print('evaluate model')
     print(video_path)
     print(keypoint_path)
@@ -74,7 +74,9 @@ def evaluate(video_path, keypoint_path):
             text.append((x[0]))
 
         print(' '.join(text))
-        # print(model)
+
+        with open(predicted_sentence_path, 'w') as f:
+            f.write(' '.join(text))
 
 
 CROP_X = 200
@@ -174,4 +176,4 @@ def data_to_device(self, data):
 #     evaluate(video, keypoint)
 
 if __name__ == '__main__':
-    globals()[sys.argv[1]](sys.argv[2], (sys.argv[3]))
+    globals()[sys.argv[1]](sys.argv[2], (sys.argv[3]), (sys.argv[4]))

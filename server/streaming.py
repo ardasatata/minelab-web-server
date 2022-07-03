@@ -11,6 +11,7 @@ app.config['SECRET_KEY'] = '78581099#lkjh'
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 PREDICT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/predict/"
+SL_PREDICT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/result/"
 
 @app.after_request
 def after_request(response):
@@ -77,6 +78,26 @@ def predict_stream(path):
     resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
     return resp
 
+@app.route('/predict-sl/<path:path>', methods=["GET"])
+def predict_stream_sl(path):
+    full_path = SL_PREDICT_DIR_SEND_FILE + path
+
+    range_header = request.headers.get('Range', None)
+    byte1, byte2 = 0, None
+    if range_header:
+        match = re.search(r'(\d+)-(\d*)', range_header)
+        groups = match.groups()
+
+        if groups[0]:
+            byte1 = int(groups[0])
+        if groups[1]:
+            byte2 = int(groups[1])
+
+    chunk, start, length, file_size = get_chunk(byte1, byte2, full_path)
+    resp = Response(chunk, 206, mimetype='video/mp4',
+                    content_type='video/mp4', direct_passthrough=True)
+    resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
+    return resp
 
 if __name__ == '__main__':
     context = ('140_115_51_243.chained.crt', '140_115_51_243.key')  # certificate and key files
