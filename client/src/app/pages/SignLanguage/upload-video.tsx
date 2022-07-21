@@ -23,7 +23,7 @@ import guide from './assets/csl-wisnu.gif';
 
 interface Props {}
 
-const fileTypes = ['MP4', 'MOV', 'webm'];
+const fileTypes = ['MP4', 'MOV', 'webm', 'avi'];
 
 export function UploadVideo(props: Props) {
   const [file, setFile] = useState<any>(null);
@@ -122,10 +122,10 @@ export function UploadVideo(props: Props) {
               {isUploaded ? (
                 <>
                   <h1 className={'text-4xl mb-2'}>Your file is uploaded!</h1>
-                  <h1 className={'text-2xl mb-12 text-center text-teal-300'}>
-                    We appreciate your contribution to allow us for using your
-                    video file for research purposes.
-                  </h1>
+                  {/*<h1 className={'text-2xl mb-12 text-center text-teal-300'}>*/}
+                  {/*  We appreciate your contribution to allow us for using your*/}
+                  {/*  video file for research purposes.*/}
+                  {/*</h1>*/}
                 </>
               ) : (
                 <div className={'flex flex-col items-center mb-12'}>

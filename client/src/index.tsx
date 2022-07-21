@@ -69,6 +69,12 @@ ReactDOM.render(
         <HelmetProvider>
           <React.StrictMode>
             <App />
+            {/*<div className={"flex flex-col w-full h-full items-center justify-center text-5xl mt-64"}>*/}
+            {/*  We're sorry this server is unavailabe right now!*/}
+            {/*  <div className={"text-3xl mt-8"}>*/}
+            {/*    Please contact us if you need to use the erhu website*/}
+            {/*  </div>*/}
+            {/*</div>*/}
           </React.StrictMode>
         </HelmetProvider>
       </ThemeProvider>

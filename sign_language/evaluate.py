@@ -5,11 +5,21 @@ import cv2
 from utils import video_augmentation, Decode
 from collections import OrderedDict
 import sys
+from os import listdir
+from os.path import isfile, join
 
-# dataset_root: ./dataset/csl/
-# dict_path: ./preprocess/csl/gloss_dict.npy
-# evaluation_dir: ./evaluation/slr_eval_csl
-# evaluation_prefix: csl-groundtruth
+
+def transform():
+    print("Apply testing transform.")
+    return video_augmentation.Compose([
+        video_augmentation.CenterCrop(224),
+        # video_augmentation.Resize(0.5),
+        video_augmentation.ToTensor(),
+    ])
+
+
+data_aug = transform()
+
 
 def modified_weights(state_dict, modified=False):
     state_dict = OrderedDict([(k.replace('.module', ''), v) for k, v in state_dict.items()])
@@ -24,59 +34,70 @@ def evaluate(video_path, keypoint_path, predicted_sentence_path):
     print(video_path)
     print(keypoint_path)
 
+    video = read_video(video_path)
+    keypoint = load_keypoint(keypoint_path)
+
+    gloss_dict = np.load('/home/minelab/dev/erhu-project/sign_language/preprocess/phoenix2014/gloss_dict.npy',
+                         allow_pickle=True).item()
+    num_classes = len(gloss_dict) + 1
+
+    decoder = Decode(gloss_dict, num_classes, 'beam')
+
+    print(gloss_dict)
+
+    model = slr_network_mf.SLRModelMF(
+        num_classes=num_classes,
+        c2d_type="resnet18",
+        conv_type=2,
+        use_bn=1,
+        gloss_dict=gloss_dict,
+        temporal_embedd_dim=1024,
+        use_temporal_attn=True
+    )
+    state_dict = torch.load('/home/minelab/dev/erhu-project/sign_language/attn_phoenix_2.pt')
+
+    weights = modified_weights(state_dict['model_state_dict'], False)
+
+    model.load_state_dict(weights, strict=False)
+
+    model.eval()
+
+    print(video)
+    print(keypoint)
+
+    video, keypoint = normalize(video, keypoint)
+
+    print(video)
+    print(keypoint)
+
+    vid_length = video.shape[0]
+
+    print(video.unsqueeze(0).shape)
+    print(keypoint.unsqueeze(0).shape)
+    print(torch.LongTensor([vid_length]).shape)
+
     with torch.no_grad():
+        ret_dict = model(video.unsqueeze(0), keypoint.unsqueeze(0), torch.LongTensor([vid_length]), label=None,
+                         label_lgt=None)
 
-        video = read_video(video_path)
-        keypoint = load_keypoint(keypoint_path)
+    # print(ret_dict)
 
-        num_classes = 193 + 1
-        gloss_dict = np.load('./sign_language/preprocess/csl/gloss_dict.npy', allow_pickle=True).item()
+    # print(ret_dict['sequence_logits'].shape)
+    # print(ret_dict['feat_len'].shape)
+    # exit()
+    predict = decoder.decode(ret_dict['sequence_logits'], ret_dict['feat_len'], batch_first=False, probs=False)
+    # print(predict[0])
+    # print(type(predict[0]))
+    text = []
 
-        decoder = Decode(gloss_dict, num_classes, 'beam')
+    for x in predict[0]:
+        # print(x[0])
+        text.append((x[0]))
 
-        print(gloss_dict)
+    print(' '.join(text))
 
-        model = slr_network_mf.SLRModelMF(
-            num_classes=num_classes,
-            c2d_type="resnet18",
-            conv_type=2,
-            use_bn=1,
-            gloss_dict=gloss_dict,
-            temporal_embedd_dim=1024,
-            use_temporal_attn=True
-        )
-
-        state_dict = torch.load('./sign_language/attn_csl.pt')
-
-        weights = modified_weights(state_dict['model_state_dict'], False)
-
-        model.load_state_dict(weights, strict=True)
-
-        model.eval()
-
-        video, keypoint, label = normalize(video, keypoint, [9])
-
-        vid_length = video.shape[0]
-
-
-        ret_dict = model(video.unsqueeze(0), keypoint.unsqueeze(0), torch.LongTensor([vid_length]), label=label,
-                         label_lgt=[2, 9, 14, 16, 20, 22, 25, 27, 30])
-
-        # print(ret_dict)
-        # print(ret_dict['sequence_logits'])
-        predict = decoder.decode(ret_dict['sequence_logits'], ret_dict['feat_len'], batch_first=False, probs=False)
-        # print(predict[0])
-        # print(type(predict[0]))
-        text = []
-
-        for x in predict[0]:
-            # print(x[0])
-            text.append((x[0]))
-
-        print(' '.join(text))
-
-        with open(predicted_sentence_path, 'w') as f:
-            f.write(' '.join(text))
+    with open(predicted_sentence_path, 'w') as f:
+        f.write(' '.join(text))
 
 
 CROP_X = 200
@@ -84,18 +105,24 @@ CROP_TOP = 200
 
 
 def read_video(path):
+    # all_frames = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
+    #
+    # return [cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) for img_path in all_frames]
+
     try:
         cap = cv2.VideoCapture(path)
         video = []
 
+        # cap.set(cv2.CAP_PROP_POS_MSEC, 50)
+
         while cap.isOpened():
             ret, frame = cap.read()
             if ret:
-                cropped = frame[0 + CROP_TOP:720, 0 + CROP_X:1280 - CROP_X]
-                resized_image = cv2.resize(cropped, (256, 256))
+                # cropped = frame[0 + CROP_TOP:720, 0 + CROP_X:1280 - CROP_X]
+                # resized_image = cv2.resize(frame, (256, 256))
 
                 # append frame to be converted
-                video.append(np.asarray(resized_image))
+                video.append(np.asarray(frame))
             else:
                 break
         cap.release()
@@ -130,17 +157,7 @@ def load_keypoint(path):
     return torch.from_numpy(data[:, selected, :])
 
 
-def transform():
-    print("Apply testing transform.")
-    return video_augmentation.Compose([
-        video_augmentation.CenterCrop(224),
-        # video_augmentation.Resize(0.5),
-        video_augmentation.ToTensor(),
-    ])
-
-
-def normalize(video, keypoint, label, file_id=None):
-    data_aug = transform()
+def normalize(video, keypoint, label=None, file_id=None):
     video, keypoint, label = data_aug(video, keypoint, label, file_id)
 
     if isinstance(keypoint, torch.Tensor):
@@ -148,7 +165,7 @@ def normalize(video, keypoint, label, file_id=None):
 
     video = video.float() / 127.5 - 1
     keypoint = 2. * (keypoint - np.min(keypoint)) / np.ptp(keypoint) - 1
-    return video, torch.from_numpy(keypoint), label
+    return video, torch.from_numpy(keypoint)
 
 
 def data_to_device(self, data):
@@ -170,10 +187,13 @@ def data_to_device(self, data):
 #     # video = '/home/minelab/dev/VAC_CSLR/dataset/csl/video/000020/P50_s3_00_2._color.avi'
 #     # keypoint = '/home/minelab/dev/VAC_CSLR/dataset/csl/keypoint/000020/P50_s3_00_2._color.avi.npy'
 #
-#     video = '/home/minelab/dev/erhu-project/sign_language/result/test2.mp4'
-#     keypoint = '/home/minelab/dev/erhu-project/sign_language/result/test2.mp4.npy'
+#     # video = '/home/minelab/dev/erhu-project/sign_language/result/test1.mp4'
+#     # keypoint = '/home/minelab/dev/erhu-project/sign_language/result/test1.npy'
 #
-#     evaluate(video, keypoint)
+#     # video = '/home/minelab/dev/erhu-project/sign_language/test_phoenix/processed.mp4'
+#     # keypoint = '/home/minelab/dev/erhu-project/sign_language/test_phoenix/processed.npy'
+#     #
+#     # evaluate(video, keypoint, "/home/minelab/dev/erhu-project/sign_language/result/test1.mp4.txt")
 
 if __name__ == '__main__':
     globals()[sys.argv[1]](sys.argv[2], (sys.argv[3]), (sys.argv[4]))

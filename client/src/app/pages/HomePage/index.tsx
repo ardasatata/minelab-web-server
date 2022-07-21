@@ -12,7 +12,7 @@ export function HomePage() {
         <title>Home Page</title>
         <meta
           name="description"
-          content="A React Boilerplate application homepage"
+          content="Minelab Server"
         />
       </Helmet>
       <NavBar />

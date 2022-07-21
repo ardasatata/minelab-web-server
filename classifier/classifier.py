@@ -19,12 +19,12 @@ mp_drawing = mp.solutions.drawing_utils
 out_filename = outPredictName
 
 print("blurring...", out_filename)
-subprocess.call(
+subprocess.run(
     ['python', './server/FaceMosaicMediaPipe.py', result, out_filename])
 print("blurring prediction done...", out_filename)
 
 print("blurring analyzed message...", analyzedBlurred)
-subprocess.call(
+subprocess.run(
     ['python', './server/FaceMosaicMediaPipe.py', result_error_msg, analyzedBlurred])
 print("blurring prediction done...", analyzedBlurred)
 
@@ -38,7 +38,7 @@ filename_transform_out = streamFileName.replace('(', '\(')
 filename_transform_out = filename_transform_out.replace(':', '\:')
 filename_transform_out = filename_transform_out.replace(')', '\)')
 
-subprocess.call(
+subprocess.run(
     ["ffmpeg", "-an", "-i", out_filename, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'baseline', '-level',
      '3', streamFileName])
 

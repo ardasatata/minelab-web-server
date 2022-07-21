@@ -10,7 +10,7 @@ import { StyleConstants } from '../../../styles/StyleConstants';
 import { PageWrapper } from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
 
-import { NavBar } from '../../components/NavBar';
+import { NavBar } from './NavBar';
 import { useQuery } from '../../../hooks/useQuery';
 
 import { Player } from 'video-react';
@@ -59,9 +59,9 @@ export function VideoPlayerSL(props: Props) {
   };
 
   useEffect(() => {
-    // setTimeout(() => {
-    //   play();
-    // }, 2000);
+    setTimeout(() => {
+      play();
+    }, 2000);
   }, []);
 
   const refVideo = useRef(null);
@@ -165,7 +165,7 @@ export function VideoPlayerSL(props: Props) {
                     progressInterval={1}
                     width="100%"
                     height="100%"
-                    playbackRate={0.5}
+                    playbackRate={1}
                     playing={playing}
                     muted={true}
                   />

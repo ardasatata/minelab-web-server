@@ -21,7 +21,7 @@ from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import mediapipe as mp
 from math import degrees, atan2
-import pixellib
+# import pixellib
 import warnings
 import tensorflow
 from pixellib.instance import custom_segmentation
@@ -1723,6 +1723,102 @@ def body_segment_mmpose(frame):
     y_WRRH = int(pose_results[0]['keypoints'][117][1])
     rh_wrist = [x_WRRH, y_WRRH]
 
+    # leftHand92_x = int(pose_results[0]['keypoints'][91][0])
+    # leftHand92_y = int(pose_results[0]['keypoints'][91][1])
+    # leftHand93_x = int(pose_results[0]['keypoints'][92][0])
+    # leftHand93_y = int(pose_results[0]['keypoints'][92][1])
+    leftHand94_x = int(pose_results[0]['keypoints'][93][0])
+    leftHand94_y = int(pose_results[0]['keypoints'][93][1])
+    leftHand95_x = int(pose_results[0]['keypoints'][94][0])
+    leftHand95_y = int(pose_results[0]['keypoints'][94][1])
+    leftHand96_x = int(pose_results[0]['keypoints'][95][0])
+    leftHand96_y = int(pose_results[0]['keypoints'][95][1])
+    leftHand97_x = int(pose_results[0]['keypoints'][96][0])
+    leftHand97_y = int(pose_results[0]['keypoints'][96][1])
+    leftHand98_x = int(pose_results[0]['keypoints'][97][0])
+    leftHand98_y = int(pose_results[0]['keypoints'][97][1])
+    leftHand99_x = int(pose_results[0]['keypoints'][98][0])
+    leftHand99_y = int(pose_results[0]['keypoints'][98][1])
+    leftHand100_x = int(pose_results[0]['keypoints'][99][0])
+    leftHand100_y = int(pose_results[0]['keypoints'][99][1])
+    leftHand101_x = int(pose_results[0]['keypoints'][100][0])
+    leftHand101_y = int(pose_results[0]['keypoints'][100][1])
+    leftHand102_x = int(pose_results[0]['keypoints'][101][0])
+    leftHand102_y = int(pose_results[0]['keypoints'][101][1])
+    leftHand103_x = int(pose_results[0]['keypoints'][102][0])
+    leftHand103_y = int(pose_results[0]['keypoints'][102][1])
+    leftHand104_x = int(pose_results[0]['keypoints'][103][0])
+    leftHand104_y = int(pose_results[0]['keypoints'][103][1])
+    leftHand105_x = int(pose_results[0]['keypoints'][104][0])
+    leftHand105_y = int(pose_results[0]['keypoints'][104][1])
+    leftHand106_x = int(pose_results[0]['keypoints'][105][0])
+    leftHand106_y = int(pose_results[0]['keypoints'][105][1])
+    leftHand107_x = int(pose_results[0]['keypoints'][106][0])
+    leftHand107_y = int(pose_results[0]['keypoints'][106][1])
+    leftHand108_x = int(pose_results[0]['keypoints'][107][0])
+    leftHand108_y = int(pose_results[0]['keypoints'][107][1])
+    leftHand109_x = int(pose_results[0]['keypoints'][108][0])
+    leftHand109_y = int(pose_results[0]['keypoints'][108][1])
+    leftHand110_x = int(pose_results[0]['keypoints'][109][0])
+    leftHand110_y = int(pose_results[0]['keypoints'][109][1])
+    leftHand111_x = int(pose_results[0]['keypoints'][110][0])
+    leftHand111_y = int(pose_results[0]['keypoints'][110][1])
+    leftHand112_x = int(pose_results[0]['keypoints'][110][0])
+    leftHand112_y = int(pose_results[0]['keypoints'][110][1])
+    leftHandFinger = [(leftHand94_x, leftHand94_y),
+                      (leftHand95_x, leftHand95_y), (leftHand96_x, leftHand96_y), (leftHand97_x, leftHand97_y),
+                      (leftHand98_x, leftHand98_y), (leftHand99_x, leftHand99_y), (leftHand100_x, leftHand100_y),
+                      (leftHand101_x, leftHand101_y), (leftHand102_x, leftHand102_y), (leftHand103_x, leftHand103_y),
+                      (leftHand104_x, leftHand104_y), (leftHand105_x, leftHand105_y), (leftHand106_x, leftHand106_y),
+                      (leftHand107_x, leftHand107_y), (leftHand108_x, leftHand108_y), (leftHand109_x, leftHand109_y),
+                      (leftHand110_x, leftHand110_y), (leftHand111_x, leftHand111_y), (leftHand112_x, leftHand112_y)]
+
+    rightHand115_x = int(pose_results[0]['keypoints'][114][0])
+    rightHand115_y = int(pose_results[0]['keypoints'][114][1])
+    rightHand116_x = int(pose_results[0]['keypoints'][115][0])
+    rightHand116_y = int(pose_results[0]['keypoints'][115][1])
+    rightHand117_x = int(pose_results[0]['keypoints'][116][0])
+    rightHand117_y = int(pose_results[0]['keypoints'][116][1])
+    rightHand118_x = int(pose_results[0]['keypoints'][117][0])
+    rightHand118_y = int(pose_results[0]['keypoints'][117][1])
+    rightHand119_x = int(pose_results[0]['keypoints'][118][0])
+    rightHand119_y = int(pose_results[0]['keypoints'][118][1])
+    rightHand120_x = int(pose_results[0]['keypoints'][119][0])
+    rightHand120_y = int(pose_results[0]['keypoints'][119][1])
+    rightHand121_x = int(pose_results[0]['keypoints'][120][0])
+    rightHand121_y = int(pose_results[0]['keypoints'][120][1])
+    rightHand122_x = int(pose_results[0]['keypoints'][121][0])
+    rightHand122_y = int(pose_results[0]['keypoints'][121][1])
+    rightHand123_x = int(pose_results[0]['keypoints'][122][0])
+    rightHand123_y = int(pose_results[0]['keypoints'][122][1])
+    rightHand124_x = int(pose_results[0]['keypoints'][123][0])
+    rightHand124_y = int(pose_results[0]['keypoints'][123][1])
+    rightHand125_x = int(pose_results[0]['keypoints'][124][0])
+    rightHand125_y = int(pose_results[0]['keypoints'][124][1])
+    rightHand126_x = int(pose_results[0]['keypoints'][125][0])
+    rightHand126_y = int(pose_results[0]['keypoints'][125][1])
+    rightHand127_x = int(pose_results[0]['keypoints'][126][0])
+    rightHand127_y = int(pose_results[0]['keypoints'][126][1])
+    rightHand128_x = int(pose_results[0]['keypoints'][127][0])
+    rightHand128_y = int(pose_results[0]['keypoints'][127][1])
+    rightHand129_x = int(pose_results[0]['keypoints'][128][0])
+    rightHand129_y = int(pose_results[0]['keypoints'][128][1])
+    rightHand130_x = int(pose_results[0]['keypoints'][129][0])
+    rightHand130_y = int(pose_results[0]['keypoints'][129][1])
+    rightHand131_x = int(pose_results[0]['keypoints'][130][0])
+    rightHand131_y = int(pose_results[0]['keypoints'][130][1])
+    rightHand132_x = int(pose_results[0]['keypoints'][131][0])
+    rightHand132_y = int(pose_results[0]['keypoints'][131][1])
+    rightHand133_x = int(pose_results[0]['keypoints'][132][0])
+    rightHand133_y = int(pose_results[0]['keypoints'][132][1])
+    rightHandFinger = [(rightHand115_x, rightHand115_y),
+                      (rightHand116_x, rightHand116_y), (rightHand117_x, rightHand117_y), (rightHand118_x, rightHand118_y),
+                      (rightHand119_x, rightHand119_y), (rightHand120_x, rightHand120_y), (rightHand121_x, rightHand121_y),
+                      (rightHand122_x, rightHand122_y), (rightHand123_x, rightHand123_y), (rightHand124_x, rightHand124_y),
+                      (rightHand125_x, rightHand125_y), (rightHand126_x, rightHand126_y), (rightHand127_x, rightHand127_y),
+                      (rightHand128_x, rightHand128_y), (rightHand129_x, rightHand129_y), (rightHand130_x, rightHand130_y),
+                      (rightHand131_x, rightHand131_y), (rightHand132_x, rightHand132_y), (rightHand133_x, rightHand133_y)]
+
     x_MIDFGRLH = int(pose_results[0]['keypoints'][102][0])
     y_MIDFGRLH = int(pose_results[0]['keypoints'][102][1])
     lh_middle_finger = [x_MIDFGRLH, y_MIDFGRLH]
@@ -1824,7 +1920,7 @@ def body_segment_mmpose(frame):
            x_WRRH, y_WRRH, x_LTFGRRH, y_LTFGRRH, x_RElbow, y_RArm, x_RArm, x_LArm, y_LArm, x_WRLH, y_WRLH, \
            head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face,\
            degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor,\
-           lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear
+           lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger
 
 
 def get_cropped_image(frame, length_shoulders,length_half_shoulders, length_shoulders_3times,length_shoulders_2times, length_thirdhalf_shoulders, \
@@ -2268,7 +2364,7 @@ def main_predict(video_input, isFlip = True):
             x_WRRH, y_WRRH, x_LTFGRRH, y_LTFGRRH, x_RElbow, y_RArm, x_RArm, x_LArm, y_LArm, x_WRLH, y_WRLH, \
             head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face, \
             degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor, \
-            lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear = body_segment_mmpose(frame.copy())
+            lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger = body_segment_mmpose(frame.copy())
 
             image, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, \
             RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
@@ -2357,7 +2453,7 @@ def main_predict(video_input, isFlip = True):
             x_test_all_body_point.append(
                 [head_coordinate, body_coordinate, knees_shoulder_distance, degree_ear_face,
                  degree_body, degree_shoulder, lh_hip, rh_hip, degree_lh_shoulder_elbow, lh_slope_value,
-                 lh_finger_wrist_elbow_coor, lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear])
+                 lh_finger_wrist_elbow_coor, lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger])
         if len(x_test_erhu_line_point) < limit_sample:
             # erhu_line = [(350, 100), (350, 400)]
             # x_test_erhu_line_point.append(erhu_line)
@@ -2914,6 +3010,8 @@ def main_predict(video_input, isFlip = True):
                 rh_shoulder_coor = all_body_point[14]
                 lh_ear_coor = all_body_point[15]
                 rh_ear_coor = all_body_point[16]
+                lh_all_finger = all_body_point[17]
+                rh_all_finger = all_body_point[18]
 
                 # cv2.rectangle(img_chinese, (10, 10), (200, 200), (255, 255, 255))
                 # draw_res_bow.rectangle([(5, 5), (500, 350)], outline=None, fill="#ffffff")
@@ -3261,19 +3359,179 @@ def main_predict(video_input, isFlip = True):
                     # print('Right Arm')
                     draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
                                           leftHand_AL1_ClassName, font=result_font, fill=(0, 0, 255))
-                    draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    draw_res_err_box.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_err_box.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
                     warning_mess.append(
                         ["A-L1", str(rightArm_E31), 'Left Hand Hand Position', str(rightArm_E31), 'A-L1-Wrong A-L1'])
                     # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw all finger point and edge
+                    for i in range(18):
+                        r_finger_circle = 2
+                        if i != 18:
+                        # if i%4!=0 or i==0 or i==1:
+                            if i < 2:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 255, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 255, 255), width=2)
+                            elif i > 2 and i < 6:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 0))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 0))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 255, 0), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 255, 0), width=2)
+                            elif i > 6 and i < 10:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
+                            elif i > 10 and i < 14:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
+                            elif i > 14:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
                 elif is_leftArm_AL2 == True:
                     # print('Else Right Arm')
                     draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]),
                                           leftHand_AL2_ClassName, font=result_font, fill=(0, 0, 255))
-                    draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    draw_res_err_box.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_err_box.rectangle(ori_left_hand_rectangle_shape, outline="blue", fill=None, width=4)
                     warning_mess.append(
                         ["A-L2", str(rightArm_E31), 'Left Hand Hand Position', str(rightArm_E31), 'A-L2-Wrong A-L2'])
+                    # draw all finger point and edge
+                    for i in range(18):
+                        r_finger_circle = 2
+                        if i != 18:
+                        # if i % 4 != 0 or i == 0 or i == 1:
+                            if i < 2:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 255, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 255, 255), width=2)
+                            elif i > 2 and i < 6:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 0))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 0))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 255, 0), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 255, 0), width=2)
+                            elif i > 6 and i < 10:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
+                            elif i > 10 and i < 14:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
+                            elif i > 14:
+                                draw_res_err_box.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(lh_all_finger[i][0] - r_finger_circle, lh_all_finger[i][1] - r_finger_circle),
+                                     (lh_all_finger[i][0] + r_finger_circle, lh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                       (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(lh_all_finger[i][0], lh_all_finger[i][1]),
+                                                   (lh_all_finger[i + 1][0], lh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
                 elif is_leftArm_ALN == True:
                     # print('Else Right Arm')
                     draw_res_err_box.text((lefthand_err_mess_coor[0], lefthand_err_mess_coor[1]), '左手按弦: 正常',
@@ -3295,24 +3553,96 @@ def main_predict(video_input, isFlip = True):
                                           rightArm_E31_ClassName, font=result_font, fill=(0, 0, 255))
                     warning_mess.append(["E31", str(rightArm_E31), 'Right Hand Hand Position', str(rightArm_E31),
                                          'E31-Wrong RH thumb position'])
-                    draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    for i in range(18):
+                        if i != 18:
+                        # if i % 4 != 0 or i == 0 or i == 1:
+                            if i < 2:
+                                r_finger_circle = 2
+                                draw_res_err_box.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 255))
+                                draw_res_bow.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 255))
+                                draw_res_err_box.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                       (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                      fill=(0, 255, 255), width=2)
+                                draw_res_bow.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                   (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                  fill=(0, 255, 255), width=2)
                 # elif rightArm_E32 >= P_var:
                 elif is_right_hand_E32 == True:
                     draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]),
                                           rightArm_E32_ClassName, font=result_font, fill=(0, 0, 255))
                     warning_mess.append(["E32", str(rightArm_E32), 'Right Hand Hand Position', str(rightArm_E32),
                                          'E32-Wrong RH index finger position'])
-                    draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    for i in range(18):
+                        if i != 18:
+                            # if i % 4 != 0 or i == 0 or i == 1:
+                            if i > 2 and i < 6:
+                                r_finger_circle = 2
+                                draw_res_err_box.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 0))
+                                draw_res_bow.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 255, 0))
+                                draw_res_err_box.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                       (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                      fill=(0, 255, 0), width=2)
+                                draw_res_bow.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                   (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                  fill=(0, 255, 0), width=2)
                 # elif rightArm_E33 >= P_var:
                 elif is_right_hand_E33 == True:
                     draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]),
                                           rightArm_E33_ClassName, font=result_font, fill=(0, 0, 255))
                     warning_mess.append(["E33", str(rightArm_E33), 'Right Hand Hand Position', str(rightArm_E33),
                                          'E33-Wrong RH middle or ring finger position'])
-                    draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
-                    draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_bow.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    # draw_res_err_box.rectangle(ori_right_hand_rectangle_shape, outline="blue", fill=None, width=4)
+                    for i in range(18):
+                        if i != 18:
+                            if i > 6 and i < 10:
+                                r_finger_circle = 2
+                                draw_res_err_box.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                       (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                   (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
+                            elif i > 10 and i < 14:
+                                r_finger_circle = 2
+                                draw_res_err_box.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_bow.ellipse(
+                                    [(rh_all_finger[i][0] - r_finger_circle, rh_all_finger[i][1] - r_finger_circle),
+                                     (rh_all_finger[i][0] + r_finger_circle, rh_all_finger[i][1] + r_finger_circle)],
+                                    fill=(0, 0, 255))
+                                draw_res_err_box.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                       (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                      fill=(0, 0, 255), width=2)
+                                draw_res_bow.line([(rh_all_finger[i][0], rh_all_finger[i][1]),
+                                                   (rh_all_finger[i + 1][0], rh_all_finger[i + 1][1])],
+                                                  fill=(0, 0, 255), width=2)
                 # elif rightArm_NHand >= P_var:
                 elif is_right_hand_E3N == True:
                     draw_res_err_box.text((rightarm_err_mess_coor[0], rightarm_err_mess_coor[1]), '右手持弓: 正常',
@@ -3647,5 +3977,5 @@ def main_predict(video_input, isFlip = True):
     print("Frame Count Failed=", frame_failed)
     return os.path.join(result_folder, filename + ".mp4"), os.path.join(result_folder, filename + "_err_msg.mp4")
 
-# main_predict('/home/minelab/dev/erhu-project/Data Test/E33_5072_clip_0.mp4')
+# main_predict('/home/minelab/dev/erhu-project/E21,E31_0.mp4')
 # main_predict('/home/minelab/dev/erhu-project/28_05_2022_Saturday(03:27:44).webm')

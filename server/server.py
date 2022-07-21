@@ -10,7 +10,7 @@ import base64
 import eventlet
 import numpy as np
 
-from os import listdir
+from os import listdir, popen
 from os.path import isfile, join
 
 from flask_cors import CORS, cross_origin
@@ -36,7 +36,7 @@ from classifier.timeout import timeout
 from classifier.checking_tool import check_player_img_postition
 
 # from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+# from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
@@ -217,6 +217,43 @@ def send_video():
     return value
 
 
+@app.route('/delete-sl', methods=['GET'])
+def delete_original_sl():
+    filename = request.args.get('filename')
+    file_path = SL_UPLOAD_DIR + filename
+    deleted_file_path = DELETED_DIR_SEND_FILE + filename
+    print('deleting...', file_path)
+
+    if isfile(file_path):
+        try:
+            shutil.move(file_path, deleted_file_path)
+        except PermissionError:
+            print('error delete_original')
+            shutil.os.system('sudo chown $USER "{}"'.format(file_path))
+            # try again
+            try:
+                shutil.move(file_path, deleted_file_path)
+            except:
+                print('Giving up on'.format(file_path))
+
+        value = {
+            "ok": True,
+            "filename": filename,
+            "message": 'File deleted!'
+        }
+        print('OK Deleted')
+        return value
+    else:
+        value = {
+            "ok": False,
+            "filename": filename,
+            "message": 'File not found!'
+        }
+        print('Error Deleted')
+        print('File not found!')
+        return value
+
+
 @app.route('/delete', methods=['GET'])
 def delete_original():
     filename = request.args.get('filename')
@@ -371,6 +408,7 @@ def file_list():
                 "filename": filename,
                 "original": f,
                 "processed": f"{filename}.mov",
+                "isUploaded": True if isfile(join(UPLOAD_DIR, f"{filename}.mov")) else False,
                 "isProcessing": False if isfile(join(PREDICTION_DIR, f"{filename}.npz")) else True,
                 "isPredictError": False if isfile(join(PREDICTION_DIR, f"{filename}_message_blur.mov")) else True,
             })
@@ -448,6 +486,9 @@ SL_RESULT_DIR = r"./sign_language/result/"
 SL_UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/upload/"
 SL_RESULT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/result/"
 
+def convert_avi_to_mp4(avi_file_path, output_name):
+    popen("ffmpeg -i {input} -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 {output}.mp4".format(input = avi_file_path, output = output_name))
+    return True
 
 @app.route("/sign-language/send-video", methods=['POST'])
 @cross_origin()
@@ -459,8 +500,8 @@ def sl_send_video():
     date_time = now.strftime("%d_%m_%Y_%A(%H:%M:%S)")
 
     # Video Metadata
-    filename = f"{date_time}.mov"
-    file_mp4 = f"{date_time}.mov"
+    filename = f"{date_time}.mp4"
+    file_mp4 = f"{date_time}.mp4"
 
     video.filename = filename
 
@@ -478,6 +519,12 @@ def sl_send_video():
              'baseline',
              '-level',
              '3', SL_RESULT_DIR_SEND_FILE + file_mp4])
+
+        # subprocess.call(["ffmpeg", "-i", SL_UPLOAD_DIR + filename, '-preset', 'superfast', '-r', '30', SL_RESULT_DIR_SEND_FILE + file_mp4])
+
+        # subprocess.run(["ffmpeg", "-i", SL_UPLOAD_DIR + filename, '-c', 'copy', SL_RESULT_DIR_SEND_FILE + file_mp4])
+        # ffmpeg -i {input} -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 {output}.mp4
+        # subprocess.run(["ffmpeg", "-i", SL_UPLOAD_DIR + filename, '-ac', '2', '-b:v', '2000k', '-c:a', 'aac', '-c:v', 'libx264', '-b:a', '160k', '-vprofile', 'high', '-bf', '0', '-strict', 'experimental', '-f', 'mp4', SL_RESULT_DIR_SEND_FILE + file_mp4])
 
         print(SL_RESULT_DIR_SEND_FILE + file_mp4)
 
@@ -519,8 +566,6 @@ def sl_file_list():
             "isProcessing": False if isfile(join(SL_RESULT_DIR, f"{filename}.mov.txt")) else True,
             "isPredictError": False if isfile(join(SL_RESULT_DIR, f"{filename}.mov.txt")) else True,
         })
-
-    print(list)
 
     value = {
         "ok": True,

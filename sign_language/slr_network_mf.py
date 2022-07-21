@@ -62,36 +62,32 @@ class SLRModelMF(nn.Module):
                                    conv_type=conv_type,
                                    use_bn=use_bn,
                                    num_classes=num_classes)
+
+        self.conv1d_key = TemporalConv(input_size=512,
+                                       hidden_size=512,
+                                       conv_type=conv_type,
+                                       use_bn=use_bn,
+                                       num_classes=num_classes)
+
         self.decoder = utils.Decode(gloss_dict, num_classes, 'beam')
 
         self.classifier = nn.Linear(hidden_size, self.num_classes)
         self.register_backward_hook(self.backward_hook)
 
-        self.conv1d_type_1_block1 = TemporalConv(input_size=512,
-                                   hidden_size=hidden_size,
-                                   conv_type=1,
-                                   use_bn=use_bn,
-                                   num_classes=num_classes)
-
-        self.conv1d_type_1_block2 = TemporalConv(input_size=1024,
-                                   hidden_size=hidden_size,
-                                   conv_type=1,
-                                   use_bn=use_bn,
-                                   num_classes=num_classes)
-
-        self.temporal_model = BiLSTMLayer(rnn_type='LSTM', input_size=hidden_size * 2, hidden_size=hidden_size,
+        self.temporal_model = BiLSTMLayer(rnn_type='LSTM', input_size=hidden_size + 512,
+                                          hidden_size=hidden_size,
                                           num_layers=2, bidirectional=True)
 
         self.use_temporal_attn = use_temporal_attn
 
         if self.use_temporal_attn:
             self.temporal_attn = MultiHeadedAttention(temporal_n_heads, temporal_embedd_dim, 0.3)
+            self.temporal_attn_key = MultiHeadedAttention(temporal_n_heads, 512, 0.3)
             print('Using Temporal Attention layer', use_temporal_attn)
         else:
             self.temporal_attn = None
+            self.temporal_attn_key = None
             print('Temporal Attention layer not Used', use_temporal_attn)
-
-
 
     def backward_hook(self, module, grad_input, grad_output):
         for g in grad_input:
@@ -130,11 +126,11 @@ class SLRModelMF(nn.Module):
 
         batch, temp, placeholder, point, axis = key_x.shape
         inputs_kp = key_x.reshape(batch * temp, placeholder, point, axis)
-        # print(inputs_kp.shape)
+        # # print(inputs_kp.shape)
         keypoints = self.masked_bn_kp(inputs_kp, len_x)
-        # print(keypoints.shape)
+        # # print(keypoints.shape)
         keypoints = keypoints.reshape(batch, temp, -1).transpose(1, 2)
-        # print(keypoints.shape)
+        # # print(keypoints.shape)
 
         if len(x.shape) == 5:
             # videos
@@ -152,15 +148,15 @@ class SLRModelMF(nn.Module):
 
         if self.use_temporal_attn:
             conv1d_outputs = self.conv1d(framewise, len_x)
-            conv1d_outputs_key = self.conv1d(keypoints, len_x)
+            conv1d_outputs_key = self.conv1d_key(keypoints, len_x)
 
             # x: T, B, C
             block_1 = conv1d_outputs['visual_feat']
-            # x_key: T, B, C
+            # # x_key: T, B, C
             block_1_key = conv1d_outputs_key['visual_feat']
 
             x = self.temporal_attn(block_1, block_1, block_1)
-            x_key = self.temporal_attn(block_1_key, block_1_key, block_1_key)
+            x_key = self.temporal_attn_key(block_1_key, block_1_key, block_1_key)
 
             # cross_attn = self.temporal_attn(block_1_key, block_1, block_1)
             # x = self.temporal_attn(block_1, block_1, block_1)
@@ -169,17 +165,18 @@ class SLRModelMF(nn.Module):
             lgt = conv1d_outputs['feat_len']
         else:
             conv1d_outputs = self.conv1d(framewise, len_x)
-            conv1d_outputs_key = self.conv1d(keypoints, len_x)
+            # conv1d_outputs_key = self.conv1d(keypoints, len_x)
             # x: T, B, C
             x = conv1d_outputs['visual_feat']
             # x_key: T, B, C
-            x_key = conv1d_outputs_key['visual_feat']
+            # x_key = conv1d_outputs_key['visual_feat']
             # feature length
             lgt = conv1d_outputs['feat_len']
 
         # concat
         x_cat = torch.cat([x, x_key], 2)
 
+        # tm_outputs = self.temporal_model(x, lgt)
         tm_outputs = self.temporal_model(x_cat, lgt)
 
         # tm_outputs_ff = self.temporal_model(x, lgt)
@@ -189,23 +186,22 @@ class SLRModelMF(nn.Module):
         # outputs_ff = self.classifier(tm_outputs_ff['predictions'])
         # outputs_key = self.classifier(tm_outputs_key['predictions'])
 
-
         pred = None if self.training \
             else self.decoder.decode(outputs, lgt, batch_first=False, probs=False)
         conv_pred = None if self.training \
             else self.decoder.decode(conv1d_outputs['conv_logits'], lgt, batch_first=False, probs=False)
-        key_pred = None if self.training \
-            else self.decoder.decode(conv1d_outputs_key['conv_logits'], lgt, batch_first=False, probs=False)
+        # key_pred = None if self.training \
+        #     else self.decoder.decode(conv1d_outputs_key['conv_logits'], lgt, batch_first=False, probs=False)
 
         return {
             "framewise_features": framewise,
-            "visual_features": x_cat,
+            "visual_features": x,
             "feat_len": lgt,
             "conv_logits": conv1d_outputs['conv_logits'],
-            "key_logits": conv1d_outputs_key['conv_logits'],
+            # "key_logits": conv1d_outputs_key['conv_logits'],
             "sequence_logits": outputs,
             "conv_sents": conv_pred,
-            "key_sents": key_pred,
+            # "key_sents": key_pred,
             "recognized_sents": pred,
             # "seq_ff_logits": outputs_ff,
             # "seq_key_logits": outputs_key,

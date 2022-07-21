@@ -70,7 +70,7 @@ export function FileList(props: Props) {
     getFileList();
     setInterval(() => {
       getFileList();
-    }, 120000);
+    }, 300000);
   }, []);
 
   const requestDelete = async filename => {
@@ -193,7 +193,7 @@ export function FileList(props: Props) {
           </div>
         ) : (
           <div className={'flex h-full w-full bg-black justify-center'}>
-            <div className="flex flex-col max-h-screen mt-8 w-full max-w-5xl mt-20">
+            <div className="flex flex-col max-h-screen mt-8 w-full max-w-7xl mt-20">
               <DataTable
                 paginationDefaultPage={page}
                 noDataComponent={<h1 className={'text-4xl my-12'}>No video record is available</h1>}
@@ -210,6 +210,21 @@ export function FileList(props: Props) {
                       flex: 1
                     },
                     sortable: true,
+                  },
+                  {
+                    left: true,
+                    name: 'Video Uploaded',
+                    cell: row => (
+                      <div style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', textAlign: 'center'}}>
+                        {row.isUploaded ? (
+                          <CheckOutlined />
+                        ) : <div>Error</div>}
+                      </div>
+                    ),
+                    style:{
+                      flex: 1,
+                      width: '100%',
+                    }
                   },
                   {
                     left: true,
@@ -257,18 +272,26 @@ export function FileList(props: Props) {
                     name: 'Download or Play Analyzed Video When Completed',
                     cell: row => (
                       <div className="flex flex-row text-sm font-light items-center">
-                        {row.isProcessing ? (
-                          <></>
-                        ) : (
-                          <a
+                        {/*{row.isProcessing ? (*/}
+                        {/*  <></>*/}
+                        {/*) : (*/}
+                        {/*  <a*/}
+                        {/*    className={*/}
+                        {/*      'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'*/}
+                        {/*    }*/}
+                        {/*    href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}*/}
+                        {/*  >*/}
+                        {/*    {'🗄️ \u00A0 Download Original'}*/}
+                        {/*  </a>*/}
+                        {/*)}*/}
+                        <a
                             className={
                               'flex h-full items-center justify-center mr-2 font-black cursor-pointer hover:text-blue-500'
                             }
                             href={`https://140.115.51.243/api/download-original?filename=${row.processed}`}
                           >
                             {'🗄️ \u00A0 Download Original'}
-                          </a>
-                        )}
+                        </a>
                         {row.isPredictError === true ? (
                           <></>
                         ) : (

@@ -29,11 +29,11 @@ export function Nav() {
       </Item>
       <Item
         href={process.env.PUBLIC_URL + `/sign-language/record`}
-        title="Auto Record"
+        title="Record"
         rel="noopener noreferrer"
       >
         <VideoCameraAddOutlined className={'mr-2'} />
-        Auto Record
+        Record
       </Item>
     </Wrapper>
   );

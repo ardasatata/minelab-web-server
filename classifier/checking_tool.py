@@ -28,7 +28,7 @@ def check_player_img_postition(img):
 
     try:
         with time_limit(1):
-            with mp_holistic_checker.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3, model_complexity=2, smooth_landmarks=True, static_image_mode=True) as holistic:
+            with mp_holistic_checker.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3, smooth_landmarks=True, static_image_mode=True) as holistic:
                 image.flags.writeable = False
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 results = holistic.process(image)

@@ -79,7 +79,7 @@ export function FileListSL(props: Props) {
     setIsloading(true);
 
     const data = await axios
-      .get(`https://140.115.51.243/api/delete?filename=${filename}`)
+      .get(`https://140.115.51.243/api/delete-sl?filename=${filename}`)
       .then(() => reset());
 
     console.log(data);
