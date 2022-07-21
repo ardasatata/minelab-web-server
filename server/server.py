@@ -27,16 +27,10 @@ import shutil
 
 import locale
 
-# import random
-
 sys.path.append(os.path.abspath(os.path.join('..', 'classifier')))
 sys.path.append(os.path.abspath(os.path.join('..', 'sign_language')))
 
-from classifier.timeout import timeout
 from classifier.checking_tool import check_player_img_postition
-
-# from classifier.ErhuPrediction3DCNNLSTM_class import check_player_postition
-# from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
@@ -393,11 +387,9 @@ def file_path():
     }
     return jsonify(value)
 
-
+# File List menu end-point
 @app.route('/file-list')
 def file_list():
-    # print('getting all predicted files name')
-    # onlyfiles = [f[:-4] for f in os_sorted(listdir(UPLOAD_DIR))]
 
     list = []
 
@@ -412,8 +404,6 @@ def file_list():
                 "isProcessing": False if isfile(join(PREDICTION_DIR, f"{filename}.npz")) else True,
                 "isPredictError": False if isfile(join(PREDICTION_DIR, f"{filename}_message_blur.mov")) else True,
             })
-
-    # print(list)
 
     value = {
         "ok": True,
@@ -473,11 +463,6 @@ def stop_work():
 ## SIGN LANGUAGE SERVER ##
 ##### -------------- #####
 
-# sys.path.append(os.path.abspath(os.path.join('..', 'sign_language')))
-
-# from sign_language.keypoint_extract import extract_keypoint
-# from sign_language.evaluate import evaluate
-
 
 # Directory List
 SL_UPLOAD_DIR = r"./sign_language/upload/"
@@ -486,10 +471,7 @@ SL_RESULT_DIR = r"./sign_language/result/"
 SL_UPLOAD_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/upload/"
 SL_RESULT_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sign_language/result/"
 
-def convert_avi_to_mp4(avi_file_path, output_name):
-    popen("ffmpeg -i {input} -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 {output}.mp4".format(input = avi_file_path, output = output_name))
-    return True
-
+# Upload video end-point
 @app.route("/sign-language/send-video", methods=['POST'])
 @cross_origin()
 def sl_send_video():
@@ -520,12 +502,6 @@ def sl_send_video():
              '-level',
              '3', SL_RESULT_DIR_SEND_FILE + file_mp4])
 
-        # subprocess.call(["ffmpeg", "-i", SL_UPLOAD_DIR + filename, '-preset', 'superfast', '-r', '30', SL_RESULT_DIR_SEND_FILE + file_mp4])
-
-        # subprocess.run(["ffmpeg", "-i", SL_UPLOAD_DIR + filename, '-c', 'copy', SL_RESULT_DIR_SEND_FILE + file_mp4])
-        # ffmpeg -i {input} -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 {output}.mp4
-        # subprocess.run(["ffmpeg", "-i", SL_UPLOAD_DIR + filename, '-ac', '2', '-b:v', '2000k', '-c:a', 'aac', '-c:v', 'libx264', '-b:a', '160k', '-vprofile', 'high', '-bf', '0', '-strict', 'experimental', '-f', 'mp4', SL_RESULT_DIR_SEND_FILE + file_mp4])
-
         print(SL_RESULT_DIR_SEND_FILE + file_mp4)
 
         subprocess.call(
@@ -549,11 +525,9 @@ def sl_send_video():
         return value
     return value
 
-
+# File List end-point
 @app.route('/sign-language/file-list')
 def sl_file_list():
-    # print('getting all predicted files name')
-    # onlyfiles = [f[:-4] for f in os_sorted(listdir(UPLOAD_DIR))]
 
     list = []
 
@@ -573,7 +547,7 @@ def sl_file_list():
     }
     return jsonify(value)
 
-
+# Get prediction by the filename
 @app.route('/sentence-sl/<path:path>', methods=["GET"])
 def sl_predict_sentence(path):
     full_path = SL_RESULT_DIR + path
@@ -591,4 +565,3 @@ def sl_predict_sentence(path):
 if __name__ == "__main__":
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt",
                  keyfile="server/140_115_51_243.key")
-    # socketio.run(app, debug=True, host='0.0.0.0', port=5000)
