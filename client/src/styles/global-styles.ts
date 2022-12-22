@@ -33,4 +33,10 @@ export const GlobalStyle = createGlobalStyle`
     width: 1.5rem;
     height: 1.5rem;
   }
+  
+  .img-height-fit{
+    height: auto;
+    height: fit-content;
+    display: block;
+  }
 `;

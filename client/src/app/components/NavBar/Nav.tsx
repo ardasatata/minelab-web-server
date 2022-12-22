@@ -35,6 +35,14 @@ export function Nav() {
         Upload Video
       </Item>
       <Item
+        href={process.env.PUBLIC_URL + `/lesson`}
+        title="Erhu Lessons"
+        rel="noopener noreferrer"
+      >
+        <OrderedListOutlined className={'mr-2'} />
+        Erhu Lessons
+      </Item>
+      <Item
         href={process.env.PUBLIC_URL + `/about`}
         title="Development Team"
         rel="noopener noreferrer"

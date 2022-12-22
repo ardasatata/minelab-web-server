@@ -12,6 +12,8 @@ import numpy as np
 
 from os import listdir, popen
 from os.path import isfile, join
+from pathlib import Path
+import os
 
 from flask_cors import CORS, cross_origin
 
@@ -59,6 +61,9 @@ PROCESSED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/processed/"
 DELETED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/deleted/"
 SLICED_DIR_SEND_FILE = r"/home/minelab/dev/erhu-project/sliced/"
 
+LESSON_DIR = r"/home/minelab/dev/erhu-project/lesson/"
+LESSON_UPLOAD_DIR = r"/home/minelab/dev/erhu-project/lesson/upload/"
+LESSON_PREDICT_DIR = r"/home/minelab/dev/erhu-project/lesson/predict/"
 
 class Worker(object):
     switch = False
@@ -211,6 +216,40 @@ def send_video():
     return value
 
 
+
+
+@app.route("/send-video-lesson", methods=['POST'])
+@cross_origin()
+def send_video_lesson():
+    lesson = request.args.get('lesson')
+    video = request.files.get('video')
+    print('received..', video.filename)
+
+    # Video Metadata
+    filename = f"{lesson}.mov"
+
+    value = {
+        "ok": True,
+        "filename": filename
+    }
+
+    print("saving...", filename)
+    video.save(LESSON_UPLOAD_DIR + "temp_" + filename)
+
+    subprocess.Popen(
+        ['python', './server/upload_lesson.py',
+         filename
+         ])
+
+    time.sleep(2)
+
+    return value
+
+
+
+
+
+
 @app.route('/delete-sl', methods=['GET'])
 def delete_original_sl():
     filename = request.args.get('filename')
@@ -306,6 +345,23 @@ def download_original():
 def download_predict():
     filename = request.args.get('filename')
     file_path = PREDICT_DIR_SEND_FILE + filename
+    print('downloading...', file_path)
+
+    if isfile(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        value = {
+            "ok": False,
+            "filename": filename,
+            "message": 'File not found!'
+        }
+        return value
+
+
+@app.route('/download-predict-lesson', methods=['GET'])
+def download_predict_lesson():
+    filename = request.args.get('lesson')
+    file_path = LESSON_PREDICT_DIR + filename
     print('downloading...', file_path)
 
     if isfile(file_path):
@@ -415,6 +471,11 @@ def file_list():
 @app.route('/predict/<path:path>', methods=["GET"])
 def send_report(path):
     return send_from_directory(PREDICT_DIR_SEND_FILE, path, conditional=True)
+
+
+@app.route('/predictlesson/<path:path>', methods=["GET"])
+def send_report_lesson(path):
+    return send_from_directory(LESSON_PREDICT_DIR, path, conditional=True)
 
 
 @socketio.on('connect', namespace='/work')
@@ -561,6 +622,80 @@ def sl_predict_sentence(path):
     }
     return jsonify(value)
 
+
+
+# lesson List menu end-point
+@app.route('/lesson-list')
+def lesson_list():
+
+    list = []
+
+    for f in os_sorted(Path(LESSON_DIR).glob('*.mp4')):
+        filenameExt = os.path.basename(f)
+        filename = os.path.splitext(filenameExt)[0]
+        imgFile = os.path.join(os.path.dirname(f), filename + ".jpg")
+
+        if os.path.exists(imgFile) :
+            list.append({
+                "filename": filename,
+                "isUploaded": isfile(join(LESSON_UPLOAD_DIR, f"{filename}.mov")),
+                "isProcessed": isfile(join(LESSON_PREDICT_DIR, f"analyzed_{filename}.mov")),
+            })
+
+    value = {
+        "ok": True,
+        "filepath": list
+    }
+    return jsonify(value)
+
+
+@app.route('/practicedelete', methods=['GET'])
+def delete_lesson_files():
+    filename = request.args.get('filename') + ".mov"
+
+    file_path = LESSON_UPLOAD_DIR + filename
+    print('deleting...', file_path)
+
+    if isfile(file_path):
+        try:
+            path1 = LESSON_UPLOAD_DIR + filename
+            path2 = LESSON_PREDICT_DIR + "process_" + filename
+            path3 = LESSON_PREDICT_DIR + "blur_" + filename
+            path4 = LESSON_PREDICT_DIR + "stream_" + filename
+            path5 = LESSON_PREDICT_DIR + "analyzed_" + filename
+            path7 = LESSON_UPLOAD_DIR + "sliced_" + request.args.get('filename') + ".mov"
+            path6 = LESSON_PREDICT_DIR + "sliced_" + request.args.get('filename') + ".mp4"
+            path8 = LESSON_PREDICT_DIR + "sliced_" + request.args.get('filename') + ".json"
+            path9 = LESSON_PREDICT_DIR + "sliced_" + request.args.get('filename') + ".npz"
+
+            subprocess.run(["rm", "-rf", path1])
+            subprocess.run(["rm", "-rf", path2])
+            subprocess.run(["rm", "-rf", path3])
+            subprocess.run(["rm", "-rf", path4])
+            subprocess.run(["rm", "-rf", path5])
+            subprocess.run(["rm", "-rf", path6])
+            subprocess.run(["rm", "-rf", path7])
+            subprocess.run(["rm", "-rf", path8])
+            subprocess.run(["rm", "-rf", path9])
+        except PermissionError:
+            print('error practice files')
+
+        value = {
+            "ok": True,
+            "filename": filename,
+            "message": 'File deleted!'
+        }
+        print('OK Deleted')
+        return value
+    else:
+        value = {
+            "ok": False,
+            "filename": filename,
+            "message": 'File not found!'
+        }
+        print('Error Deleted')
+        print('File not found!')
+        return value
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, certfile="server/140_115_51_243.chained.crt",

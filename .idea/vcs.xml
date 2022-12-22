@@ -2,5 +2,12 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mmcv" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mmdetection" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mmdetection/mmdetection" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/sign_language/ctcdecode" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/sign_language/ctcdecode/third_party/ThreadPool" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/sign_language/ctcdecode/third_party/kenlm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/sign_language/mmpose" vcs="Git" />
   </component>
 </project>

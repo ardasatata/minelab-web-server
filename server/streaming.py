@@ -57,6 +57,31 @@ def get_file():
     resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
     return resp
 
+
+LESSON_PREDICT_DIR = r"/home/minelab/dev/erhu-project/lesson/predict/"
+@app.route('/predictlesson/<path:path>', methods=["GET"])
+def predict_streamlesson(path):
+    full_path = LESSON_PREDICT_DIR + path
+    print(full_path)
+
+    range_header = request.headers.get('Range', None)
+    byte1, byte2 = 0, None
+    if range_header:
+        match = re.search(r'(\d+)-(\d*)', range_header)
+        groups = match.groups()
+
+        if groups[0]:
+            byte1 = int(groups[0])
+        if groups[1]:
+            byte2 = int(groups[1])
+
+    chunk, start, length, file_size = get_chunk(byte1, byte2, full_path)
+    resp = Response(chunk, 206, mimetype='video/mp4',
+                    content_type='video/mp4', direct_passthrough=True)
+    resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
+    return resp
+
+
 @app.route('/predict/<path:path>', methods=["GET"])
 def predict_stream(path):
     full_path = PREDICT_DIR_SEND_FILE + path

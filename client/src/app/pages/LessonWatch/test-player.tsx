@@ -487,18 +487,6 @@ export function TestPlayer(props: Props) {
     }
   };
 
-  const rightArmMessage = (input: string) => {
-    switch (input) {
-      case 'RightHand_Normal':
-        return '正常';
-      case 'E31':
-        return '大臂過於主動，帶動小臂與手腕';
-      case 'E32':
-        return '大臂未動，只動小臂與手腕';
-      case 'E33':
-        return '手腕帶動弓，過於僵硬';
-    }
-  };
   const kneesMessage = (input: string) => {
     switch (input) {
       case 'Knees_Normal':
@@ -738,7 +726,7 @@ export function TestPlayer(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
-                      <HandIcon className={'w-12 mr-4 flip-hand flip-hand2'} />
+                      <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {`右手持弓 : ${rightHandMessage(jsonData[frame][0][7][0])}`}
                       </div>

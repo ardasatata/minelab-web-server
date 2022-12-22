@@ -182,7 +182,7 @@ interface Props {}
 
 const OFFSET = 30
 
-export function TestPlayer(props: Props) {
+export function LessonAnalyse(props: Props) {
   const query = useQuery();
   // console.log(query.get('title'));
   // @ts-ignore
@@ -487,18 +487,6 @@ export function TestPlayer(props: Props) {
     }
   };
 
-  const rightArmMessage = (input: string) => {
-    switch (input) {
-      case 'RightHand_Normal':
-        return '正常';
-      case 'E31':
-        return '大臂過於主動，帶動小臂與手腕';
-      case 'E32':
-        return '大臂未動，只動小臂與手腕';
-      case 'E33':
-        return '手腕帶動弓，過於僵硬';
-    }
-  };
   const kneesMessage = (input: string) => {
     switch (input) {
       case 'Knees_Normal':
@@ -518,7 +506,7 @@ export function TestPlayer(props: Props) {
 
   useEffect(() => {
     getJSON(
-      `https://140.115.51.243/api/predict/${query.get('title')}.json`,
+      `https://140.115.51.243/api/predictlesson/sliced_${query.get('lesson')}.json`,
       function (err, data) {
         if (err !== null) {
           alert('Something went wrong: ' + err);
@@ -533,7 +521,7 @@ export function TestPlayer(props: Props) {
   return (
     <>
       <Helmet>
-        <title>{`Evaluate ${query.get('title')}`}</title>
+        <title>{"Evaluate - " + query.get('lesson')}</title>
         <meta
           name="description"
           content="A React Boilerplate application homepage"
@@ -596,9 +584,7 @@ export function TestPlayer(props: Props) {
                 >
                   <ReactPlayer
                     className="absolute top-0 left-0"
-                    url={`https://140.115.51.243:5001/predict/${query.get(
-                      'title',
-                    )}_stream.mov`}
+                    url={`https://140.115.51.243:5001/predictlesson/stream_${query.get('lesson')}.mov`}
                     controls={true}
                     onProgress={state => {
                       const frameNum = Math.round(state.playedSeconds * 30);
@@ -738,7 +724,7 @@ export function TestPlayer(props: Props) {
                           : 'flex items-center text-red-500 mb-2'
                       }
                     >
-                      <HandIcon className={'w-12 mr-4 flip-hand flip-hand2'} />
+                      <HandIcon className={'w-12 mr-4'} />
                       <div className={'whitespace-nowrap'}>
                         {`右手持弓 : ${rightHandMessage(jsonData[frame][0][7][0])}`}
                       </div>

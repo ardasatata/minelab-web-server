@@ -41,7 +41,6 @@ tensorflow.config.experimental.enable_tensor_float_32_execution(
     False
 )
 
-
 def getVideoProperties(video):
     properties = {}
     properties['FPS'] = round(video.get(cv2.CAP_PROP_FPS))

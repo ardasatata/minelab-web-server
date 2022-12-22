@@ -1,7 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="fix server classifier &amp; frontend view" />
+    <list default="true" id="fc60a570-e9f1-4cc4-80c7-cf5b53b1c28a" name="Changes" comment="Update Readme.md">
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/assets/bow.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/assets/hand.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/assets/head.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/assets/knee.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/assets/shoulder.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/assets/torso.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonAnalyse/index.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonList/index.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonWatch/index.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/app/pages/LessonWatch/test-player.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/erhu-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/erhu-project.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class_bck.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class_bck.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifier/ErhuPredictionYOLO_GCN_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier/ErhuPredictionYOLO_GCN_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/components/NavBar/Nav.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/components/NavBar/Nav.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/pages/PlayVideo/test-player.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/pages/PlayVideo/test-player.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/styles/global-styles.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/styles/global-styles.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/video-react.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/video-react.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/streaming.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/streaming.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -28,6 +55,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="MIXED" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
     <option name="WARN_ABOUT_CRLF" value="false" />
   </component>
   <component name="GitSEFilterConfiguration">
@@ -38,43 +66,57 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/anaconda3/envs/erhu-project-conda/lib/python3.9/site-packages/flask_socketio/__init__.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/client/.cert/cert.pem" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/client/.env.local" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/client/.env.production" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/client/node_modules/@types/node/https.d.ts" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/client/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/client/src/app/pages/CheckingTool/index.tsx" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/client/src/app/pages/FileList/index.tsx" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/research_ardasatata_com.csr" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/research_ardasatata_com.pem" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/server/server.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="27b3AmfD5fdkFnGu8o4i7vvUl7N" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="dart.analysis.tool.window.visible" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/src/app/pages" />
-    <property name="node.js.detected.package.eslint" value="true" />
-    <property name="node.js.detected.package.standard" value="true" />
-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="node.js.selected.package.standard" value="" />
-    <property name="nodejs_package_manager_path" value="yarn" />
-    <property name="settings.editor.selected.configurable" value="settings.javascript.linters.eslint" />
-    <property name="show.migrate.to.gradle.popup" value="false" />
-    <property name="ts.external.directory.path" value="$PROJECT_DIR$/client/node_modules/typescript/lib" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "WebServerToolWindowFactoryState": "false",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "yarn",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/client/src/app/pages" />
-      <recent name="$PROJECT_DIR$/classifier" />
-      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/server" />
+      <recent name="$PROJECT_DIR$/client/src/app" />
+      <recent name="$PROJECT_DIR$/sign_language" />
+      <recent name="$PROJECT_DIR$/sign_language/utils" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/src/app/pages" />
+      <recent name="$PROJECT_DIR$/classifier" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/predict" />
       <recent name="$PROJECT_DIR$/server" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.server">
-    <configuration name="classifier" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.streaming">
+    <configuration name="ErhuPrediction3DCNNLSTM_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="erhu-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -87,7 +129,73 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/classifier/classifier.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/classifier/ErhuPrediction3DCNNLSTM_class.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ErhuPredictionYOLO_GCN_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="erhu-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/classifier" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/classifier/ErhuPredictionYOLO_GCN_class.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="evaluate (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="erhu-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/sign_language" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sign_language/evaluate.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="keypoint_extract (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="erhu-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/sign_language" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sign_language/keypoint_extract.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -118,7 +226,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="website start" type="js.build_tools.npm" temporary="true">
+    <configuration name="streaming" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="erhu-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/server" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server/streaming.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="React" type="js.build_tools.npm">
       <package-json value="$PROJECT_DIR$/client/package.json" />
       <command value="run" />
       <scripts>
@@ -129,14 +259,21 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.classifier" />
+      <item itemvalue="npm.React" />
       <item itemvalue="Python.server" />
-      <item itemvalue="npm.website start" />
+      <item itemvalue="Python.ErhuPrediction3DCNNLSTM_class" />
+      <item itemvalue="Python.streaming" />
+      <item itemvalue="Python.ErhuPredictionYOLO_GCN_class" />
+      <item itemvalue="Python.keypoint_extract (1)" />
+      <item itemvalue="Python.evaluate (1)" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.classifier" />
-        <item itemvalue="npm.website start" />
+        <item itemvalue="Python.streaming" />
+        <item itemvalue="Python.evaluate (1)" />
+        <item itemvalue="Python.ErhuPredictionYOLO_GCN_class" />
+        <item itemvalue="Python.keypoint_extract (1)" />
+        <item itemvalue="Python.ErhuPrediction3DCNNLSTM_class" />
       </list>
     </recent_temporary>
   </component>
@@ -154,6 +291,50 @@
       <workItem from="1649701802268" duration="2058000" />
       <workItem from="1649740268790" duration="2067000" />
       <workItem from="1649974667630" duration="20789000" />
+      <workItem from="1651072057707" duration="7222000" />
+      <workItem from="1651082499267" duration="179000" />
+      <workItem from="1651083394921" duration="1035000" />
+      <workItem from="1651144636778" duration="599000" />
+      <workItem from="1651150589455" duration="10347000" />
+      <workItem from="1651243543287" duration="452000" />
+      <workItem from="1651244079108" duration="5548000" />
+      <workItem from="1651268865916" duration="54294000" />
+      <workItem from="1651748302948" duration="64970000" />
+      <workItem from="1652552413727" duration="484000" />
+      <workItem from="1652554685569" duration="646000" />
+      <workItem from="1652588795766" duration="1846000" />
+      <workItem from="1652626061185" duration="651000" />
+      <workItem from="1652633237476" duration="20768000" />
+      <workItem from="1652813021732" duration="4258000" />
+      <workItem from="1652985861783" duration="308000" />
+      <workItem from="1652989851175" duration="94896000" />
+      <workItem from="1653927797091" duration="22222000" />
+      <workItem from="1654014270620" duration="61025000" />
+      <workItem from="1654699395032" duration="8952000" />
+      <workItem from="1654711219593" duration="14274000" />
+      <workItem from="1654794882472" duration="26088000" />
+      <workItem from="1655026940886" duration="17653000" />
+      <workItem from="1655126617391" duration="487000" />
+      <workItem from="1655130647966" duration="26704000" />
+      <workItem from="1656055338392" duration="142853000" />
+      <workItem from="1657004394927" duration="3472000" />
+      <workItem from="1657007895428" duration="6006000" />
+      <workItem from="1657014232270" duration="26846000" />
+      <workItem from="1657549931411" duration="296000" />
+      <workItem from="1657558200908" duration="38168000" />
+      <workItem from="1658321819445" duration="18636000" />
+      <workItem from="1658543556664" duration="3224000" />
+      <workItem from="1659370761757" duration="2260000" />
+      <workItem from="1661321853880" duration="59510000" />
+      <workItem from="1666670481431" duration="2199000" />
+      <workItem from="1666672696286" duration="448000" />
+      <workItem from="1666673163697" duration="375000" />
+      <workItem from="1666673637096" duration="1968000" />
+      <workItem from="1667976779230" duration="17396000" />
+      <workItem from="1669083757656" duration="4625000" />
+      <workItem from="1670070683611" duration="9000" />
+      <workItem from="1670070709551" duration="1771000" />
+      <workItem from="1670592181014" duration="50621000" />
     </task>
     <task id="LOCAL-00001" summary="add server.py">
       <created>1649582412245</created>
@@ -211,7 +392,210 @@
       <option name="project" value="LOCAL" />
       <updated>1649962068783</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="update server.py changes">
+      <created>1650899417815</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1650899417815</updated>
+    </task>
+    <task id="LOCAL-00010" summary="update server.py changes">
+      <created>1650899649264</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1650899649264</updated>
+    </task>
+    <task id="LOCAL-00011" summary="update changes, server done &amp; checking tool">
+      <created>1651076872105</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1651076872105</updated>
+    </task>
+    <task id="LOCAL-00012" summary="update changes, update https, api url update">
+      <created>1651321812900</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1651321812900</updated>
+    </task>
+    <task id="LOCAL-00013" summary="update fix 5/4/2022 3am">
+      <created>1651604870978</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1651604870978</updated>
+    </task>
+    <task id="LOCAL-00014" summary="update server &amp; blurring pipeline">
+      <created>1651747612947</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1651747612947</updated>
+    </task>
+    <task id="LOCAL-00015" summary="update server, delete file">
+      <created>1651749527291</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1651749527291</updated>
+    </task>
+    <task id="LOCAL-00016" summary="update server, file-list api">
+      <created>1651800014844</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1651800014844</updated>
+    </task>
+    <task id="LOCAL-00017" summary="update server, client, full pipeline update">
+      <created>1651862924184</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1651862924184</updated>
+    </task>
+    <task id="LOCAL-00018" summary="update perpage">
+      <created>1651865011135</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1651865011135</updated>
+    </task>
+    <task id="LOCAL-00019" summary="update server &amp; client">
+      <created>1652028495955</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1652028495955</updated>
+    </task>
+    <task id="LOCAL-00020" summary="latest-update: new model, recorder config">
+      <created>1652267168368</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1652267168368</updated>
+    </task>
+    <task id="LOCAL-00021" summary="update latest">
+      <created>1652978236184</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1652978236184</updated>
+    </task>
+    <task id="LOCAL-00022" summary="ignore video">
+      <created>1652981785868</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1652981785868</updated>
+    </task>
+    <task id="LOCAL-00023" summary="update from server">
+      <created>1653548125937</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1653548125937</updated>
+    </task>
+    <task id="LOCAL-00024" summary="update from server">
+      <created>1653584085436</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1653584085436</updated>
+    </task>
+    <task id="LOCAL-00025" summary="update from server, player tidy up &amp; server update">
+      <created>1653614026989</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1653614026989</updated>
+    </task>
+    <task id="LOCAL-00026" summary="update sign language">
+      <created>1653930293621</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1653930293622</updated>
+    </task>
+    <task id="LOCAL-00027" summary="erhu update">
+      <created>1654541652111</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1654541652111</updated>
+    </task>
+    <task id="LOCAL-00028" summary="erhu update latest">
+      <created>1655019239799</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1655019239799</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Update">
+      <created>1655308157091</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1655308157091</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Update save page with local storage">
+      <created>1655311558737</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1655311558737</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Update latest &amp; maintenance">
+      <created>1656446148349</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1656446148349</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Update latest &amp; maintenance">
+      <created>1656825176270</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1656825176270</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Added about page">
+      <created>1656836730057</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1656836730057</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Sign language update">
+      <created>1656857330485</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1656857330485</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Tidy UP">
+      <created>1658420799899</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1658420799899</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Tidy UP server.py">
+      <created>1658421245666</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1658421245666</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Update Readme.md">
+      <created>1658422720835</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1658422720835</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -229,23 +613,60 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add server.py" />
-    <MESSAGE value="re-structure folder" />
-    <MESSAGE value="update" />
-    <MESSAGE value="restructure" />
-    <MESSAGE value="update ignore" />
-    <MESSAGE value="update new structure" />
-    <MESSAGE value="added util files" />
-    <MESSAGE value="fix server classifier &amp; frontend view" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix server classifier &amp; frontend view" />
+    <MESSAGE value="update changes, server done &amp; checking tool" />
+    <MESSAGE value="update changes, update https, api url update" />
+    <MESSAGE value="update fix 5/4/2022 3am" />
+    <MESSAGE value="update server &amp; blurring pipeline" />
+    <MESSAGE value="update server, delete file" />
+    <MESSAGE value="update server, file-list api" />
+    <MESSAGE value="update server, client, full pipeline update" />
+    <MESSAGE value="update perpage" />
+    <MESSAGE value="update server &amp; client" />
+    <MESSAGE value="latest-update: new model, recorder config" />
+    <MESSAGE value="update latest" />
+    <MESSAGE value="ignore video" />
+    <MESSAGE value="update from server" />
+    <MESSAGE value="update from server, player tidy up &amp; server update" />
+    <MESSAGE value="update sign language" />
+    <MESSAGE value="erhu update" />
+    <MESSAGE value="erhu update latest" />
+    <MESSAGE value="Update" />
+    <MESSAGE value="Update save page with local storage" />
+    <MESSAGE value="Update latest &amp; maintenance" />
+    <MESSAGE value="Added about page" />
+    <MESSAGE value="Sign language update" />
+    <MESSAGE value="Tidy UP" />
+    <MESSAGE value="Tidy UP server.py" />
+    <MESSAGE value="Update Readme.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update Readme.md" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/client/src/app/pages/PlayVideo/test-player.tsx</url>
+          <line>10</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/erhu_project$classifier.coverage" NAME="classifier Coverage Results" MODIFIED="1650308309576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
-    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1650895174594" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
+    <SUITE FILE_PATH="coverage/erhu_project$keypoint_extract__1_.coverage" NAME="keypoint_extract (1) Coverage Results" MODIFIED="1657023677522" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/sign_language" />
     <SUITE FILE_PATH="coverage/erhu_project$test_classifier.coverage" NAME="test_classifier Coverage Results" MODIFIED="1649877640572" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
+    <SUITE FILE_PATH="coverage/erhu_project$server.coverage" NAME="server Coverage Results" MODIFIED="1670592237918" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
+    <SUITE FILE_PATH="coverage/erhu_project$ErhuPredictionYOLO_GCN_class.coverage" NAME="ErhuPredictionYOLO_GCN_class Coverage Results" MODIFIED="1657647231262" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
+    <SUITE FILE_PATH="coverage/erhu_project$ErhuPrediction3DCNNLSTM_class_no_segment_bck.coverage" NAME="ErhuPrediction3DCNNLSTM_class_no_segment_bck Coverage Results" MODIFIED="1653409221500" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
+    <SUITE FILE_PATH="coverage/erhu_project$ErhuPrediction3DCNNLSTM_class.coverage" NAME="ErhuPrediction3DCNNLSTM_class Coverage Results" MODIFIED="1656392779512" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
+    <SUITE FILE_PATH="coverage/erhu_project$FaceMosaicMediaPipe.coverage" NAME="FaceMosaicMediaPipe Coverage Results" MODIFIED="1651745397470" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/server" />
+    <SUITE FILE_PATH="coverage/erhu_project$evaluate__1_.coverage" NAME="evaluate (1) Coverage Results" MODIFIED="1658377101941" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/sign_language" />
+    <SUITE FILE_PATH="coverage/erhu_project$keypoint_extract.coverage" NAME="keypoint_extract Coverage Results" MODIFIED="1653924789993" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/sign-language" />
+    <SUITE FILE_PATH="coverage/erhu_project$classifier.coverage" NAME="classifier Coverage Results" MODIFIED="1650308309576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/classifier" />
+    <SUITE FILE_PATH="coverage/erhu_project$evaluate.coverage" NAME="evaluate Coverage Results" MODIFIED="1653926151658" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/sign-language" />
+    <SUITE FILE_PATH="coverage/erhu_project$streaming.coverage" NAME="streaming Coverage Results" MODIFIED="1670592291815" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/server" />
   </component>
 </project>

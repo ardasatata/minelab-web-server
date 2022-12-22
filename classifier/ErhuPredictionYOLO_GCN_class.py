@@ -34,7 +34,7 @@ from mmpose.datasets import DatasetInfo
 from mmdet.apis import inference_detector, init_detector
 from keras_gcn import GraphConv
 from keras_gcn import GraphMaxPool, GraphAveragePool
-
+# from tcn import TCN
 sys.path.append(os.path.abspath(os.path.join('..', 'upload')))
 
 print("Num GPUs Available: ", len(tensorflow.config.list_physical_devices('GPU')))
@@ -1811,6 +1811,12 @@ def body_segment_mmpose(frame):
     rightHand132_y = int(pose_results[0]['keypoints'][131][1])
     rightHand133_x = int(pose_results[0]['keypoints'][132][0])
     rightHand133_y = int(pose_results[0]['keypoints'][132][1])
+    rightHand6_x = int(pose_results[0]['keypoints'][6][0])
+    rightHand6_y = int(pose_results[0]['keypoints'][6][1])
+    rightHand8_x = int(pose_results[0]['keypoints'][8][0])
+    rightHand8_y = int(pose_results[0]['keypoints'][8][1])
+    rightHand10_x = int(pose_results[0]['keypoints'][10][0])
+    rightHand10_y = int(pose_results[0]['keypoints'][10][1])
     rightHandFinger = [(rightHand115_x, rightHand115_y),
                       (rightHand116_x, rightHand116_y), (rightHand117_x, rightHand117_y), (rightHand118_x, rightHand118_y),
                       (rightHand119_x, rightHand119_y), (rightHand120_x, rightHand120_y), (rightHand121_x, rightHand121_y),
@@ -1818,7 +1824,7 @@ def body_segment_mmpose(frame):
                       (rightHand125_x, rightHand125_y), (rightHand126_x, rightHand126_y), (rightHand127_x, rightHand127_y),
                       (rightHand128_x, rightHand128_y), (rightHand129_x, rightHand129_y), (rightHand130_x, rightHand130_y),
                       (rightHand131_x, rightHand131_y), (rightHand132_x, rightHand132_y), (rightHand133_x, rightHand133_y)]
-
+    rightHandArm = [(rightHand6_x, rightHand6_y), (rightHand8_x, rightHand8_y), (rightHand10_x, rightHand10_y)]
     x_MIDFGRLH = int(pose_results[0]['keypoints'][102][0])
     y_MIDFGRLH = int(pose_results[0]['keypoints'][102][1])
     lh_middle_finger = [x_MIDFGRLH, y_MIDFGRLH]
@@ -1920,7 +1926,7 @@ def body_segment_mmpose(frame):
            x_WRRH, y_WRRH, x_LTFGRRH, y_LTFGRRH, x_RElbow, y_RArm, x_RArm, x_LArm, y_LArm, x_WRLH, y_WRLH, \
            head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face,\
            degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor,\
-           lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger
+           lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger, rightHandArm
 
 
 def get_cropped_image(frame, length_shoulders,length_half_shoulders, length_shoulders_3times,length_shoulders_2times, length_thirdhalf_shoulders, \
@@ -2091,8 +2097,18 @@ def getKeypoints(frame):
     key_100_y = int(pose_results[0]['keypoints'][100][1])
     key_103_x = int(pose_results[0]['keypoints'][103][0])
     key_103_y = int(pose_results[0]['keypoints'][103][1])
+    #########add right elbow 2022-11-15
+    key_6_x = int(pose_results[0]['keypoints'][6][0])
+    key_6_y = int(pose_results[0]['keypoints'][6][1])
+    key_8_x = int(pose_results[0]['keypoints'][8][0])
+    key_8_y = int(pose_results[0]['keypoints'][8][1])
+    key_10_x = int(pose_results[0]['keypoints'][10][0])
+    key_10_y = int(pose_results[0]['keypoints'][10][1])
+
+    keypoints_elbow_right = [(key_6_x, key_6_y), (key_8_x, key_8_y), (key_10_x, key_10_y)]
+    ##############
     keypoints_elbow = [(key_7_x, key_7_y), (key_9_x, key_9_y), (key_100_x, key_100_y), (key_103_x, key_103_y)]
-    return keypoints_rh, keypoints_lh, keypoints_elbow
+    return keypoints_rh, keypoints_lh, keypoints_elbow, keypoints_elbow_right
     # keypoint_list.append(pose_results[0]['keypoints'])
     # if cv2.waitKey(5) & 0xFF == 27:
     #     exit
@@ -2123,9 +2139,16 @@ def main_predict(video_input, isFlip = True):
     # model_right_arm.summary()
     # # print('TEST')
     # # exit()
+    # model_rightHand2 = load_model(
+    #     "/home/minelab/dev/erhu-project/classifier/model/GCN_TCN/rightHand/newdata_right.h5",
+    #     custom_objects={"GraphConv": GraphConv, "GraphMaxPool": GraphMaxPool, "TCN": TCN})
     model_rightHand = load_model("/home/minelab/dev/erhu-project/classifier/model/YOLO_GCN/rightHand/combine_new_model_right.h5", custom_objects={"GraphConv": GraphConv, "GraphMaxPool": GraphMaxPool})
     model_leftHand  = load_model("/home/minelab/dev/erhu-project/classifier/model/YOLO_GCN/leftHand/left_hand_model.h5", custom_objects={"GraphConv": GraphConv, "GraphMaxPool": GraphMaxPool})
     result_folder = os.path.join(os.path.abspath(__file__ + "/../../"), "predict")
+
+    if "Lesson" in video_input :
+        result_folder = os.path.join(os.path.abspath(__file__ + "/../../"), "lesson/predict")
+
     if os.path.exists(result_folder) == False:
         os.mkdir(result_folder)
 
@@ -2140,10 +2163,13 @@ def main_predict(video_input, isFlip = True):
 
     videoInput = cv2.VideoCapture(video_path)
     LABELS = ["body", "bow", "erhu"]
+    ###########comment segment 2022-11-15
+    '''
     segment_image = custom_segmentation()
     segment_image.inferConfig(num_classes=3, class_names=LABELS)
     # segment_image.load_model(os.path.join(thisfolder, "model/SegmentationModel/4_5_dataset_13032022/mask_rcnn_model.081-0.129956.h5"))
     segment_image.load_model( os.path.join(thisfolder, "model/SegmentationModel/MixAllDataset/mask_rcnn_model.097-0.444332.h5"))
+    '''
     properties = getVideoProperties(videoInput)
     # videoSegmentation = {}
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -2289,9 +2315,12 @@ def main_predict(video_input, isFlip = True):
     x_test_left_hand_keypoint = []
     x_test_right_hand_keypoint = []
     x_test_left_arm_keypoint = []
+    x_test_right_arm_keypoint = []
+    x_test_right_hand_keypoint2 = []
     hand_edge = np.zeros((21, 21))
     hand_edge2 = np.zeros((21, 21))
     hand_edge_arm = np.zeros((4, 4))
+    hand_edge2_arm = np.zeros((24, 24))
 
     hand_edge2[0, 0] = 1
     hand_edge2[1, 1] = 1
@@ -2347,6 +2376,15 @@ def main_predict(video_input, isFlip = True):
     hand_edge_arm[0, 1] = 1
     hand_edge_arm[1, 2] = 1
     hand_edge_arm[2, 3] = 1
+    ########Add right hand arm 2022-11-15
+    hand_edge2_arm[:21, :21] = hand_edge2
+    hand_edge2_arm[0, 21] = 1
+    hand_edge2_arm[21, 22] = 1
+    hand_edge2_arm[22, 23] = 1
+    # hand_edge2_arm[23,24] = 1
+    hand_edge2_arm[21, 21] = 1
+    hand_edge2_arm[22, 22] = 1
+    hand_edge2_arm[23, 23] = 1
 
     while videoInput.isOpened():
         # print('Frame open')
@@ -2364,7 +2402,7 @@ def main_predict(video_input, isFlip = True):
             x_WRRH, y_WRRH, x_LTFGRRH, y_LTFGRRH, x_RElbow, y_RArm, x_RArm, x_LArm, y_LArm, x_WRLH, y_WRLH, \
             head_rectangle_coordinate, body_rectangle_coordinate, knee_shoulder_distance, degrees_ear_face, \
             degrees_body, degrees_shoulder, degree_lh_shoulder_elbow, lh_slope_value, rh_hip, lh_hip, lh_finger_wrist_elbow_coor, \
-            lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger = body_segment_mmpose(frame.copy())
+            lh_knees, rh_knees, lh_shoulder, rh_shoulder, lh_ear, rh_ear, leftHandFinger, rightHandFinger, rightHandArm = body_segment_mmpose(frame.copy())
 
             image, RH_Cropped, RArm_Cropped, LArm_Cropped, LH_Cropped, \
             RH_Cropped_Coor, RArm_Cropped_Coor, LArm_Cropped_Coor, LH_Cropped_Coor, \
@@ -2384,7 +2422,7 @@ def main_predict(video_input, isFlip = True):
         # cv2.imshow('RArm_Cropped', RArm_Cropped)
         # cv2.imshow('LArm_Cropped', LArm_Cropped)
         # cv2.imshow('LH_Cropped', LH_Cropped)
-        rightHand_keypoints, leftHand_keypoints, leftArm_keypoint = getKeypoints(frame.copy())
+        rightHand_keypoints, leftHand_keypoints, leftArm_keypoint, rightArm_keypoint = getKeypoints(frame.copy())
         # print('rightHand_keypoints', rightHand_keypoints)
         # print('leftHand_keypoints', leftHand_keypoints)
         # print('leftArm_keypoint', leftArm_keypoint)
@@ -2429,7 +2467,7 @@ def main_predict(video_input, isFlip = True):
         # cv2.imshow('LeftHand', LH_Cropped)
         # cv2.imshow('Img Ori', image)
         # cv2.waitKey(1)
-
+        limit_sample_right_arm = 99
         if len(x_test_video_leftHand_resized) < limit_sample:
             # img_resized_leftHand = cv2.resize(LH_Cropped, (img_height, img_width))
             x_test_video_leftHand_resized.append(LH_Cropped)
@@ -2445,6 +2483,7 @@ def main_predict(video_input, isFlip = True):
             x_test_video_leftArm_resized.append(LArm_Cropped)
             x_test_left_arm_point.append(LArm_Cropped_Coor)
             x_test_left_arm_keypoint.append(leftArm_keypoint)
+
         if len(x_test_video_rightArm_resized) < limit_sample:
             # img_resized_rightArm = cv2.resize(RArm_Cropped, (img_height, img_width))
             x_test_video_rightArm_resized.append(RArm_Cropped)
@@ -2466,7 +2505,13 @@ def main_predict(video_input, isFlip = True):
             bow_line = BowLine
             # print('Bow Line:', bow_line)
             x_test_bow_line_point.append(bow_line)
-
+        '''
+        #########add right hand error 2022-11-15
+        if len(x_test_right_arm_keypoint) < limit_sample_right_arm:
+            # img_resized_leftArm = cv2.resize(LArm_Cropped, (img_height, img_width))
+            x_test_right_hand_keypoint2.append(rightHand_keypoints)
+            x_test_right_arm_keypoint.append(rightArm_keypoint)
+        '''
         # seg_mask, seg_output = segment_image.segmentFrame(frame.copy())
         # segLeng = len(seg_mask['scores'])
         # # print(seg_mask['scores'])
@@ -2570,11 +2615,44 @@ def main_predict(video_input, isFlip = True):
         frame_number += 1
         limit_counter += 1
         frame_count += 1
+
         # except:
         #     print("Something is wrong...")
         # # else:
         # #     skipped_frame += 1
         # else:
+
+        '''
+        #########add right hand error 2022-11-15
+        limit_counter_right_arm += 1
+        if limit_counter_right_arm >= limit_sample_right_arm:
+            for (rightHand_keypoint,rightArm_keypoint) in zip(x_test_right_hand_keypoint2, x_test_right_arm_keypoint):
+                limit_counter_right_arm = 0
+                x_train_rightHand = []
+                x_train_rightElbow = []
+                edge_train_rightHand = []
+                x_train_rightHand2 = []
+                edge_train_rightArm = []
+                edge_train_rightHand.append(hand_edge2)
+                edge_train_rightArm.append(hand_edge2_arm)
+                x_train_rightHand.append(rightHand_keypoint)
+                x_train_rightHand2.append(rightHand_keypoint)
+                x_train_rightElbow.append(rightArm_keypoint)
+
+                train_x_rightHand2 = np.asarray(x_train_rightHand2)
+                train_x_rightElbow = np.asarray(x_train_rightElbow)
+                edge_rightHand = np.asarray(edge_train_rightHand)
+                edge_rightHandArm = np.asarray(edge_rightHandArm)
+                train_x_rightElbow = NormalizeData(train_x_rightElbow)
+                train_x_rightHand2 = NormalizeData(train_x_rightHand2)
+
+                #########add right hand arm prediction 2022-11-15
+                prediction_rightHandarm = model_rightHand2.predict([train_x_rightHand2, edge_rightHand,train_x_rightElbow,edge_rightHandArm])
+                # print(prediction_rightArm)
+
+                prediction_right_hand_max = np.argmax(prediction_rightHandarm[0])
+                print(prediction_right_hand_max[0])
+        '''
         if limit_counter >= limit_sample:
             # exit()
             rightArm_E31_ClassName = '拇指握弓位置錯誤'
@@ -2583,6 +2661,12 @@ def main_predict(video_input, isFlip = True):
             rightArm_E34_ClassName = '右手腕持弓太向內翻'
             rightArm_E35_ClassName = '右手腕持弓太向外翻'
             rightArm_Normal_ClassName = 'N-右手正常持弓 '
+            ############add right class error AR11,AR12,AR13,ARN 2022-11-15
+            rightArm_A11_ClassName = '大臂過於主動，帶動小臂與手腕'
+            rightArm_A12_ClassName = '大臂未動，只動小臂與手腕'
+            rightArm_A13_ClassName = '手腕帶動弓，過於僵硬'
+            rightArm_AN_ClassName = 'Normal'
+            #################################
             # leftArm_E21 = round(np.argmax(prediction_leftArm),2)
             # leftArm_E22 = round(np.argmax(prediction_leftArm),2)
             # leftArm_E23 = round(np.argmax(prediction_leftHand),2)
@@ -2659,6 +2743,16 @@ def main_predict(video_input, isFlip = True):
             leftHand_AL1 = 0
             leftHand_AL2 = 0
             leftHand_ALN = 0
+            ###########add right hand arm 2022-11-15
+            # for (imgLeftHand, imgRightHand, imgLeftArm, imgRightArm, leftHandPoint, rightHandPoint, leftArmPoint, \
+            #     rightArmPoint, all_body_point, leftHand_keypoint,\
+            #         leftArm_keypoint, rightHand_keypoint, righttArm_keypoint) in zip(x_test_video_leftHand_resized, x_test_video_rightHand_resized,
+            #                                          x_test_video_leftArm_resized, x_test_video_rightArm_resized,
+            #                                          x_test_left_hand_point, x_test_right_hand_point,x_test_left_arm_point,
+            #                                          x_test_right_arm_point, x_test_all_body_point, x_test_left_hand_keypoint,
+            #                                          x_test_left_arm_keypoint, x_test_right_hand_keypoint, x_test_right_arm_keypoint):
+
+
             for (imgLeftHand, imgRightHand, imgLeftArm, imgRightArm, leftHandPoint, rightHandPoint, leftArmPoint, \
                 rightArmPoint, all_body_point, leftHand_keypoint,\
                     leftArm_keypoint, rightHand_keypoint) in zip(x_test_video_leftHand_resized, x_test_video_rightHand_resized,
@@ -2667,6 +2761,7 @@ def main_predict(video_input, isFlip = True):
                                                      x_test_right_arm_point, x_test_all_body_point, x_test_left_hand_keypoint,
                                                      x_test_left_arm_keypoint, x_test_right_hand_keypoint):
                 limit_counter = 0
+                limit_counter_right_arm = 0
                 # limit_counter_bow = 0
                 # limit_counter_body = 0
                 # limit_counter_erhu = 0
@@ -2753,16 +2848,21 @@ def main_predict(video_input, isFlip = True):
                 x_train_rightHand = []
                 x_train_leftHand = []
                 x_train_leftElbow = []
+                x_train_rightElbow = []
                 y_train = []
                 edge_train_rightHand = []
                 edge_train_leftHand = []
                 edge_train_leftArm = []
+                # x_train_rightHand2 = []
+
                 edge_train_rightHand.append(hand_edge2)
                 edge_train_leftHand.append(hand_edge2)
                 edge_train_leftArm.append(hand_edge_arm)
                 x_train_rightHand.append(rightHand_keypoint)
+                # x_train_rightHand2.append(rightHand_keypoint)
                 x_train_leftHand.append(leftHand_keypoint)
                 x_train_leftElbow.append(leftArm_keypoint)
+                # x_train_rightElbow.append(rightArm_keypoint)
                 h_lh, w_lh, c_lh = imgLeftArm.shape
                 h_rh, w_rh, c_rh = imgRightHand.shape
                 # img_padding = img_paddings
@@ -2790,15 +2890,22 @@ def main_predict(video_input, isFlip = True):
                 yolo_x_rightHand = np.asarray(x_train_yolo_rightHand)
                 train_x_leftHand = np.asarray(x_train_leftHand)
                 train_x_rightHand = np.asarray(x_train_rightHand)
+                # train_x_rightHand2 = np.asarray(x_train_rightHand2)
                 train_x_leftElbow = np.asarray(x_train_leftElbow)
+                train_x_rightElbow = np.asarray(x_train_rightElbow)
                 edge_leftHand = np.asarray(edge_train_leftHand)
                 edge_leftElbow = np.asarray(edge_train_leftArm)
                 edge_rightHand = np.asarray(edge_train_rightHand)
                 train_x_leftHand = NormalizeData(train_x_leftHand)
                 train_x_rightHand = NormalizeData(train_x_rightHand)
                 train_x_leftElbow = NormalizeData(train_x_leftElbow)
+                # train_x_rightElbow = NormalizeData(train_x_rightElbow)
+                # train_x_rightHand2 = NormalizeData(train_x_rightHand2)
+
                 prediction_leftHand = model_leftHand.predict([yolo_x_leftHand, train_x_leftHand, edge_leftHand, train_x_leftElbow, edge_leftElbow])
                 prediction_rightHand = model_rightHand.predict([yolo_x_rightHand, train_x_rightHand, edge_rightHand])
+                #########add right hand arm prediction 2022-11-15
+                #prediction_rightHandarm = model_rightHand2.predict([train_x_rightHand2, edge_rightHand])
                 # print(prediction_rightArm)
                 # print(prediction_rightHand[0])
                 # print(prediction_leftArm)
@@ -3942,6 +4049,7 @@ def main_predict(video_input, isFlip = True):
             warning_mess.append(["Erhu_Normal", "Normal", "Erhu Position", str(1.0), "Normal"])
             warning_mess.append(["Bow_Normal", "Normal", "Bow Erhu Position", str(1.0), "Normal"])
             warning_mess.append(["Knees_Normal", "Normal", 'Knees Position', str(0), 'Normal'])
+            # warning_mess.append(["RightHand2_Normal", 'Normal', "Right Hand Position", str(1.0), 'Normal'])
             output_array.append([warning_mess])
             output_json_number += 1
             videoOut_1.write(img)

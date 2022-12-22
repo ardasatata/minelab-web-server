@@ -25,6 +25,13 @@ import {AboutPage} from "./pages/AboutPage";
 import {FileListSL} from "./pages/SignLanguage/FileList";
 import {VideoPlayerSL} from "./pages/SignLanguage/video-player";
 
+import { LessonList } from "./pages/LessonList";
+import { LessonWatch } from "./pages/LessonWatch";
+import { LessonRecord } from "./pages/LessonRecord";
+import { LessonAnalyse } from "./pages/LessonAnalyse";
+
+
+
 export function App() {
   const { i18n } = useTranslation();
   return (
@@ -107,6 +114,26 @@ export function App() {
           exact
           path={process.env.PUBLIC_URL + '/about'}
           component={() => <AboutPage />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/lesson'}
+          component={() => <LessonList />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/lesson-watch'}
+          component={() => <LessonWatch />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/record-lesson'}
+          component={() => <LessonRecord />}
+        />
+        <Route
+          exact
+          path={process.env.PUBLIC_URL + '/analyse-lesson'}
+          component={() => <LessonAnalyse />}
         />
         <Route component={NotFoundPage} />
       </Switch>
